@@ -222,7 +222,17 @@ object Section{
     val name = CommandLine.prompt("Name")
 
     val id = ( section.whiteboards foldRight 0) ((a,b) => if(a.id > b) a.id else b)
-    val new_wb = Whiteboard(id,color,(sizeX.toDouble, sizeY.toDouble),List(), name)
+    val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name)
+
+    val newSection = logicMC.Section(section.id, section.name, section.sections, new_wb::section.whiteboards)
+    updateAll(mainSection, newSection)
+    //TODO we gotta check if the update is working m8!
+  }
+
+  def addWhiteboardWithValues(mainSection : Section, section: Section, color:String, sizeX:Double, sizeY:Double, name:String):(Section, Section) = {
+
+    val id = ( section.whiteboards foldRight 0) ((a,b) => if(a.id > b) a.id else b)
+    val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name)
 
     val newSection = logicMC.Section(section.id, section.name, section.sections, new_wb::section.whiteboards)
     updateAll(mainSection, newSection)

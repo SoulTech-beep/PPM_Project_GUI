@@ -6,7 +6,9 @@ import javafx.scene.control._
 import javafx.scene.effect.BoxBlur
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.input.KeyCode
-import javafx.scene.layout.{FlowPane, HBox, Pane, Priority, VBox}
+import javafx.scene.layout.{FlowPane, HBox, Pane, Priority, StackPane, VBox}
+import javafx.scene.paint.{Color, Paint}
+import javafx.scene.shape.Circle
 import javafx.scene.text.{Font, FontWeight}
 import javafx.stage.{Modality, Stage, StageStyle}
 import logicMC.{Section, Whiteboard}
@@ -31,11 +33,17 @@ class Controller{
   private var rightSpacer:HBox = _
 
   @FXML
-  private var addButton:Button = _
+  private var addSectionButton:MenuItem = _
+
+  @FXML
+  private var addWhiteboardButton:MenuItem = _
 
   var myFont: Font = Font.font("SF Pro Display", FontWeight.BLACK, 12)
 
   var currentSection:Section = _
+
+  var selectedColor: Paint = Color.WHITE
+
 
   @Override
   def initialize(): Unit = {
@@ -46,6 +54,8 @@ class Controller{
     currentSectionLabel.setText("")
     currentSectionLabel.setFont(myFont)
 
+    goBackButton.setDisable(true)
+
     goBackButton.setOnMouseClicked(event => {
       FxApp.app_state = Section.exitSection(FxApp.app_state._1, FxApp.app_state._2)
       updateStuff(FxApp.app_state._2)
@@ -54,12 +64,18 @@ class Controller{
 
 
     teste()
-    addButtonClicked()
+    addSectionButtonOnClick()
+    addWhiteboardButtonOnClick()
   }
 
   def updateStuff(newCurrentSection: Section):Unit={
     println("---updateStuff---")
 
+    if(newCurrentSection.id.length > 1){
+      goBackButton.setDisable(false)
+    }else{
+      goBackButton.setDisable(true)
+    }
 
     currentSection = newCurrentSection
     currentSectionLabel.setText(currentSection.name)
@@ -218,17 +234,57 @@ class Controller{
   }
 
 
+def addWhiteboardButtonOnClick():Unit = {
+  addWhiteboardButton.setOnAction(event => {
+
+    val popupStage: Stage = new Stage()
+    popupStage.setTitle("Add Section")
+    popupStage.initModality(Modality.APPLICATION_MODAL)
+
+    val nameTextField = new TextField()
+    nameTextField.setPromptText("Whiteboard name")
+
+    val colorTextField = new TextField()
+    colorTextField.setPromptText("Color name")
+
+    val xTextField = new TextField()
+    xTextField.setPromptText("X")
+
+    val yTextField = new TextField()
+    yTextField.setPromptText("Y")
+
+    val okButton = new Button("Add Whiteboard")
 
 
-  def addButtonClicked():Unit = {
-    addButton.setOnMouseClicked(event => {
+    val innervBox = new VBox(nameTextField, colorPicker(), xTextField, yTextField, okButton)
+    innervBox.setSpacing(20)
+    innervBox.setAlignment(Pos.CENTER)
+    innervBox.setPadding(new Insets(10,10,10,10))
 
-      val addSection = new MenuItem("Add Section")
-      val addWhiteboard = new MenuItem("Add Whiteboard")
-      val contextMenu = new ContextMenu(addSection, addWhiteboard)
+    val scene = new Scene(innervBox)
+
+    popupStage.setScene(scene)
+    popupStage.show()
+
+    okButton.setOnMouseClicked(p => {
+      //TODO check if name isn't empty
+      if(!nameTextField.getText.isBlank){
 
 
-      addSection.setOnAction(p => {
+        FxApp.app_state = Section.addWhiteboardWithValues(FxApp.app_state._1, FxApp.app_state._2,selectedColor.toString, xTextField.getText.toDouble, yTextField.getText.toDouble, nameTextField.getText)
+
+        updateStuff(FxApp.app_state._2)
+
+        popupStage.close()
+      }
+    })
+
+  })
+
+}
+
+  def addSectionButtonOnClick():Unit = {
+    addSectionButton.setOnAction(event => {
 
         val popupStage: Stage = new Stage()
         popupStage.setTitle("Add Section")
@@ -273,10 +329,56 @@ class Controller{
 
       })
 
-      contextMenu.show(addButton, event.getScreenX, event.getScreenY)
+  }
+
+  def colorPicker():HBox = {
+
+    val colors = new HBox()
+
+    val c1 = new Circle()
+    c1.setFill(Color.WHITE)
+    c1.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);")
+
+    val c2 = new Circle()
+    c2.setFill(Color.web("#ffeaa7"))
+
+    val c3 = new Circle()
+    c3.setFill(Color.web("#2d3436"))
+    c3.setOnMouseClicked(p => {
+      selectedColor = c3.getFill
+      c3.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);")
+      c1.setStyle("")
+      c2.setStyle("")
     })
 
+    c2.setOnMouseClicked(p => {
+      selectedColor = c2.getFill
+      c2.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);")
+      c1.setStyle("")
+      c3.setStyle("")
+    })
 
+    c1.setOnMouseClicked(p =>  {
+      selectedColor = c1.getFill
+      c1.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);")
+      c2.setStyle("")
+      c3.setStyle("")
+    })
+
+    c1.setRadius(10)
+    c2.setRadius(10)
+    c3.setRadius(10)
+
+    c1.setStroke(Color.BLACK)
+    c2.setStroke(Color.BLACK)
+    c3.setStroke(Color.BLACK)
+
+    colors.setSpacing(20)
+    colors.setAlignment(Pos.CENTER)
+
+    colors.getChildren.addAll(c1,c2,c3)
+    colors
   }
+
 
 }
