@@ -1,14 +1,11 @@
-import javafx.geometry.{Bounds, Insets, Pos}
-import javafx.scene.control.ScrollPane
-import javafx.scene.image.{Image, ImageView}
-import javafx.scene.layout.{Background, BackgroundFill, BorderPane, CornerRadii, HBox, Pane, Priority, StackPane, VBox}
-import javafx.scene.paint.Color
-import javafx.beans.binding.Bindings
 import javafx.beans.value.{ChangeListener, ObservableValue}
-import javafx.scene.Node
+import javafx.geometry.{Bounds, Insets, Pos}
 import javafx.scene.canvas.{Canvas, GraphicsContext}
+import javafx.scene.control.{Button, ScrollPane}
 import javafx.scene.input.MouseButton
-import javafx.scene.transform.Scale
+import javafx.scene.layout._
+import javafx.scene.paint.Color
+import javafx.scene.shape.Rectangle
 
 class whiteboardScroller {
 
@@ -18,52 +15,92 @@ class whiteboardScroller {
 object whiteboardScroller{
 
   def  initDraw( gc:GraphicsContext):Unit = {
-    val canvasWidth = gc.getCanvas.getWidth;
-    val canvasHeight = gc.getCanvas.getHeight;
+    val canvasWidth = gc.getCanvas.getWidth
+    val canvasHeight = gc.getCanvas.getHeight
 
-    gc.setFill(Color.LIGHTGRAY);
-    gc.setStroke(Color.BLACK);
-    gc.setLineWidth(5);
+    gc.setFill(Color.LIGHTGRAY)
+    gc.setStroke(Color.BLACK)
+    gc.setLineWidth(5)
 
-    gc.fill();
+    gc.fill()
     gc.strokeRect(
       0,              //x of the upper left corner
       0,              //y of the upper left corner
       canvasWidth,    //width of the rectangle
-      canvasHeight);  //height of the rectangle
+      canvasHeight)  //height of the rectangle
 
-    gc.setFill(Color.RED);
-    gc.setStroke(Color.BLUE);
-    gc.setLineWidth(1);
+    gc.setFill(Color.RED)
+    gc.setStroke(Color.BLUE)
+    gc.setLineWidth(1)
 
   }
 
   def getCanvas():ScrollPane = {
-    val canvas = new ScrollPane()
 
-    val pages = new VBox()
+    var currentLayer = new Canvas(400,400)
+    var selecting = false
+    var  dragBox = new Rectangle(0, 0, 0, 0);
+    var camadas = List(currentLayer)
 
-    val page3 = new Canvas(400,400)
-    val graphicsContext = page3.getGraphicsContext2D
+   /////
+
+    val page3 = new Pane(dragBox)
+    page3.setPrefSize(400,400)
+
+
+    var graphicsContext = currentLayer.getGraphicsContext2D
     initDraw(graphicsContext)
 
     page3.setOnMousePressed(event => {
 
-      graphicsContext.beginPath()
-      graphicsContext.moveTo(event.getX,event.getY)
-      graphicsContext.stroke()
+      if(!selecting){
+
+        currentLayer = new Canvas(400,400)
+        graphicsContext = currentLayer.getGraphicsContext2D
+        initDraw(graphicsContext)
+
+        page3.getChildren.add(currentLayer)
+
+        graphicsContext.beginPath()
+        graphicsContext.moveTo(event.getX,event.getY)
+        graphicsContext.stroke()
+
+      }else{
+        dragBox.setVisible(true);
+        dragBox.setTranslateX(event.getX)
+        dragBox.setTranslateY(event.getY)
+      }
+
 
     })
 
     page3.setOnMouseDragged(event => {
+        if(!selecting){
 
-      graphicsContext.lineTo(event.getX, event.getY)
-      graphicsContext.stroke()
+          graphicsContext.lineTo(event.getX, event.getY)
+          graphicsContext.stroke()
+        }else{
+          dragBox.setWidth(event.getX - dragBox.getTranslateX)
+          dragBox.setHeight(event.getY - dragBox.getTranslateY)
+        }
     })
 
     page3.setOnMouseReleased(event => {
+        if(selecting){
+          camadas = currentLayer::camadas
 
+          dragBox.setVisible(false)
+          println("vamos ver quais foram os selecionados!")
+
+
+        }
     })
+
+
+    //////7
+
+    val canvas = new ScrollPane()
+    val pages = new VBox()
 
     val page1 = new Pane()
     val page2 = new Pane()
@@ -78,7 +115,13 @@ object whiteboardScroller{
 
     pages.setMaxWidth(1200)
 
-    pages.getChildren.addAll(page3,page1,page2)
+
+    var selectButton = new Button("Selecionar")
+    selectButton.setOnMouseClicked(p => selecting = !selecting)
+
+    pages.getChildren.addAll(page3, selectButton,page1,page2)
+
+
     pages.setSpacing(80)
     pages.setAlignment(Pos.CENTER)
 
