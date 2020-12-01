@@ -63,7 +63,8 @@ object Section{
       val sectionCreated = Section(s.id+".1",name, List(), List() )
       val sectionWeAreIn = logicMC.Section(s.id, s.name, sectionCreated::s.sections, s.whiteboards)
 
-      (mainSection, sectionWeAreIn)
+      updateAll(mainSection, sectionWeAreIn)
+      //(mainSection, sectionWeAreIn)
     }else{
       val maxID = s.sections.last.id.split('.').last.toInt + 1
       val newID : String = s.id + '.' + maxID.toString
@@ -71,18 +72,43 @@ object Section{
       val sectionCreated = Section(newID,name, List(), List() )
       val sectionWeAreIn = logicMC.Section(s.id, s.name, (sectionCreated::s.sections).reverse, s.whiteboards)
 
-      (mainSection, sectionWeAreIn)
+      //(mainSection, sectionWeAreIn)
+      updateAll(mainSection, sectionWeAreIn)
     }
+
+    //TODO If some problem exists check here!
+  }
+
+  def addNewSectionName(mainSection :Section, s:Section, name:String):(Section, Section) = {
+    if(s.sections.isEmpty){
+      val sectionCreated = Section(s.id+".1",name, List(), List() )
+      val sectionWeAreIn = logicMC.Section(s.id, s.name, sectionCreated::s.sections, s.whiteboards)
+
+      updateAll(mainSection, sectionWeAreIn)
+      //(mainSection, sectionWeAreIn)
+    }else{
+      val maxID = s.sections.last.id.split('.').last.toInt + 1
+      val newID : String = s.id + '.' + maxID.toString
+
+      val sectionCreated = Section(newID,name, List(), List() )
+      val sectionWeAreIn = logicMC.Section(s.id, s.name, (sectionCreated::s.sections).reverse, s.whiteboards)
+
+      //(mainSection, sectionWeAreIn)
+      updateAll(mainSection, sectionWeAreIn)
+    }
+
+    //TODO If some problem exists check here!
   }
 
   def updateAll(mainSection: Section, s:Section):(Section, Section) = {
 
-    val newMainSections: List[Section] = updateAllAuxiliary(mainSection.sections, s)
-    val newMainSection = Section(mainSection.id, mainSection.name, newMainSections, mainSection.whiteboards)
-
     if(s.id.length == 1){
       return (Section(s.id, s.name, s.sections, s.whiteboards),s)
     }
+
+    val newMainSections: List[Section] = updateAllAuxiliary(mainSection.sections, s)
+    val newMainSection = Section(mainSection.id, mainSection.name, newMainSections, mainSection.whiteboards)
+
 
     (newMainSection, s)
   }

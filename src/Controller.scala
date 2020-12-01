@@ -1,12 +1,14 @@
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Scene
 import javafx.scene.control._
+import javafx.scene.effect.BoxBlur
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.input.KeyCode
-import javafx.scene.layout.{FlowPane, Pane, VBox}
+import javafx.scene.layout.{FlowPane, HBox, Pane, Priority, VBox}
 import javafx.scene.text.{Font, FontWeight}
-import javafx.stage.{Modality, Stage}
+import javafx.stage.{Modality, Stage, StageStyle}
 import logicMC.{Section, Whiteboard}
 
 class Controller{
@@ -22,12 +24,25 @@ class Controller{
   @FXML
   private var currentSectionLabel: Label = _
 
+  @FXML
+  private var leftSpacer:HBox = _
+
+  @FXML
+  private var rightSpacer:HBox = _
+
+  @FXML
+  private var addButton:Button = _
+
   var myFont: Font = Font.font("SF Pro Display", FontWeight.BLACK, 12)
 
   var currentSection:Section = _
 
   @Override
   def initialize(): Unit = {
+
+    HBox.setHgrow(leftSpacer, Priority.SOMETIMES)
+    HBox.setHgrow(rightSpacer, Priority.SOMETIMES)
+
     currentSectionLabel.setText("")
     currentSectionLabel.setFont(myFont)
 
@@ -36,18 +51,23 @@ class Controller{
       updateStuff(FxApp.app_state._2)
     })
 
+
+
     teste()
+    addButtonClicked()
   }
 
   def updateStuff(newCurrentSection: Section):Unit={
     println("---updateStuff---")
 
+
     currentSection = newCurrentSection
+    currentSectionLabel.setText(currentSection.name)
 
     sectionsVBox.getChildren.clear()
 
-    FxApp.app_state._2.sections.foreach(p => sectionsVBox.getChildren.add(getSectionPane(p)))
-    FxApp.app_state._2.whiteboards.foreach(p => sectionsVBox.getChildren.add(getWhiteboardPane(p)))
+    FxApp.app_state._2.sections.sortWith((p1,p2) => p1.id < p2.id).foreach(p => sectionsVBox.getChildren.add(getSectionPane(p)))
+    FxApp.app_state._2.whiteboards.sortWith((w1,w2)=> w1.id<w2.id).foreach(p => sectionsVBox.getChildren.add(getWhiteboardPane(p)))
   }
 
   def teste():Unit = {
@@ -88,6 +108,11 @@ class Controller{
 
     var label = new Label(whiteboard.name)
     label.setFont(myFont)
+    label.setAlignment(Pos.BASELINE_CENTER)
+    //TODO FIX THE ICON OFFSET THINGY THAT IS FUCKING THIS SHIT UP, FACK.
+    label.setMaxWidth(60)
+    label.setMaxHeight(40)
+    label.setWrapText(true)
 
     var vBox = new VBox(imageView, label)
 
@@ -96,6 +121,7 @@ class Controller{
 
     val rename = new MenuItem("Rename")
     val contextMenu = new ContextMenu(rename)
+
 
     rename.setOnAction(p => {
 
@@ -118,12 +144,13 @@ class Controller{
 
       val okButton = new Button("Change name")
 
-      val vBox = new VBox(nameTextField, okButton)
-      vBox.setSpacing(20)
-      vBox.setAlignment(Pos.CENTER)
-      vBox.setPadding(new Insets(10,10,10,10))
+      val innervBox = new VBox(nameTextField, okButton)
+      innervBox.setSpacing(20)
+      innervBox.setAlignment(Pos.CENTER)
+      innervBox.setPadding(new Insets(10,10,10,10))
 
-      val scene = new Scene(vBox)
+
+      val scene = new Scene(innervBox)
 
       popupStage.setScene(scene)
       popupStage.show()
@@ -138,6 +165,7 @@ class Controller{
       })
 
     })
+
 
     vBox.setOnContextMenuRequested( p => contextMenu.show(vBox,p.getScreenX, p.getScreenY ))
 
@@ -191,8 +219,64 @@ class Controller{
 
 
 
-  def btnPenClicked():Unit = {
-    println("O HENRIQUE PARECE UMA CASTANHA")
+
+  def addButtonClicked():Unit = {
+    addButton.setOnMouseClicked(event => {
+
+      val addSection = new MenuItem("Add Section")
+      val addWhiteboard = new MenuItem("Add Whiteboard")
+      val contextMenu = new ContextMenu(addSection, addWhiteboard)
+
+
+      addSection.setOnAction(p => {
+
+        val popupStage: Stage = new Stage()
+        popupStage.setTitle("Add Section")
+        popupStage.initModality(Modality.APPLICATION_MODAL)
+
+        val nameTextField = new TextField()
+        nameTextField.setPromptText("Section name")
+
+        nameTextField.setOnKeyPressed(p => {
+          if(p.getCode == KeyCode.ENTER){
+            if(!nameTextField.getText.isBlank) {
+              FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+              updateStuff(FxApp.app_state._2)
+
+              popupStage.close()
+            }
+          }
+        })
+
+        val okButton = new Button("Add Section")
+
+        val innervBox = new VBox(nameTextField, okButton)
+        innervBox.setSpacing(20)
+        innervBox.setAlignment(Pos.CENTER)
+        innervBox.setPadding(new Insets(10,10,10,10))
+
+
+        val scene = new Scene(innervBox)
+
+        popupStage.setScene(scene)
+        popupStage.show()
+
+        okButton.setOnMouseClicked(p => {
+          //TODO check if name isn't empty
+          if(!nameTextField.getText.isBlank){
+            FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+            updateStuff(FxApp.app_state._2)
+
+            popupStage.close()
+          }
+        })
+
+      })
+
+      contextMenu.show(addButton, event.getScreenX, event.getScreenY)
+    })
+
+
   }
 
 }

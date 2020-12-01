@@ -10,6 +10,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -20,18 +21,33 @@
          <children>
             <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <ToolBar id="toolbar1" prefHeight="40.0" prefWidth="200.0" stylesheets="@navbar.css">
+                  <ToolBar id="toolbar1" fx:id="leftToolBar" prefHeight="49.0" prefWidth="484.0" stylesheets="@navbar.css" VBox.vgrow="ALWAYS">
                     <items>
-                      <Button fx:id="goBackButton" mnemonicParsing="false" text="&lt;">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
+                        <Button fx:id="goBackButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/backarrow.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
                         </Button>
+                        <HBox fx:id="leftSpacer" minHeight="1.0" prefHeight="10.0" prefWidth="10.0" />
                         <Label fx:id="currentSectionLabel" text="Label">
                            <font>
                               <Font name="SF Pro Display Bold" size="15.0" />
                            </font>
                         </Label>
+                        <HBox fx:id="rightSpacer" minHeight="10.0" prefHeight="10.0" prefWidth="10.0" />
+                        <Button fx:id="addButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/add.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
                     </items>
                   </ToolBar>
                   <ScrollPane fx:id="sectionsScrollPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: TRANSPARENT;" VBox.vgrow="ALWAYS" />
@@ -44,7 +60,7 @@
                <children>
                   <ToolBar id="toolbar" maxWidth="500.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
                     <items>
-                      <Button fx:id="btnPen" mnemonicParsing="false" onMouseClicked="#btnPenClicked" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
+                      <Button fx:id="btnPen" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
                            <graphic>
                               <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
