@@ -1,5 +1,6 @@
+import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
-import javafx.geometry.{Insets, Pos}
+import javafx.geometry.{Bounds, Insets, Pos}
 import javafx.scene.Scene
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
@@ -8,6 +9,7 @@ import javafx.scene.layout._
 import javafx.scene.paint.{Color, Paint}
 import javafx.scene.shape.Circle
 import javafx.scene.text.{Font, FontWeight}
+import javafx.scene.transform.Scale
 import javafx.stage.{Modality, Stage}
 import logicMC.{Section, Whiteboard}
 
@@ -15,6 +17,9 @@ class Controller{
 
   @FXML
   private var sectionsScrollPane: ScrollPane = _
+
+  @FXML
+  private var leftAnchorPane:AnchorPane = _
 
   @FXML
   private var goBackButton:Button = _
@@ -39,6 +44,9 @@ class Controller{
   @FXML
   private var addWhiteboardButton:MenuItem = _
 
+  @FXML
+  private var mySplitPane:SplitPane = _
+
   var myFont: Font = Font.font("SF Pro Display", FontWeight.BLACK, 12)
 
   var currentSection:Section = _
@@ -49,7 +57,14 @@ class Controller{
   @Override
   def initialize(): Unit = {
 
-    rightStackPane.getChildren.add(0, whiteboardScroller.getCanvas())
+    var canvasScroller = whiteboardScroller.getCanvas()
+
+
+
+
+    SplitPane.setResizableWithParent(leftAnchorPane, false)
+
+    rightStackPane.getChildren.add(0,canvasScroller)
 
     HBox.setHgrow(leftSpacer, Priority.SOMETIMES)
     HBox.setHgrow(rightSpacer, Priority.SOMETIMES)
