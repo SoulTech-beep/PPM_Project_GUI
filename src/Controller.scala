@@ -1,16 +1,14 @@
-import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Scene
 import javafx.scene.control._
-import javafx.scene.effect.BoxBlur
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.input.KeyCode
-import javafx.scene.layout.{FlowPane, HBox, Pane, Priority, StackPane, VBox}
+import javafx.scene.layout._
 import javafx.scene.paint.{Color, Paint}
 import javafx.scene.shape.Circle
 import javafx.scene.text.{Font, FontWeight}
-import javafx.stage.{Modality, Stage, StageStyle}
+import javafx.stage.{Modality, Stage}
 import logicMC.{Section, Whiteboard}
 
 class Controller{
@@ -25,6 +23,9 @@ class Controller{
 
   @FXML
   private var currentSectionLabel: Label = _
+
+  @FXML
+  private var rightStackPane:StackPane = _
 
   @FXML
   private var leftSpacer:HBox = _
@@ -47,6 +48,8 @@ class Controller{
 
   @Override
   def initialize(): Unit = {
+
+    rightStackPane.getChildren.add(0, whiteboardScroller.getCanvas())
 
     HBox.setHgrow(leftSpacer, Priority.SOMETIMES)
     HBox.setHgrow(rightSpacer, Priority.SOMETIMES)

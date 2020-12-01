@@ -62,7 +62,7 @@
          </children></AnchorPane>
     <AnchorPane minHeight="0.0" minWidth="300.0" prefHeight="641.0" prefWidth="568.0">
          <children>
-            <StackPane layoutX="150.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <StackPane fx:id="rightStackPane" layoutX="150.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <ToolBar id="toolbar" maxWidth="500.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
                     <items>
@@ -108,6 +108,15 @@
                               <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/geometric.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button alignment="TOP_LEFT" layoutX="262.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/text.png" />
                                  </image>
                               </ImageView>
                            </graphic>
