@@ -34,14 +34,22 @@ class Controller{
   @FXML
   private var rightStackPane:StackPane = _
 
+  @FXML
+  private var toolbar:ToolBar = _
+
   //FlowPane where all the sections and whiteboards will appear on the left side of the split pane
   private val sectionsVBox: FlowPane = new FlowPane()
 
   //Current section being shown on the left side of the split pane
   private var currentSection:Section = _
 
+  private var customToolBar:customToolBar = new customToolBar
+
   @Override
   def initialize(): Unit = {
+    customToolBar.setToolbar(toolbar)
+    customToolBar.initializeCustomToolBar()
+
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
 
@@ -119,6 +127,7 @@ class Controller{
 
 def addWhiteboardButtonOnClick():Unit = {
   addWhiteboardButton.setOnAction(event => {
+
 
     val popupStage: Stage = new Stage()
     popupStage.setTitle("Add Section")

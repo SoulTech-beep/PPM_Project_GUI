@@ -9,31 +9,10 @@ import javafx.scene.shape.{Path, Polyline, Rectangle}
 
 class whiteboardScroller {
 
-
 }
 
+
 object whiteboardScroller{
-
-  def  initDraw( gc:GraphicsContext):Unit = {
-    val canvasWidth = gc.getCanvas.getWidth
-    val canvasHeight = gc.getCanvas.getHeight
-
-    gc.setFill(Color.LIGHTGRAY)
-    gc.setStroke(Color.BLACK)
-    gc.setLineWidth(5)
-
-    gc.fill()
-    gc.strokeRect(
-      0,              //x of the upper left corner
-      0,              //y of the upper left corner
-      canvasWidth,    //width of the rectangle
-      canvasHeight)  //height of the rectangle
-
-    gc.setFill(Color.RED)
-    gc.setStroke(Color.BLUE)
-    gc.setLineWidth(1)
-
-  }
 
   def getCanvas():ScrollPane = {
 
@@ -42,72 +21,58 @@ object whiteboardScroller{
     var  dragBox = new Rectangle(0, 0, 0, 0);
     var camadas = List(currentLayer)
 
-   /////
+    /////
 
     val page3 = new Pane(dragBox)
     page3.setPrefSize(400,400)
+    page3.setMaxSize(400,400)
+
 
     page3.setOnMousePressed(event => {
 
-      if(!selecting){
 
-        currentLayer = new Polyline()
-        var coiso = currentLayer
+      currentLayer = new Polyline()
+      var coiso = currentLayer
 
+      currentLayer.setOnContextMenuRequested(click=>{
+        val delete = new MenuItem("Delete")
+        val contextMenu = new ContextMenu(delete)
 
-
-        currentLayer.setOnContextMenuRequested(click=>{
-          val delete = new MenuItem("Delete")
-          val contextMenu = new ContextMenu(delete)
-
-          delete.setOnAction(action => {
-            camadas = camadas.filter(p=>p!=currentLayer)
-            println("GONNA REMOVE")
-            page3.getChildren.remove(coiso)
-          })
-
-          contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+        delete.setOnAction(action => {
+          camadas = camadas.filter(p=>p!=currentLayer)
+          println("GONNA REMOVE")
+          page3.getChildren.remove(coiso)
         })
 
-        page3.getChildren.add(currentLayer)
+        contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+      })
 
-        currentLayer.setStrokeWidth(5)
-        currentLayer.getPoints.add(event.getX)
-        currentLayer.getPoints.add(event.getY)
+      page3.getChildren.add(currentLayer)
 
-      }else{
-        dragBox.setVisible(true);
-        dragBox.setTranslateX(event.getX)
-        dragBox.setTranslateY(event.getY)
-      }
+      currentLayer.setStrokeWidth(15)
+      currentLayer.setOpacity(0.4)
+      currentLayer.setSmooth(true)
+      currentLayer.setStroke(Color.RED)
+      currentLayer.getPoints.add(event.getX)
+      currentLayer.getPoints.add(event.getY)
 
 
     })
 
     page3.setOnMouseDragged(event => {
-        if(!selecting){
 
-          //graphicsContext.lineTo(event.getX, event.getY)
-          //graphicsContext.stroke()
-          currentLayer.getPoints.add(event.getX)
-          currentLayer.getPoints.add(event.getY)
-        }else{
-          dragBox.setWidth(event.getX - dragBox.getTranslateX)
-          dragBox.setHeight(event.getY - dragBox.getTranslateY)
-        }
+      //graphicsContext.lineTo(event.getX, event.getY)
+      //graphicsContext.stroke()
+
+
+      if(event.getX < page3.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page3.getHeight) {
+
+
+        currentLayer.getPoints.add(event.getX)
+        currentLayer.getPoints.add(event.getY)
+      }
+
     })
-
-    page3.setOnMouseReleased(event => {
-        if(selecting){
-          camadas = currentLayer::camadas
-
-          dragBox.setVisible(false)
-          println("vamos ver quais foram os selecionados!")
-
-
-        }
-    })
-
 
     //////7
 
@@ -153,7 +118,7 @@ object whiteboardScroller{
     canvas.setOnMouseClicked(event => {
       //Left click zooms, right click unzooms
       if(event.isControlDown && event.getButton == MouseButton.PRIMARY){
-          canvas.setScaleX( canvas.getScaleX + canvas.getScaleX*0.1)
+        canvas.setScaleX( canvas.getScaleX + canvas.getScaleX*0.1)
 
       }else if(event.isControlDown && event.getButton == MouseButton.SECONDARY){
         canvas.setScaleX( canvas.getScaleX - canvas.getScaleX*0.1)
