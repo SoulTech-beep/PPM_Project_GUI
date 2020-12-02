@@ -1,5 +1,10 @@
 package logicMC
 
+import javafx.geometry.Pos
+import javafx.scene.control.Label
+import javafx.scene.image.{Image, ImageView}
+import javafx.scene.layout.VBox
+import logicMC.Auxiliary.getImageView
 import logicMC.Section.{ID, Name}
 
 import scala.annotation.tailrec
@@ -289,6 +294,25 @@ object Section{
       }
   }
 
+  def getSectionPane(section: Section, godSection:Section, currentSection: Section,updateVisualState: Section => Unit):VBox = {
+    val imageView = getImageView("images/folder.png")
+
+    val label = new Label(section.name)
+    label.setFont(Auxiliary.myFont)
+
+    val vBox = new VBox(imageView, label)
+    vBox.setSpacing(10)
+    vBox.setAlignment(Pos.CENTER)
+
+    imageView.setOnMouseClicked(_ => {
+      val sectionToEnter = section.id.substring(section.id.lastIndexOf('.')+1, section.id.length).toInt
+      val newSection = Section.enterSectionID(godSection, currentSection, sectionToEnter)._2
+
+      updateVisualState(newSection)
+    })
+
+    vBox
+  }
 
 
 }

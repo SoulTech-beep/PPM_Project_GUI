@@ -1,11 +1,11 @@
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Pos}
 import javafx.scene.canvas.{Canvas, GraphicsContext}
-import javafx.scene.control.{Button, ScrollPane}
+import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.Rectangle
+import javafx.scene.shape.{Path, Polyline, Rectangle}
 
 class whiteboardScroller {
 
@@ -37,7 +37,7 @@ object whiteboardScroller{
 
   def getCanvas():ScrollPane = {
 
-    var currentLayer = new Canvas(400,400)
+    var currentLayer = new Polyline()
     var selecting = false
     var  dragBox = new Rectangle(0, 0, 0, 0);
     var camadas = List(currentLayer)
@@ -47,23 +47,33 @@ object whiteboardScroller{
     val page3 = new Pane(dragBox)
     page3.setPrefSize(400,400)
 
-
-    var graphicsContext = currentLayer.getGraphicsContext2D
-    initDraw(graphicsContext)
-
     page3.setOnMousePressed(event => {
 
       if(!selecting){
 
-        currentLayer = new Canvas(400,400)
-        graphicsContext = currentLayer.getGraphicsContext2D
-        initDraw(graphicsContext)
+        currentLayer = new Polyline()
+        var coiso = currentLayer
+
+
+
+        currentLayer.setOnContextMenuRequested(click=>{
+          val delete = new MenuItem("Delete")
+          val contextMenu = new ContextMenu(delete)
+
+          delete.setOnAction(action => {
+            camadas = camadas.filter(p=>p!=currentLayer)
+            println("GONNA REMOVE")
+            page3.getChildren.remove(coiso)
+          })
+
+          contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+        })
 
         page3.getChildren.add(currentLayer)
 
-        graphicsContext.beginPath()
-        graphicsContext.moveTo(event.getX,event.getY)
-        graphicsContext.stroke()
+        currentLayer.setStrokeWidth(5)
+        currentLayer.getPoints.add(event.getX)
+        currentLayer.getPoints.add(event.getY)
 
       }else{
         dragBox.setVisible(true);
@@ -77,8 +87,10 @@ object whiteboardScroller{
     page3.setOnMouseDragged(event => {
         if(!selecting){
 
-          graphicsContext.lineTo(event.getX, event.getY)
-          graphicsContext.stroke()
+          //graphicsContext.lineTo(event.getX, event.getY)
+          //graphicsContext.stroke()
+          currentLayer.getPoints.add(event.getX)
+          currentLayer.getPoints.add(event.getY)
         }else{
           dragBox.setWidth(event.getX - dragBox.getTranslateX)
           dragBox.setHeight(event.getY - dragBox.getTranslateY)
@@ -127,7 +139,6 @@ object whiteboardScroller{
 
     canvas.viewportBoundsProperty().addListener(new ChangeListener[Bounds] {
       override def changed(observableValue: ObservableValue[_ <: Bounds], t: Bounds, t1: Bounds): Unit = {
-
         if(t1.getMaxX > 1200) {
           pag.foreach(p => p.setTranslateX(t1.getCenterX - 1200/2))
         }
