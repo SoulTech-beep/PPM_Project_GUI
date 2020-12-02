@@ -64,17 +64,8 @@
          <children>
             <StackPane fx:id="rightStackPane" layoutX="150.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <ToolBar id="toolbar" fx:id="toolbar" maxWidth="500.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
+                  <ToolBar id="toolbar" fx:id="toolbar" maxWidth="700.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
                     <items>
-                        <Button alignment="TOP_LEFT" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/marker.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
                         <Separator id="my-separator" orientation="VERTICAL" prefHeight="20.0" stylesheets="@separator.css" />
                         <Button alignment="TOP_LEFT" layoutX="53.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
                            <graphic>
