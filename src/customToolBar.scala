@@ -7,8 +7,6 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.HBox
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
-import logicMC.Pen
-
 
 object ToolType extends Enumeration {
 
@@ -34,11 +32,10 @@ class customToolBar {
   val optionsHBox:HBox = new HBox()
 
   var buttonList:List[Button] = List()
-  var pensList:List[Pen] = List()
+  var penList:List[Pen] = List()
 
   var pen: Pen = Pen(0,Color.BLACK, 1, 1)
   var marker:Pen = Pen(1, Color.YELLOW, 5, 0.5)
-
 
   def setToolbar(tb: ToolBar): Unit = {
     toolbar = tb;

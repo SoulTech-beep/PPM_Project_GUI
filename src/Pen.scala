@@ -1,5 +1,3 @@
-package logicMC
-
 import javafx.scene.paint.Color
 
 case class Pen(id: Int, color: Color, width: Double, opacity: Double){
