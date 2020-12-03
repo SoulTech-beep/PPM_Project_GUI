@@ -15,6 +15,7 @@ object ToolType extends Enumeration {
   type ToolType = String
 
   val pen:String = "PEN"
+  val marker:String = "MARKER"
   val eraser:String = "ERASER"
   val selector:String = "SELECTOR"
   val geometricShape:String = "GEOMETRIC_SHAPE"
@@ -30,39 +31,100 @@ class customToolBar {
   var toolbar: ToolBar = _
 
   var selectedPen:Pen = null
+  var selectedTool:ToolType = null
 
   val optionsHBox:HBox = new HBox()
 
   var buttonList:List[Button] = List()
-  var penList:List[Pen] = List()
+  var penList:List[(Pen,ToolType)] = List()
 
-  var pen: Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1.0), new SimpleDoubleProperty(1))
-  var marker:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
 
   def setToolbar(tb: ToolBar): Unit = {
     toolbar = tb;
   }
 
   def initializeCustomToolBar(): Unit ={
-    penList = pen :: penList
-    penList = marker :: penList
 
-    setPenButton("images/marker.png",1)
-    setPenButton("images/ball-point.png",0)
+    val penTool: Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
+    val markerTool:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
+
+    penList = (penTool, ToolType.pen) :: penList
+    penList = (markerTool, ToolType.marker) :: penList
+
+    setShapeButton()
+    setEraserButton()
+
+    getSeparator()
+
+    //TODO we gotta add some separatores here!
+
+    setPenButton("images/marker.png", ToolType.marker)
+    setPenButton("images/ball-point.png", ToolType.pen)
 
     toolbar.getItems.add(optionsHBox)
     optionsHBox.setSpacing(10)
   }
 
+  def getSeparator():Unit = {
+    val separator = new Separator()
+    separator.getStylesheets.add("separator.css")
+    separator.setId("my-separator")
+    separator.setPrefHeight(20)
 
-  def setPenButton(imageLocation: String, id: Int):Unit = {
+    toolbar.getItems.add(0, separator)
+  }
+
+  def setShapeButton():Unit = {
+    val shapeButton:Button = new Button()
+
+    buttonList = shapeButton :: buttonList
+
+    shapeButton.setOnAction(event => {
+      selectTool(ToolType.eraser)
+    })
+
+    shapeButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    val icon = new ImageView(new Image("images/geometric.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    shapeButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,shapeButton)
+
+  }
+
+  def setEraserButton(): Unit = {
+
+    val eraserButton:Button = new Button()
+
+    buttonList = eraserButton::buttonList
+
+    eraserButton.setOnAction(event => {
+    selectTool(ToolType.eraser)
+  })
+
+    eraserButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    val icon = new ImageView(new Image("images/eraser.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    eraserButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,eraserButton)
+
+  }
+
+def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
 
     val penButton:Button = new Button()
 
     buttonList = penButton::buttonList
 
     penButton.setOnAction(event => {
-      selectTool(ToolType.pen, id)
+      selectTool(toolType)
     })
 
     penButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -76,10 +138,11 @@ class customToolBar {
     toolbar.getItems.add(0,penButton)
   }
 
-  def selectTool(toolName: ToolType, id: Int): Unit = {
+  def selectTool(toolName: ToolType): Unit = {
 
-    if(toolName == ToolType.pen){
-      selectedPen = penList.find(p => p.id == id).get
+    if(toolName == ToolType.pen || toolName == ToolType.marker){
+      selectedTool = toolName
+      selectedPen = penList.find(p => p._2 == toolName).get._1
 
       val dropDown = new MenuButton()
 
@@ -102,8 +165,8 @@ class customToolBar {
       val colorPicker = new ColorPicker()
       colorPicker.setOnAction(a => {
         dropDown.setGraphic(getCircle(colorPicker.getValue))
-        penList.foreach(p1 => if(p1.id == id)  {
-          penList = penList.updated(penList.indexOf(p1), p1.changeColor(colorPicker.getValue))
+        penList.foreach(p1 => if(p1._2 == toolName)  {
+          penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(colorPicker.getValue), p1._2))
         })
       })
       //colorPicker.getStyleClass.add("button")
@@ -126,22 +189,22 @@ class customToolBar {
 
       redColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.RED))
-        penList.foreach(p1 => if(p1.id == id)  {
-          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.RED))
+        penList.foreach(p1 => if(p1._2 == toolName)  {
+          penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.RED), p1._2))
         })
       })
 
       blueColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.BLUE))
-        penList.foreach(p1 => if(p1.id == id)  {
-          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.BLUE))
+        penList.foreach(p1 => if(p1._2 == toolName)  {
+          penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.BLUE), p1._2))
         })
       })
 
       blackColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.BLACK))
-        penList.foreach(p1 => if(p1.id == id)  {
-          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.BLACK))
+        penList.foreach(p1 => if(p1._2 == toolName)  {
+          penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.BLACK), p1._2))
         })
       })
 
@@ -149,30 +212,30 @@ class customToolBar {
 
       optionsHBox.getChildren.clear()
 
-      penList.foreach(p => if(p.id == id)  {
+      penList.foreach(p => if(p._2 == toolName)  {
 
-        dropDown.setGraphic(getCircle(p.color))
+        dropDown.setGraphic(getCircle(p._1.color))
 
-        val slOpacity: Slider = getSliderMenu(p.opacity.get(), (0,1), 0.1)
-        val slWidth: Slider = getSliderMenu(p.width.get(), (1,15))
+        val slOpacity: Slider = getSliderMenu(p._1.opacity.get(), (0,1), 0.1)
+        val slWidth: Slider = getSliderMenu(p._1.width.get(), (1,15))
 
         slOpacity.valueProperty().addListener(new ChangeListener[Number] {
           override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
-            penList.foreach(p1 => if(p1.id == id)  {
-              penList = penList.updated(penList.indexOf(p1), p1.changeOpacity(t1.doubleValue()))
+            penList.foreach(p1 => if(p1._2 == toolName)  {
+              penList = penList.updated(penList.indexOf(p1), (p1._1.changeOpacity(t1.doubleValue()), p1._2))
             })
           }
         })
 
         slWidth.valueProperty().addListener(new ChangeListener[Number] {
           override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
-            penList.foreach(p2 => if(p2.id == id)  {
-              penList = penList.updated(penList.indexOf(p2), p2.changeWidth(t1.doubleValue()))
+            penList.foreach(p2 => if(p2._2 == toolName)  {
+              penList = penList.updated(penList.indexOf(p2), (p2._1.changeWidth(t1.doubleValue()), p2._2))
             })
           }
         })
 
-        return optionsHBox.getChildren.addAll(dropDown, toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
+         return optionsHBox.getChildren.addAll(dropDown, toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
       })
 
 

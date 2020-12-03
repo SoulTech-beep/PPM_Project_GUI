@@ -73,10 +73,6 @@ object whiteboardScroller{
 
     /////
 
-
-
-    //////7
-
     val canvas = new ScrollPane()
     val pages = new VBox()
 

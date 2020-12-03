@@ -66,30 +66,11 @@
                <children>
                   <ToolBar id="toolbar" fx:id="toolbar" maxWidth="700.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
                     <items>
-                        <Separator id="my-separator" orientation="VERTICAL" prefHeight="20.0" stylesheets="@separator.css" />
-                        <Button alignment="TOP_LEFT" layoutX="53.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/eraser.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
                         <Button alignment="TOP_LEFT" layoutX="102.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
                            <graphic>
                               <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/lasso.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Button alignment="TOP_LEFT" layoutX="144.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/geometric.png" />
                                  </image>
                               </ImageView>
                            </graphic>
