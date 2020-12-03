@@ -73,8 +73,6 @@ object whiteboardScroller{
 
         var porApagar: List[Polyline] = List()
 
-
-
         camadas.foreach(c =>  {
           var i = 0
 
@@ -88,7 +86,7 @@ object whiteboardScroller{
               page.getChildren.remove(c)
               i = points.size()
             } else {
-              i = i + 1
+              i = i + 2
             }
           }
         })
