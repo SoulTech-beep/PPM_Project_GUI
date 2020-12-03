@@ -43,12 +43,14 @@ class Controller{
   //Current section being shown on the left side of the split pane
   private var currentSection:Section = _
 
-  private var customToolBar:customToolBar = new customToolBar
+  //private var customToolBar:customToolBar = new customToolBar
+
+  private var canvasScroller:ScrollPane = new ScrollPane()
 
   @Override
   def initialize(): Unit = {
-    customToolBar.setToolbar(toolbar)
-    customToolBar.initializeCustomToolBar()
+    /*customToolBar.setToolbar(toolbar)
+    customToolBar.initializeCustomToolBar()*/
 
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
@@ -56,7 +58,7 @@ class Controller{
     layoutShenanigans()
 
     //TODO remove: debug variables in order to help us previewing a whiteboard on the right side
-    var canvasScroller = whiteboardScroller.getCanvas()
+    //canvasScroller = whiteboardScroller.getCanvas(customToolBar)
     rightStackPane.getChildren.add(0,canvasScroller)
 
     addSectionButtonOnClick()
@@ -109,7 +111,25 @@ class Controller{
   }
 
   def getWhiteboardPane(whiteboard: Whiteboard):VBox = {
-    Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName)
+    setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName))
+  }
+
+  def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox):VBox = {
+    vBox.setOnMouseClicked(event => {
+      rightStackPane.getChildren.remove(canvasScroller)
+
+      val toolBar:customToolBar = new customToolBar
+      toolBar.setToolbar(toolbar)
+      toolBar.initializeCustomToolBar()
+
+      canvasScroller = whiteboardScroller.getCanvas(toolBar)
+      rightStackPane.getChildren.add(0, canvasScroller)
+
+      //TODO if the one we click is the one being displayed, let's not remove and update everything...
+
+    })
+
+    vBox
   }
 
   def updateWhiteboardName(whiteboard: Whiteboard):Unit = {

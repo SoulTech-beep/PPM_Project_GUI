@@ -1,20 +1,71 @@
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Pos}
-import javafx.scene.canvas.{Canvas, GraphicsContext}
 import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.{Path, Polyline, Rectangle}
+import javafx.scene.shape.{Polyline, Rectangle}
 
 class whiteboardScroller {
 
-}
+  val pages:List[Pane] = List()
+  val toolbar:customToolBar = new customToolBar()
 
+
+}
 
 object whiteboardScroller{
 
-  def getCanvas():ScrollPane = {
+  def createPage(backgroundColor: Color, width : Double, height: Double, toolBar: customToolBar):Pane = {
+    val page = new Pane()
+    page.setPrefSize(width, height)
+    page.setMaxSize(width, height)
+    page.setBackground(new Background(new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY)))
+
+    var camadas:List[Polyline] = List()
+    var currentLayer = new Polyline()
+
+    page.setOnMousePressed(event => {
+
+      currentLayer = new Polyline()
+      val tempCurrentLayer = currentLayer
+
+      currentLayer.setOnContextMenuRequested(click => {
+        val delete = new MenuItem("Delete")
+        val contextMenu = new ContextMenu(delete)
+
+        delete.setOnAction(_ => {
+          camadas = camadas.filter(p=>p!=currentLayer)
+          page.getChildren.remove(tempCurrentLayer)
+        })
+
+        contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+
+      })
+
+      page.getChildren.add(currentLayer)
+
+      currentLayer.setStrokeWidth(toolBar.currentPen.width.get())
+      println("createPage strokeWidth: " + toolBar.currentPen.width)
+      currentLayer.setOpacity(0.4)
+      currentLayer.setSmooth(true)
+      currentLayer.setStroke(Color.RED)
+      currentLayer.getPoints.add(event.getX)
+      currentLayer.getPoints.add(event.getY)
+
+    })
+
+    page.setOnMouseDragged(event => {
+      if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+        currentLayer.getPoints.add(event.getX)
+        currentLayer.getPoints.add(event.getY)
+      }
+    })
+
+    page
+  }
+
+  def getCanvas(toolBar:customToolBar):ScrollPane = {
 
     var currentLayer = new Polyline()
     var selecting = false
@@ -23,56 +74,7 @@ object whiteboardScroller{
 
     /////
 
-    val page3 = new Pane(dragBox)
-    page3.setPrefSize(400,400)
-    page3.setMaxSize(400,400)
 
-
-    page3.setOnMousePressed(event => {
-
-
-      currentLayer = new Polyline()
-      var coiso = currentLayer
-
-      currentLayer.setOnContextMenuRequested(click=>{
-        val delete = new MenuItem("Delete")
-        val contextMenu = new ContextMenu(delete)
-
-        delete.setOnAction(action => {
-          camadas = camadas.filter(p=>p!=currentLayer)
-          println("GONNA REMOVE")
-          page3.getChildren.remove(coiso)
-        })
-
-        contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
-      })
-
-      page3.getChildren.add(currentLayer)
-
-      currentLayer.setStrokeWidth(15)
-      currentLayer.setOpacity(0.4)
-      currentLayer.setSmooth(true)
-      currentLayer.setStroke(Color.RED)
-      currentLayer.getPoints.add(event.getX)
-      currentLayer.getPoints.add(event.getY)
-
-
-    })
-
-    page3.setOnMouseDragged(event => {
-
-      //graphicsContext.lineTo(event.getX, event.getY)
-      //graphicsContext.stroke()
-
-
-      if(event.getX < page3.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page3.getHeight) {
-
-
-        currentLayer.getPoints.add(event.getX)
-        currentLayer.getPoints.add(event.getY)
-      }
-
-    })
 
     //////7
 
@@ -81,6 +83,7 @@ object whiteboardScroller{
 
     val page1 = new Pane()
     val page2 = new Pane()
+    val page3 = whiteboardScroller.createPage(Color.GREENYELLOW, 600, 600, toolBar)
 
     val pag = List(page3,page1, page2)
 
