@@ -45,8 +45,8 @@ object whiteboardScroller{
 
       page.getChildren.add(currentLayer)
 
-      currentLayer.setStrokeWidth(toolBar.currentPen.width.get())
-      currentLayer.setOpacity(toolBar.currentPen.opacity.get())
+      currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
+      currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
       currentLayer.setSmooth(true)
       currentLayer.setStroke(Color.RED)
       currentLayer.getPoints.add(event.getX)

@@ -24,7 +24,6 @@ object Pen{
   def changeColor(pen:Pen, color:Color):Pen = Pen(id= pen.id, color = color, width = pen.width, opacity = pen.opacity)
 
   def changeWidth(pen: Pen, width:Double):Pen = {
-
     pen.width.set(width)
     Pen(id= pen.id,color= pen.color, pen.width, opacity = pen.opacity)
   }

@@ -3,6 +3,7 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.HBox
@@ -28,42 +29,40 @@ class customToolBar {
   @FXML
   var toolbar: ToolBar = _
 
-  val optionsHBox:HBox = new HBox()
+  var selectedPen:Pen = null
 
-  var currentPen:Pen = null
-  var selectedTool:ToolType = null
+  val optionsHBox:HBox = new HBox()
 
   var buttonList:List[Button] = List()
   var penList:List[Pen] = List()
 
+  var pen: Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1.0), new SimpleDoubleProperty(1))
+  var marker:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
 
   def setToolbar(tb: ToolBar): Unit = {
     toolbar = tb;
   }
 
   def initializeCustomToolBar(): Unit ={
+    penList = pen :: penList
+    penList = marker :: penList
 
-    setPenButton("images/marker.png",1, Color.YELLOW, 5, 0.5)
-    setPenButton("images/ball-point.png",0, Color.BLACK, 1, 1)
+    setPenButton("images/marker.png",1)
+    setPenButton("images/ball-point.png",0)
 
     toolbar.getItems.add(optionsHBox)
     optionsHBox.setSpacing(10)
   }
 
 
-  def setPenButton(imageLocation: String, id: Int, color: Color, width: Double, opacity:Double):Unit = {
+  def setPenButton(imageLocation: String, id: Int):Unit = {
 
     val penButton:Button = new Button()
-
-    val pen:Pen = Pen(id, color, new SimpleDoubleProperty(width), new SimpleDoubleProperty(opacity))
-    penList = pen::penList
 
     buttonList = penButton::buttonList
 
     penButton.setOnAction(event => {
       selectTool(ToolType.pen, id)
-      currentPen = penList.find(p => p.id == pen.id).get
-      println("selected pen: " + currentPen + " width: " + currentPen.width)
     })
 
     penButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -77,10 +76,11 @@ class customToolBar {
     toolbar.getItems.add(0,penButton)
   }
 
-  def selectTool(toolName: String, id: Int): Unit = {
+  def selectTool(toolName: ToolType, id: Int): Unit = {
 
     if(toolName == ToolType.pen){
-      //Cor
+      selectedPen = penList.find(p => p.id == id).get
+
       val dropDown = new MenuButton()
 
       val redColor = new Button()
@@ -102,9 +102,9 @@ class customToolBar {
       val colorPicker = new ColorPicker()
       colorPicker.setOnAction(a => {
         dropDown.setGraphic(getCircle(colorPicker.getValue))
-        changePenColor(id, colorPicker.getValue)
-
-        //pen = pen.changeColor(colorPicker.getValue)
+        penList.foreach(p1 => if(p1.id == id)  {
+          penList = penList.updated(penList.indexOf(p1), p1.changeColor(colorPicker.getValue))
+        })
       })
       //colorPicker.getStyleClass.add("button")
 
@@ -126,71 +126,74 @@ class customToolBar {
 
       redColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.RED))
-        changePenColor(id, Color.RED)
-        //pen = pen.changeColor(Color.RED)
+        penList.foreach(p1 => if(p1.id == id)  {
+          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.RED))
+        })
       })
 
       blueColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.BLUE))
-        changePenColor(id, Color.BLUE)
-        //pen = pen.changeColor(Color.BLUE)
+        penList.foreach(p1 => if(p1.id == id)  {
+          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.BLUE))
+        })
       })
 
       blackColor.setOnAction(p => {
         dropDown.setGraphic(getCircle(Color.BLACK))
-        changePenColor(id, Color.BLACK)
-        //pen = pen.changeColor(Color.BLACK)
+        penList.foreach(p1 => if(p1.id == id)  {
+          penList = penList.updated(penList.indexOf(p1), p1.changeColor(Color.BLACK))
+        })
       })
-
-      dropDown.setGraphic(getCircle(penList(penList.indexWhere(p => p.id==id)).color))
 
       dropDown.getItems.addAll(setColors, colorPickerMenu)
 
       optionsHBox.getChildren.clear()
-      optionsHBox.getChildren.addAll(dropDown, getSliderMenu("images/width.png", id, false), getSliderMenu("images/opacity.png",id, true))
-      //Opacidade
+
+      penList.foreach(p => if(p.id == id)  {
+
+        dropDown.setGraphic(getCircle(p.color))
+
+        val slOpacity: Slider = getSliderMenu(p.opacity.get(), (0,1), 0.1)
+        val slWidth: Slider = getSliderMenu(p.width.get(), (1,15))
+
+        slOpacity.valueProperty().addListener(new ChangeListener[Number] {
+          override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+            penList.foreach(p1 => if(p1.id == id)  {
+              penList = penList.updated(penList.indexOf(p1), p1.changeOpacity(t1.doubleValue()))
+            })
+          }
+        })
+
+        slWidth.valueProperty().addListener(new ChangeListener[Number] {
+          override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+            penList.foreach(p2 => if(p2.id == id)  {
+              penList = penList.updated(penList.indexOf(p2), p2.changeWidth(t1.doubleValue()))
+            })
+          }
+        })
+
+        return optionsHBox.getChildren.addAll(dropDown, toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
+      })
+
+
     }
   }
 
-  def changePenColor(id:Int, color: Color):Unit = {
-    val index = penList.indexWhere(p => p.id == id)
-    val newPen = penList(index).changeColor(color)
-    penList = penList.updated(index, newPen)
+
+
+  def getSliderMenu(initial: Double, range:(Int,Int), majorTickUnit: Double = 2):Slider = {
+    val slider = new Slider(range._1,range._2, initial)
+    slider.setSnapToTicks(true)
+    slider.setMajorTickUnit(majorTickUnit)
+    slider.setShowTickLabels(true)
+    slider
   }
 
-  def getSliderMenu(imageLocation: String, id:Int, opacity: Boolean):MenuButton = {
-    val menu = new MenuButton()
-
-    val index = penList.indexWhere(p => p.id == id)
-
-    val slider = new Slider(0,
-      if(opacity) 1 else 10,
-      if(opacity) penList(index).opacity.get() else penList(index).width.get()
-    )
-
-    slider.setSnapToTicks(true)
-    slider.setMajorTickUnit(if(opacity) 0.1 else 1)
-    slider.setShowTickLabels(true)
-
-    slider.valueProperty().addListener(new ChangeListener[Number] {
-      override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
-        if(opacity) {
-
-          val newPen  = penList(index).changeOpacity(t1.doubleValue())
-          penList = penList.updated(index, newPen)
-
-        } else {
-          val newPen  = penList(index).changeWidth(t1.doubleValue())
-          penList = penList.updated(index, newPen)
-        }
-
-      }
-
-    })
-
-    val opacityMenuItem = new CustomMenuItem()
-    opacityMenuItem.setContent(slider)
-    opacityMenuItem.setHideOnClick(false)
+  def toMenuItem(n: Node, imageLocation: String): MenuButton = {
+    val menu: MenuButton = new MenuButton()
+    val menuItem = new CustomMenuItem()
+    menuItem.setContent(n)
+    menuItem.setHideOnClick(false)
 
     val icon = new ImageView(new Image(imageLocation))
     icon.setSmooth(true)
@@ -198,7 +201,7 @@ class customToolBar {
     icon.setFitWidth(20)
 
     menu.setGraphic(icon)
-    menu.getItems.add(opacityMenuItem)
+    menu.getItems.add(menuItem)
 
     menu
   }
