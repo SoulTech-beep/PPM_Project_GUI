@@ -5,7 +5,7 @@ import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
 import javafx.scene.paint.{Color, Paint}
-import javafx.scene.shape.{Circle, Polyline, Rectangle}
+import javafx.scene.shape.{Circle, Polyline, Rectangle, Shape}
 
 class whiteboardScroller {
 
@@ -36,13 +36,15 @@ object whiteboardScroller{
 
     page.setOnMousePressed(event => {
 
-      println(toolBar.selectedTool)
 
-      if(toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker){
+      if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
+
         eraserCircle.setOpacity(0)
 
         currentLayer = new Polyline()
+
         val tempCurrentLayer = currentLayer
+        camadas = tempCurrentLayer :: camadas
 
         currentLayer.setOnContextMenuRequested(click => {
 
@@ -50,14 +52,12 @@ object whiteboardScroller{
           val contextMenu = new ContextMenu(delete)
 
           delete.setOnAction(action => {
-            camadas = camadas.filter(p=>p!=currentLayer)
+            camadas = camadas.filter(p => p != currentLayer)
             page.getChildren.remove(tempCurrentLayer)
           })
 
           contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
-
         })
-        //test
 
         page.getChildren.add(currentLayer)
 
@@ -68,9 +68,37 @@ object whiteboardScroller{
         currentLayer.getPoints.add(event.getX)
         currentLayer.getPoints.add(event.getY)
 
-      }
+      } else if (toolBar.selectedTool == ToolType.eraser) {
+        println("erasing")
 
+        var porApagar: List[Polyline] = List()
+
+
+
+        camadas.foreach(c =>  {
+          var i = 0
+
+          val eraserRadius = toolBar.eraserFinal.radius.get()
+          val points = c.getPoints()
+
+          while (i < points.size()-1) {
+
+            if (points.get(i) > event.getX - eraserRadius && points.get(i) < event.getX + eraserRadius && points.get(i + 1) > event.getY - eraserRadius && points.get(i + 1) < event.getY + eraserRadius) {
+              porApagar = c :: porApagar
+              page.getChildren.remove(c)
+              i = points.size()
+            } else {
+              i = i + 1
+            }
+          }
+        })
+
+        camadas = camadas.filter(e => !porApagar.contains(e))
+
+
+      }
     })
+
 
     page.setOnMouseEntered(event => {
       if(toolBar.selectedTool.equals(ToolType.eraser)){
