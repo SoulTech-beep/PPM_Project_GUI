@@ -9,6 +9,7 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.HBox
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
+import logicMC.Eraser
 
 object ToolType extends Enumeration {
 
@@ -37,6 +38,7 @@ class customToolBar {
 
   var buttonList:List[Button] = List()
   var penList:List[(Pen,ToolType)] = List()
+  var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
 
 
   def setToolbar(tb: ToolBar): Unit = {
@@ -50,6 +52,9 @@ class customToolBar {
 
     penList = (penTool, ToolType.pen) :: penList
     penList = (markerTool, ToolType.marker) :: penList
+
+    selectedTool = ToolType.pen
+    selectedPen = penTool
 
     setShapeButton()
     setEraserButton()
@@ -102,8 +107,8 @@ class customToolBar {
     buttonList = eraserButton::buttonList
 
     eraserButton.setOnAction(event => {
-    selectTool(ToolType.eraser)
-  })
+      selectTool(ToolType.eraser)
+    })
 
     eraserButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
 
@@ -117,7 +122,7 @@ class customToolBar {
 
   }
 
-def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
+  def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
 
     val penButton:Button = new Button()
 
@@ -139,6 +144,8 @@ def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
   }
 
   def selectTool(toolName: ToolType): Unit = {
+
+    optionsHBox.getChildren.clear()
 
     if(toolName == ToolType.pen || toolName == ToolType.marker){
       selectedTool = toolName
@@ -210,8 +217,6 @@ def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
 
       dropDown.getItems.addAll(setColors, colorPickerMenu)
 
-      optionsHBox.getChildren.clear()
-
       penList.foreach(p => if(p._2 == toolName)  {
 
         dropDown.setGraphic(getCircle(p._1.color))
@@ -235,11 +240,24 @@ def setPenButton(imageLocation: String, toolType: ToolType):Unit = {
           }
         })
 
-         return optionsHBox.getChildren.addAll(dropDown, toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
+        return optionsHBox.getChildren.addAll(dropDown, toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
       })
 
+    } else if(toolName == ToolType.eraser) {
+      selectedTool = toolName
+      val eraserRadius: Slider = getSliderMenu(eraserFinal.radius.get(), (30,100), 30)
+
+      eraserRadius.valueProperty().addListener(new ChangeListener[Number] {
+        override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+          eraserFinal = eraserFinal.changeRadius(t1.doubleValue())
+        }
+      })
+
+      return optionsHBox.getChildren.add(toMenuItem(eraserRadius,"images/width.png"))
 
     }
+
+
   }
 
 

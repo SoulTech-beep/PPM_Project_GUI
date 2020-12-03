@@ -1,10 +1,11 @@
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Pos}
 import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
-import javafx.scene.paint.Color
-import javafx.scene.shape.{Polyline, Rectangle}
+import javafx.scene.paint.{Color, Paint}
+import javafx.scene.shape.{Circle, Polyline, Rectangle}
 
 class whiteboardScroller {
 
@@ -22,44 +23,81 @@ object whiteboardScroller{
     page.setMaxSize(width, height)
     page.setBackground(new Background(new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY)))
 
+    val eraserCircle = new Circle()
+
+    eraserCircle.setStrokeWidth(1)
+    eraserCircle.setStroke(Color.DARKGRAY)
+    eraserCircle.setOpacity(0)
+    eraserCircle.setFill(Color.TRANSPARENT)
+    page.getChildren.add(eraserCircle)
+
     var camadas:List[Polyline] = List()
     var currentLayer = new Polyline()
 
     page.setOnMousePressed(event => {
 
-      currentLayer = new Polyline()
-      val tempCurrentLayer = currentLayer
+      println(toolBar.selectedTool)
 
-      currentLayer.setOnContextMenuRequested(click => {
-        val delete = new MenuItem("Delete")
-        val contextMenu = new ContextMenu(delete)
+      if(toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker){
+        eraserCircle.setOpacity(0)
 
-        delete.setOnAction(action => {
-          camadas = camadas.filter(p=>p!=currentLayer)
-          page.getChildren.remove(tempCurrentLayer)
+        currentLayer = new Polyline()
+        val tempCurrentLayer = currentLayer
+
+        currentLayer.setOnContextMenuRequested(click => {
+
+          val delete = new MenuItem("Delete")
+          val contextMenu = new ContextMenu(delete)
+
+          delete.setOnAction(action => {
+            camadas = camadas.filter(p=>p!=currentLayer)
+            page.getChildren.remove(tempCurrentLayer)
+          })
+
+          contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+
         })
 
-        contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
+        page.getChildren.add(currentLayer)
 
-      })
-
-      page.getChildren.add(currentLayer)
-
-      currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
-      currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
-      currentLayer.setSmooth(true)
-      currentLayer.setStroke(Color.RED)
-      currentLayer.getPoints.add(event.getX)
-      currentLayer.getPoints.add(event.getY)
-
-    })
-
-    page.setOnMouseDragged(event => {
-      if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+        currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
+        currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
+        currentLayer.setSmooth(true)
+        currentLayer.setStroke(Color.RED)
         currentLayer.getPoints.add(event.getX)
         currentLayer.getPoints.add(event.getY)
       }
+
     })
+
+    page.setOnMouseEntered(event => {
+      if(toolBar.selectedTool.equals(ToolType.eraser)){
+        eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
+      }
+    })
+
+    page.setOnMouseMoved(event => {
+      if(toolBar.selectedTool.equals(ToolType.eraser)){
+        eraserCircle.setOpacity(1)
+        eraserCircle.setCenterX(event.getX)
+        eraserCircle.setCenterY(event.getY)
+      }else{
+        eraserCircle.setOpacity(0)
+      }
+    })
+
+    page.setOnMouseDragged(event => {
+
+      if(toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker){
+
+        if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+          currentLayer.getPoints.add(event.getX)
+          currentLayer.getPoints.add(event.getY)
+        }
+      }
+
+      })
+
 
     page
   }
