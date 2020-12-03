@@ -57,6 +57,7 @@ object whiteboardScroller{
           contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
 
         })
+        //test
 
         page.getChildren.add(currentLayer)
 
