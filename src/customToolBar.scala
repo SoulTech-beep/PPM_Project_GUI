@@ -43,53 +43,15 @@ class customToolBar {
 
   def initializeCustomToolBar(): Unit ={
 
-
-    //setPenButton("images/marker.png",1, Color.YELLOW, 5, 0.5)
-    //setPenButton("images/ball-point.png",0, Color.BLACK, 1, 1)
-
-    setPenButtons()
+    setPenButton("images/marker.png",1, Color.YELLOW, 5, 0.5)
+    setPenButton("images/ball-point.png",0, Color.BLACK, 1, 1)
 
     toolbar.getItems.add(optionsHBox)
     optionsHBox.setSpacing(10)
   }
 
-  def setPenButtons():Unit = {
 
-    val pen:Pen = Pen(0, Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
-    val marker:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5), new SimpleDoubleProperty(0.5))
-
-    penList = List(marker, pen)
-
-    setButton("images/ball-point.png").setOnAction(event => {
-      selectTool(ToolType.pen, 0)
-      currentPen = pen
-    })
-
-    setButton("images/marker.png").setOnAction(event => {
-      selectTool(ToolType.pen, 1)
-      currentPen = marker
-    })
-
-
-
-  }
-
-  def setButton(imageLocation:String): Button ={
-    val button = new Button()
-    button.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
-
-    val icon = new ImageView(new Image(imageLocation))
-    icon.setFitWidth(20)
-    icon.setFitHeight(20)
-
-    button.setGraphic(icon)
-
-    toolbar.getItems.add(0, button)
-
-    button
-  }
-
- /* def setPenButton(imageLocation: String, id: Int, color: Color, width: Double, opacity:Double):Unit = {
+  def setPenButton(imageLocation: String, id: Int, color: Color, width: Double, opacity:Double):Unit = {
 
     val penButton:Button = new Button()
 
@@ -113,7 +75,7 @@ class customToolBar {
     penButton.setGraphic(icon)
 
     toolbar.getItems.add(0,penButton)
-  }*/
+  }
 
   def selectTool(toolName: String, id: Int): Unit = {
 
@@ -201,23 +163,25 @@ class customToolBar {
 
     val index = penList.indexWhere(p => p.id == id)
 
-    val slider = new Slider(0, 10, if(opacity) penList(index).opacity.get() else penList(index).width.get())
+    val slider = new Slider(0,
+      if(opacity) 1 else 10,
+      if(opacity) penList(index).opacity.get() else penList(index).width.get()
+    )
+
     slider.setSnapToTicks(true)
-    slider.setMajorTickUnit(1)
+    slider.setMajorTickUnit(if(opacity) 0.1 else 1)
     slider.setShowTickLabels(true)
 
     slider.valueProperty().addListener(new ChangeListener[Number] {
       override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
         if(opacity) {
 
-          //val newPen  = penList(index).changeOpacity(t1.doubleValue())
-          //penList = penList.updated(index, newPen)
-          penList(index).changeOpacity(t1.doubleValue())
+          val newPen  = penList(index).changeOpacity(t1.doubleValue())
+          penList = penList.updated(index, newPen)
 
         } else {
-          //val newPen  = penList(index).changeWidth(t1.doubleValue())
-          //penList = penList.updated(index, newPen)
-          penList(index).changeWidth(t1.doubleValue())
+          val newPen  = penList(index).changeWidth(t1.doubleValue())
+          penList = penList.updated(index, newPen)
         }
 
       }

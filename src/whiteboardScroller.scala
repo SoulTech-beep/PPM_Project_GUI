@@ -34,7 +34,7 @@ object whiteboardScroller{
         val delete = new MenuItem("Delete")
         val contextMenu = new ContextMenu(delete)
 
-        delete.setOnAction(_ => {
+        delete.setOnAction(action => {
           camadas = camadas.filter(p=>p!=currentLayer)
           page.getChildren.remove(tempCurrentLayer)
         })
@@ -46,8 +46,7 @@ object whiteboardScroller{
       page.getChildren.add(currentLayer)
 
       currentLayer.setStrokeWidth(toolBar.currentPen.width.get())
-      println("createPage strokeWidth: " + toolBar.currentPen.width)
-      currentLayer.setOpacity(0.4)
+      currentLayer.setOpacity(toolBar.currentPen.opacity.get())
       currentLayer.setSmooth(true)
       currentLayer.setStroke(Color.RED)
       currentLayer.getPoints.add(event.getX)
