@@ -66,6 +66,7 @@ object whiteboardScroller{
         currentLayer.setStroke(Color.RED)
         currentLayer.getPoints.add(event.getX)
         currentLayer.getPoints.add(event.getY)
+
       }
 
     })
