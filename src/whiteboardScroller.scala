@@ -7,6 +7,9 @@ import javafx.scene.layout._
 import javafx.scene.paint.{Color, Paint}
 import javafx.scene.shape.{Circle, Polyline, Rectangle, Shape}
 
+import scala.util.control.Breaks
+import scala.util.control.Breaks.break
+
 class whiteboardScroller {
 
   val pages:List[Pane] = List()
@@ -73,27 +76,36 @@ object whiteboardScroller{
 
         var porApagar: List[Polyline] = List()
 
-        camadas.foreach(c =>  {
-          var i = 0
+        camadas.foreach(c => {
+
+          val range = (0 to c.getPoints.size-1).toList
 
           val eraserRadius = toolBar.eraserFinal.radius.get()
           val points = c.getPoints()
 
-          while (i < points.size()-1) {
+          val loop = new Breaks;
 
-            if (points.get(i) > event.getX - eraserRadius && points.get(i) < event.getX + eraserRadius && points.get(i + 1) > event.getY - eraserRadius && points.get(i + 1) < event.getY + eraserRadius) {
-              porApagar = c :: porApagar
-              page.getChildren.remove(c)
-              i = points.size()
-            } else {
-              i = i + 2
-            }
+          loop.breakable{
+           range.foreach(p => if(p%2 == 0){
+
+             if( Math.pow(points.get(p) - event.getX,2) + Math.pow(points.get(p+1)- event.getY,2) <= Math.pow(eraserRadius+0.75,2)) {
+               porApagar = c :: porApagar
+               page.getChildren.remove(c)
+               loop.break()
+               println("HEHE NO BREAK")
+             }
+
+              /*if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
+                porApagar = c :: porApagar
+                page.getChildren.remove(c)
+                loop.break()
+                println("HEHE NO BREAK")
+              }*/
+            })
           }
+
         })
-
         camadas = camadas.filter(e => !porApagar.contains(e))
-
-
       }
     })
 
@@ -122,9 +134,38 @@ object whiteboardScroller{
           currentLayer.getPoints.add(event.getX)
           currentLayer.getPoints.add(event.getY)
         }
+      }else if(toolBar.selectedTool == ToolType.eraser){
+
+        eraserCircle.setOpacity(1)
+        eraserCircle.setCenterX(event.getX)
+        eraserCircle.setCenterY(event.getY)
+
+        var porApagar: List[Polyline] = List()
+
+        camadas.foreach(c =>  {
+          var i = 0
+
+          val eraserRadius = toolBar.eraserFinal.radius.get()
+          val points = c.getPoints()
+
+          while (i < points.size()-1) {
+
+            if (points.get(i) > event.getX - eraserRadius && points.get(i) < event.getX + eraserRadius && points.get(i + 1) > event.getY - eraserRadius && points.get(i + 1) < event.getY + eraserRadius) {
+              porApagar = c :: porApagar
+              page.getChildren.remove(c)
+              i = points.size()
+            } else {
+              i = i + 2
+            }
+          }
+        })
+
+        camadas = camadas.filter(e => !porApagar.contains(e))
+
       }
 
       })
+
 
 
     page
