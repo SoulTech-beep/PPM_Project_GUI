@@ -4,7 +4,7 @@ import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.{Circle, Polyline}
+import javafx.scene.shape.{Circle, Polyline, Shape}
 
 import scala.util.control.Breaks
 
@@ -42,6 +42,7 @@ object whiteboardScroller{
 
         currentLayer = new Polyline()
         currentLayer.setSmooth(true)
+        currentLayer.setStrokeMiterLimit(1)
 
         val tempCurrentLayer = currentLayer
         camadas = tempCurrentLayer :: camadas
@@ -59,6 +60,8 @@ object whiteboardScroller{
           contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
         })
 
+
+
         page.getChildren.add(currentLayer)
 
         currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
@@ -73,6 +76,17 @@ object whiteboardScroller{
 
         var porApagar: List[Polyline] = List()
 
+
+        /*camadas.foreach(c => {
+          val intersect = Shape.intersect(eraserCircle, c)
+          if(intersect.getBoundsInLocal.getWidth != -1){
+            porApagar = c::porApagar
+            page.getChildren.remove(c)
+          }
+        })
+
+        camadas = camadas.filter(e => !porApagar.contains(e))*/
+
         camadas.foreach(c => {
 
           val range = (0 until c.getPoints.size).toList //it's going to c.getPoints.size-1
@@ -84,25 +98,17 @@ object whiteboardScroller{
 
           loop.breakable{
            range.foreach(p => if(p%2 == 0){
-
-             if( Math.pow(points.get(p) - event.getX,2) + Math.pow(points.get(p+1)- event.getY,2) <= Math.pow(eraserRadius+0.75,2)) {
-               porApagar = c :: porApagar
-               page.getChildren.remove(c)
-               loop.break()
-               println("HEHE NO BREAK")
-             }
-
-
-              /*if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
+              if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
                 porApagar = c :: porApagar
                 page.getChildren.remove(c)
                 loop.break()
                 println("HEHE NO BREAK")
-              }*/
+              }
             })
           }
 
         })
+
         camadas = camadas.filter(e => !porApagar.contains(e))
       }
     })
