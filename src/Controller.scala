@@ -1,6 +1,6 @@
-import javafx.fxml.FXML
+import javafx.fxml.{FXML, FXMLLoader}
 import javafx.geometry.{Insets, Pos}
-import javafx.scene.Scene
+import javafx.scene.{Parent, Scene}
 import javafx.scene.control._
 import javafx.scene.input.KeyCode
 import javafx.scene.layout._
@@ -146,7 +146,7 @@ class Controller{
   }
 
 def addWhiteboardButtonOnClick():Unit = {
-  addWhiteboardButton.setOnAction(event => {
+  /*addWhiteboardButton.setOnAction(event => {
 
 
     val popupStage: Stage = new Stage()
@@ -194,8 +194,26 @@ def addWhiteboardButtonOnClick():Unit = {
     })
 
   })
+*/
+  addWhiteboardButton.setOnAction(_ =>  {
+    val fxmlLoaderWhiteboard = new FXMLLoader(getClass.getResource("WhiteboardCreate.fxml"))
+    val mainViewRoot: Parent = fxmlLoaderWhiteboard.load()
+    val scene = new Scene(mainViewRoot)
 
+    val createWhiteboardController = fxmlLoaderWhiteboard.getController.asInstanceOf[WhiteboardCreate]
+    createWhiteboardController.setState(FxApp.app_state)
+
+    val secondStage: Stage = new Stage()
+    secondStage.setScene(scene)
+    secondStage.show()
+
+    secondStage.setOnCloseRequest(_ => {
+      updateVisualState(FxApp.app_state._2)
+    })
+    })
 }
+
+
 
   def addSectionButtonOnClick():Unit = {
     addSectionButton.setOnAction(event => {

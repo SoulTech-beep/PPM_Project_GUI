@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="463.0" prefWidth="316.0" style="-fx-background-color: #fcfcfc;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="463.0" prefWidth="316.0" style="-fx-background-color: #fcfcfc;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="WhiteboardCreate">
    <children>
       <VBox style="-fx-background-color: white; -fx-background-radius: 5px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);">
          <children>
@@ -89,9 +84,9 @@
             <HBox alignment="CENTER" prefHeight="63.0" prefWidth="286.0">
                <children>
                   <HBox prefHeight="100.0" prefWidth="200.0" />
-                  <Button id="teste" minHeight="35.0" minWidth="80.0" mnemonicParsing="false" pickOnBounds="false" prefWidth="35.0" style="-fx-background-radius: 25px;" stylesheets="@style.css" text="   A4   " />
+                  <Button id="teste" fx:id="a4Button" minHeight="35.0" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#onA4Clicked" pickOnBounds="false" prefWidth="35.0" style="-fx-background-radius: 25px;" stylesheets="@style.css" text="   A4   " />
                   <HBox prefHeight="100.0" prefWidth="200.0" />
-                  <Button id="teste" minHeight="35.0" minWidth="80.0" mnemonicParsing="false" pickOnBounds="false" prefWidth="35.0" style="-fx-background-radius: 25px;" stylesheets="@style.css" text="   A3   " />
+                  <Button id="teste" fx:id="a3Button" minHeight="35.0" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#onA4Clicked" pickOnBounds="false" prefWidth="35.0" style="-fx-background-radius: 25px;" stylesheets="@style.css" text="   A3   " />
                   <HBox prefHeight="100.0" prefWidth="200.0" />
                </children>
             </HBox>
@@ -115,7 +110,7 @@
             </Label>
             <HBox alignment="CENTER" prefHeight="63.0" prefWidth="286.0">
                <children>
-                  <TextField promptText="Whiteboard name" />
+                  <TextField fx:id="whiteboardNameTextField" promptText="Whiteboard name" />
                </children>
             </HBox>
          </children>
@@ -128,7 +123,7 @@
       </VBox>
       <VBox alignment="CENTER" layoutX="20.0" layoutY="343.0" style="-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0); -fx-background-radius: 5px;">
          <children>
-            <Button id="create" mnemonicParsing="false" stylesheets="@style.css" text="Create" textFill="WHITE">
+            <Button id="create" fx:id="createButton" mnemonicParsing="false" onMouseClicked="#onCreateClicked" stylesheets="@style.css" text="Create" textFill="WHITE">
                <font>
                   <Font name="Roboto Black" size="13.0" />
                </font>
