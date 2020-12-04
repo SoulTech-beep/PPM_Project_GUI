@@ -44,7 +44,7 @@ class WhiteboardCreate() {
 
   def onCreateClicked: Unit = {
    FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, color, getSize._1, getSize._2, whiteboardNameTextField.getText)
-
+ ///sjssjs
     val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
     stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
   }
