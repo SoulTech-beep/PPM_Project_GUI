@@ -1,21 +1,17 @@
-import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Pos}
 import javafx.scene.control.{Button, ContextMenu, MenuItem, ScrollPane}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout._
-import javafx.scene.paint.{Color, Paint}
-import javafx.scene.shape.{Circle, Polyline, Rectangle, Shape}
+import javafx.scene.paint.Color
+import javafx.scene.shape.{Circle, Polyline}
 
 import scala.util.control.Breaks
-import scala.util.control.Breaks.break
 
 class whiteboardScroller {
 
   val pages:List[Pane] = List()
   val toolbar:customToolBar = new customToolBar()
-
-
 }
 
 object whiteboardScroller{
@@ -45,6 +41,7 @@ object whiteboardScroller{
         eraserCircle.setOpacity(0)
 
         currentLayer = new Polyline()
+        currentLayer.setSmooth(true)
 
         val tempCurrentLayer = currentLayer
         camadas = tempCurrentLayer :: camadas
@@ -54,7 +51,7 @@ object whiteboardScroller{
           val delete = new MenuItem("Delete")
           val contextMenu = new ContextMenu(delete)
 
-          delete.setOnAction(action => {
+          delete.setOnAction(_ => {
             camadas = camadas.filter(p => p != currentLayer)
             page.getChildren.remove(tempCurrentLayer)
           })
@@ -78,12 +75,12 @@ object whiteboardScroller{
 
         camadas.foreach(c => {
 
-          val range = (0 to c.getPoints.size-1).toList
+          val range = (0 until c.getPoints.size).toList //it's going to c.getPoints.size-1
 
           val eraserRadius = toolBar.eraserFinal.radius.get()
-          val points = c.getPoints()
+          val points = c.getPoints
 
-          val loop = new Breaks;
+          val loop = new Breaks
 
           loop.breakable{
            range.foreach(p => if(p%2 == 0){
@@ -94,6 +91,7 @@ object whiteboardScroller{
                loop.break()
                println("HEHE NO BREAK")
              }
+
 
               /*if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
                 porApagar = c :: porApagar
@@ -110,7 +108,7 @@ object whiteboardScroller{
     })
 
 
-    page.setOnMouseEntered(event => {
+    page.setOnMouseEntered(_ => {
       if(toolBar.selectedTool.equals(ToolType.eraser)){
         eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
       }
@@ -146,7 +144,7 @@ object whiteboardScroller{
           var i = 0
 
           val eraserRadius = toolBar.eraserFinal.radius.get()
-          val points = c.getPoints()
+          val points = c.getPoints
 
           while (i < points.size()-1) {
 
@@ -173,10 +171,7 @@ object whiteboardScroller{
 
   def getCanvas(toolBar:customToolBar):ScrollPane = {
 
-    var currentLayer = new Polyline()
     var selecting = false
-    var  dragBox = new Rectangle(0, 0, 0, 0);
-    var camadas = List(currentLayer)
 
     /////
 
@@ -189,8 +184,8 @@ object whiteboardScroller{
 
     val pag = List(page3,page1, page2)
 
-    page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-    page2.setBackground(new Background(new BackgroundFill(Color.web("#2d3436"), CornerRadii.EMPTY, Insets.EMPTY)));
+    page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
+    page2.setBackground(new Background(new BackgroundFill(Color.web("#2d3436"), CornerRadii.EMPTY, Insets.EMPTY)))
 
     page1.setPrefSize(1200, 800)
     page2.setPrefSize(1200, 800)
@@ -198,8 +193,8 @@ object whiteboardScroller{
     pages.setMaxWidth(1200)
 
 
-    var selectButton = new Button("Selecionar")
-    selectButton.setOnMouseClicked(p => selecting = !selecting)
+    val selectButton = new Button("Selecionar")
+    selectButton.setOnMouseClicked(_ => selecting = !selecting)
 
     pages.getChildren.addAll(page3, selectButton,page1,page2)
 

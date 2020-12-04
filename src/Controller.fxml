@@ -6,7 +6,6 @@
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.image.Image?>
@@ -65,55 +64,6 @@
             <StackPane fx:id="rightStackPane" layoutX="150.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <ToolBar id="toolbar" fx:id="toolbar" maxWidth="700.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
-                    <items>
-                        <Button alignment="TOP_LEFT" layoutX="102.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/lasso.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Button alignment="TOP_LEFT" layoutX="262.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/text.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Separator id="my-separator" layoutX="95.0" layoutY="10.0" orientation="VERTICAL" prefHeight="20.0" stylesheets="@separator.css" />
-                        <Button alignment="TOP_LEFT" layoutX="197.0" layoutY="20.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/image.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Button alignment="TOP_LEFT" layoutX="187.0" layoutY="10.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/icons8-video-clip-96.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Button alignment="TOP_LEFT" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/pdf.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                        <Separator id="my-separator" layoutX="95.0" layoutY="10.0" orientation="VERTICAL" prefHeight="20.0" stylesheets="@separator.css" />
-                    </items>
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>

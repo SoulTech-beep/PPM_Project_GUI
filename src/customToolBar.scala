@@ -47,6 +47,8 @@ class customToolBar {
 
   def initializeCustomToolBar(): Unit ={
 
+    toolbar.getItems.clear()
+
     val penTool: Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
     val markerTool:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
 
