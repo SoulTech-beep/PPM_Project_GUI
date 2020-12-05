@@ -1,4 +1,6 @@
-import ToolType.ToolType
+package app
+
+import app.ToolType.ToolType
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
@@ -6,7 +8,7 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
-import javafx.scene.layout.HBox
+import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import logicMC.Eraser
@@ -36,9 +38,10 @@ class customToolBar {
 
   val optionsHBox:HBox = new HBox()
 
-  var buttonList:List[Button] = List()
+  var buttonList:List[Node] = List()
   var penList:List[(Pen,ToolType)] = List()
   var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
+  var shapePen:Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
 
 
   def setToolbar(tb: ToolBar): Unit = {
@@ -82,12 +85,26 @@ class customToolBar {
   }
 
   def setShapeButton():Unit = {
-    val shapeButton:Button = new Button()
+    val shapeButton:MenuButton = new MenuButton()
+
+    val circle : Button = new Button("Circle")
+    val square : Button = new Button("Square")
+
+    val vbox : VBox = new VBox()
+    vbox.getChildren.addAll(circle,square)
+    val options : CustomMenuItem = new CustomMenuItem()
+    options.setContent(vbox)
+
+    shapeButton.getItems().add(options)
 
     buttonList = shapeButton :: buttonList
 
-    shapeButton.setOnAction(event => {
-      selectTool(ToolType.eraser)
+    circle.setOnAction(event => {
+      selectTool(ToolType.geometricShape)
+    })
+
+    square.setOnAction(event => {
+      selectTool(ToolType.geometricShape)
     })
 
     shapeButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -256,6 +273,26 @@ class customToolBar {
       })
 
       return optionsHBox.getChildren.add(toMenuItem(eraserRadius,"images/width.png"))
+
+    } else if(toolName == ToolType.geometricShape) {
+      selectedTool = toolName
+
+      val slOpacity: Slider = getSliderMenu(shapePen.opacity.get(), (0,1), 0.1)
+      val slWidth: Slider = getSliderMenu(shapePen.width.get(), (1,15))
+
+      slOpacity.valueProperty().addListener(new ChangeListener[Number] {
+        override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+          shapePen = shapePen.changeOpacity(t1.doubleValue())
+        }
+      })
+
+      slWidth.valueProperty().addListener(new ChangeListener[Number] {
+        override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+          shapePen = shapePen.changeWidth(t1.doubleValue())
+        }
+      })
+
+      return optionsHBox.getChildren.addAll(toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
 
     }
 

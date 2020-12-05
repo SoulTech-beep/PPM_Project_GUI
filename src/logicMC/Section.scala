@@ -1,5 +1,6 @@
 package logicMC
 
+import app.PageStyle.PageStyle
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.image.{Image, ImageView}
@@ -61,28 +62,6 @@ object Section{
     case _ => str + tabMulti(mul-1)(str)
   }
 
-  def addNewSection(mainSection :Section, s:Section):(Section, Section) = {
-    val name = CommandLine.prompt("logicMC.Section name")
-
-    if(s.sections.isEmpty){
-      val sectionCreated = Section(s.id+".1",name, List(), List() )
-      val sectionWeAreIn = logicMC.Section(s.id, s.name, sectionCreated::s.sections, s.whiteboards)
-
-      updateAll(mainSection, sectionWeAreIn)
-      //(mainSection, sectionWeAreIn)
-    }else{
-      val maxID = s.sections.last.id.split('.').last.toInt + 1
-      val newID : String = s.id + '.' + maxID.toString
-
-      val sectionCreated = Section(newID,name, List(), List() )
-      val sectionWeAreIn = logicMC.Section(s.id, s.name, (sectionCreated::s.sections).reverse, s.whiteboards)
-
-      //(mainSection, sectionWeAreIn)
-      updateAll(mainSection, sectionWeAreIn)
-    }
-
-    //TODO If some problem exists check here!
-  }
 
   def addNewSectionName(mainSection :Section, s:Section, name:String):(Section, Section) = {
     if(s.sections.isEmpty){
@@ -146,19 +125,6 @@ object Section{
         }
   }
 
-  def enterSection(mainSection : Section, section: Section):(Section, Section) = {
-    val sectionIDtoEnter = CommandLine.prompt("Which section do you want to enter")
-
-    val sectionToEnter = section.sections.indexWhere( p => p.id.split('.').last.toInt == sectionIDtoEnter.toInt)
-
-    if(sectionToEnter == -1){
-      println("NO SECTION")
-      (mainSection, section)
-    }else{
-      (mainSection, section.sections.apply(sectionToEnter))
-    }
-
-  }
 
   def enterSectionID(mainSection : Section, section: Section, sectionIDtoEnter:Int):(Section, Section) = {
 
@@ -212,67 +178,21 @@ object Section{
     (mainSection, mainSection)
   }
 
-  def changeName(mainSection: Section, section: Section):(Section, Section) = {
-    //We are changing the current section name!
 
-    val newSectionName = CommandLine.prompt("What's the new section name")
-    val newSection = logicMC.Section(section.id, newSectionName, section.sections, section.whiteboards)
-    updateAll(mainSection,newSection )
-  }
-
-  def addWhiteboard(mainSection : Section, section: Section):(Section, Section) = {
-    val color = CommandLine.prompt("What color do you want to use as background")
-    val sizeX = CommandLine.prompt("Width")
-    val sizeY = CommandLine.prompt("Height")
-    val name = CommandLine.prompt("Name")
+  def addWhiteboardWithValues(mainSection : Section, section: Section, color:String, sizeX:Double, sizeY:Double, name:String, style:PageStyle):(Section, Section) = {
 
     val id = ( section.whiteboards foldRight 0) ((a,b) => if(a.id > b) a.id else b)
-    val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name)
+    val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name, style)
 
     val newSection = logicMC.Section(section.id, section.name, section.sections, new_wb::section.whiteboards)
     updateAll(mainSection, newSection)
     //TODO we gotta check if the update is working m8!
   }
 
-  def addWhiteboardWithValues(mainSection : Section, section: Section, color:String, sizeX:Double, sizeY:Double, name:String):(Section, Section) = {
-
-    val id = ( section.whiteboards foldRight 0) ((a,b) => if(a.id > b) a.id else b)
-    val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name)
-
-    val newSection = logicMC.Section(section.id, section.name, section.sections, new_wb::section.whiteboards)
-    updateAll(mainSection, newSection)
-    //TODO we gotta check if the update is working m8!
-  }
-
-  def removeWhiteboard(mainSection: Section, section: Section):(Section,Section) = {
-    val whiteboardToRemove = CommandLine.prompt("What whiteboard do you want to remove")
-
-    val newWhiteboards = section.whiteboards.filter(p => p.id != whiteboardToRemove.toInt)
-
-    val newSection = Section(section.id, section.name, section.sections, newWhiteboards)
-
-    updateAll(mainSection, newSection)
-    //TODO we also gotta check if the update is working :c
-  }
 
   //AINDA DOS ANTIGOS:
 
 
-  def removeSection(mainSection: Section, section: Section):(Section, Section) = {
-  //we are going to remove the secion we currently are in.
-
-    if(section.id.length == 1){
-      CommandLine.prompt(Console.RED + "Can't remove the current section" + Console.RESET)
-      (mainSection, section)
-    }else{
-      val newMainSections: List[Section] = auxiliaryRemoveSection(mainSection.sections, section.id)
-      val newMainSection = logicMC.Section(mainSection.id, mainSection.name, newMainSections, mainSection.whiteboards)
-
-      (newMainSection, exitSection(mainSection, section)._2)
-      //TODO when removed, we shall go to the upper level section! Now we are just going to the main section...
-    }
-
-  }
 
   def auxiliaryRemoveSection(list : List[Section], sectionToRemove: ID): List[Section] = list match {
     case Nil => Nil

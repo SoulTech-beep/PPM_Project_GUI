@@ -1,9 +1,9 @@
 package logicMC
 
+import app.PageStyle.PageStyle
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Scene
 import javafx.scene.control._
-import javafx.scene.image.{Image, ImageView}
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.VBox
 import javafx.stage.{Modality, Stage}
@@ -30,7 +30,7 @@ object BlackBox {
 
 }
 
-case class Whiteboard(id: Int, color: String, size: Size, children : List[BlackBox], name: String){
+case class Whiteboard(id: Int, color: String, size: Size, children : List[BlackBox], name: String, style:PageStyle){
 
   def changeName(name:String):Whiteboard = {
     Whiteboard.changeName(this, name)
@@ -42,15 +42,15 @@ object Whiteboard{
   type Size = (Double, Double)
 
   def changeName(w:Whiteboard, name:String):Whiteboard={
-    Whiteboard(w.id, w.color, w.size, w.children,name)
+    Whiteboard(w.id, w.color, w.size, w.children,name, w.style)
   }
 
   def changeColor( w : Whiteboard, new_color: String): Whiteboard = {
-    Whiteboard(w.id, new_color, w.size, w.children,w.name)
+    Whiteboard(w.id, new_color, w.size, w.children,w.name, w.style)
   }
 
   def changeSize(w: Whiteboard, new_size: Size): Whiteboard = {
-    Whiteboard(w.id, w.color, new_size, w.children, w.name)
+    Whiteboard(w.id, w.color, new_size, w.children, w.name, w.style)
     //TODO Update hidden elements.
   }
 
@@ -70,52 +70,8 @@ object Whiteboard{
 
   }
 
-  def translateBlackBox(whiteboard: Whiteboard):Whiteboard = {
-    val translateX = CommandLine.prompt("Offset quantity for X").toDouble
-    val translateY = CommandLine.prompt("Offset quantity for Y").toDouble
 
-    val blackBoxID = CommandLine.prompt("Blackbox to select").toInt
 
-    val selectedBlackBox = whiteboard.children.find(p => p.id == blackBoxID)
-    val blackBoxIndex = whiteboard.children.indexWhere(p => p.id == blackBoxID)
-
-    val updatedBlackBox = selectedBlackBox.get.translate(translateX, translateY)
-
-    Whiteboard(whiteboard.id, whiteboard.color, whiteboard.size, whiteboard.children.updated(blackBoxIndex, updatedBlackBox), whiteboard.name)
-  }
-
-  def removeBlackBox(whiteboard: Whiteboard):Whiteboard = {
-    val blackBoxID = CommandLine.prompt("Blackbox to remove").toInt
-
-    Whiteboard(whiteboard.id, whiteboard.color, whiteboard.size, whiteboard.children.filter(p => p.id != blackBoxID), whiteboard.name)
-  }
-
-  def changeBlackBoxSize(whiteboard: Whiteboard):Whiteboard = {
-    val sizeX = CommandLine.prompt("Which width do you want to set").toDouble
-    val sizeY = CommandLine.prompt("Which height do you want to set").toDouble
-
-    val blackBoxID = CommandLine.prompt("Blackbox to change size").toInt
-
-    val blackBoxIndex = whiteboard.children.indexWhere(p => p.id == blackBoxID)
-    val selectedBlackBox = whiteboard.children.find(p => p.id == blackBoxID)
-
-    val updatedBlackBox = selectedBlackBox.get.changeSize(sizeX, sizeY)
-
-    Whiteboard(whiteboard.id, whiteboard.color, whiteboard.size, whiteboard.children.updated(blackBoxIndex, updatedBlackBox), whiteboard.name)
-  }
-
-  def addShape(w : Whiteboard): Whiteboard = {
-
-    val idNum = ( w.children foldRight 0) ((a,b) => if(a.id > b) a.id else b)
-    val newChildren = Shape.getShape
-
-    if(newChildren.isDefined){
-      Whiteboard(w.id, w.color, w.size, Shape.changeShapeID(newChildren.get, idNum) :: w.children, w.name)
-    }else{
-      w
-    }
-
-  }
 
   def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit):VBox = {
     val imageView = getImageView("images/book.png")

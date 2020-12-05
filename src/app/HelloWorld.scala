@@ -1,3 +1,5 @@
+package app
+
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.image.Image
@@ -35,13 +37,13 @@ object FxApp {
     Section("0.1", "António", List(
       Section("0.1.1", "Laranja", List(
         Section("0.1.1.1", "Henrique", List(
-          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, "Pink", (20,20), List(), "AR")))
+          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, "Pink", (20,20), List(), "AR", PageStyle.DOTTED)))
         ), List())
       ), List()),
       Section("0.1.2", "Sapo", List(), List())
     ), List()),
     Section("0.2", "Miguel", List(), List())
-  ), List(new Whiteboard(0, "Blue", (20,20), List(), "IA")))
+  ), List(new Whiteboard(0, "Blue", (20,20), List(), "IA", PageStyle.LINED)))
 
   var app_state = (originalSection, originalSection)
 

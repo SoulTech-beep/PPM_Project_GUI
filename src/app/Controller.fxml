@@ -16,19 +16,19 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane fx:id="mySplitPane" dividerPositions="0.43875278396436523" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1112.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+<SplitPane fx:id="mySplitPane" dividerPositions="0.43875278396436523" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1112.0" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.Controller">
   <items>
     <AnchorPane fx:id="leftAnchorPane" maxWidth="800.0" minHeight="0.0" minWidth="300.0" prefHeight="0.0" prefWidth="0.0">
          <children>
             <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <ToolBar id="toolbar1" fx:id="leftToolBar" prefHeight="49.0" prefWidth="484.0" stylesheets="@navbar.css" VBox.vgrow="ALWAYS">
+                  <ToolBar id="toolbar1" fx:id="leftToolBar" prefHeight="49.0" prefWidth="484.0" stylesheets="@../navbar.css" VBox.vgrow="ALWAYS">
                     <items>
                         <Button fx:id="goBackButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" style="-fx-background-color: #b2bec3#b2bec3; -fx-background-radius: 25px;">
                            <graphic>
                               <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@images/backarrow.png" />
+                                    <Image url="@../images/backarrow.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -48,7 +48,7 @@
                            <graphic>
                               <ImageView fitHeight="150.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@images/add.png" />
+                                    <Image url="@../images/add.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -63,7 +63,7 @@
          <children>
             <StackPane fx:id="rightStackPane" layoutX="150.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <ToolBar id="toolbar" fx:id="toolbar" maxWidth="700.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@navbar.css" StackPane.alignment="TOP_CENTER">
+                  <ToolBar id="toolbar" fx:id="toolbar" maxWidth="700.0" prefHeight="40.0" prefWidth="250.0" stylesheets="@../navbar.css" StackPane.alignment="TOP_CENTER">
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>

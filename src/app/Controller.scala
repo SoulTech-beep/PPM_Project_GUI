@@ -1,9 +1,11 @@
+package app
+
 import javafx.fxml.{FXML, FXMLLoader}
 import javafx.geometry.{Insets, Pos}
-import javafx.scene.{Parent, Scene}
 import javafx.scene.control._
 import javafx.scene.input.KeyCode
 import javafx.scene.layout._
+import javafx.scene.{Parent, Scene}
 import javafx.stage.{Modality, Stage}
 import logicMC.{Auxiliary, Section, Whiteboard}
 
@@ -43,14 +45,14 @@ class Controller{
   //Current section being shown on the left side of the split pane
   private var currentSection:Section = _
 
-  //private var customToolBar:customToolBar = new customToolBar
+  //private var app.customToolBar:app.customToolBar = new app.customToolBar
 
   private var canvasScroller:ScrollPane = new ScrollPane()
 
   @Override
   def initialize(): Unit = {
-    /*customToolBar.setToolbar(toolbar)
-    customToolBar.initializeCustomToolBar()*/
+    /*app.customToolBar.setToolbar(toolbar)
+    app.customToolBar.initializeCustomToolBar()*/
 
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
@@ -58,7 +60,7 @@ class Controller{
     layoutShenanigans()
 
     //TODO remove: debug variables in order to help us previewing a whiteboard on the right side
-    //canvasScroller = whiteboardScroller.getCanvas(customToolBar)
+    //canvasScroller = app.whiteboardScroller.getCanvas(app.customToolBar)
     rightStackPane.getChildren.add(0,canvasScroller)
 
     addSectionButtonOnClick()
@@ -185,9 +187,9 @@ def addWhiteboardButtonOnClick():Unit = {
       if(!nameTextField.getText.isBlank){
 
 
-        FxApp.app_state = Section.addWhiteboardWithValues(FxApp.app_state._1, FxApp.app_state._2,colorPicker._2.get().toString, xTextField.getText.toDouble, yTextField.getText.toDouble, nameTextField.getText)
+        app.FxApp.app_state = Section.addWhiteboardWithValues(app.FxApp.app_state._1, app.FxApp.app_state._2,colorPicker._2.get().toString, xTextField.getText.toDouble, yTextField.getText.toDouble, nameTextField.getText)
         println("color: " + colorPicker._2.get())
-        updateVisualState(FxApp.app_state._2)
+        updateVisualState(app.FxApp.app_state._2)
 
         popupStage.close()
       }
@@ -196,11 +198,13 @@ def addWhiteboardButtonOnClick():Unit = {
   })
 */
   addWhiteboardButton.setOnAction(_ =>  {
-    val fxmlLoaderWhiteboard = new FXMLLoader(getClass.getResource("WhiteboardCreate.fxml"))
-    val mainViewRoot: Parent = fxmlLoaderWhiteboard.load()
+    val fxmlLoader = new FXMLLoader(getClass.getResource("WhiteboardCreate.fxml"))
+
+    val mainViewRoot: Parent = fxmlLoader.load()
+
     val scene = new Scene(mainViewRoot)
 
-    val createWhiteboardController = fxmlLoaderWhiteboard.getController.asInstanceOf[WhiteboardCreate]
+    val createWhiteboardController = fxmlLoader.getController.asInstanceOf[WhiteboardCreate]
     createWhiteboardController.setState(FxApp.app_state)
 
     val secondStage: Stage = new Stage()
@@ -209,7 +213,8 @@ def addWhiteboardButtonOnClick():Unit = {
 
     secondStage.setOnCloseRequest(_ => {
       updateVisualState(FxApp.app_state._2)
-    })
+      })
+
     })
 }
 
