@@ -3,14 +3,15 @@ package app
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.paint.Color
 
-case class Pen(id: Int, color: Color, width: SimpleDoubleProperty, opacity: SimpleDoubleProperty){
+case class Pen(id: Int, color: Color, width: SimpleDoubleProperty, opacity: SimpleDoubleProperty) extends PenTrait{
 
+  @Override
   def changeColor(color: Color) : Pen = Pen.changeColor(this, color)
-  //def changeWidth(width:Double):app.Pen = app.Pen.changeWidth(this, width)
-  //def changeOpacity(opacity: Double):app.Pen = app.Pen.changeOpacity(this, opacity)
 
+  @Override
   def changeWidth(new_width:Double):Pen = Pen.changeWidth(this, new_width)
 
+  @Override
   def changeOpacity(new_opacity:Double):Pen = {
     /*this.opacity.set(new_opacity)
     this*/

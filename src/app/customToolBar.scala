@@ -10,7 +10,7 @@ import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
-import javafx.scene.shape.Circle
+import javafx.scene.shape.{Circle, Polygon, Rectangle}
 import logicMC.Eraser
 
 object ToolType extends Enumeration {
@@ -89,9 +89,11 @@ class customToolBar {
 
     val circle : Button = new Button("Circle")
     val square : Button = new Button("Square")
+    val line : Button = new Button("Line")
+    val polygon : Button = new Button("Polygon")
 
     val vbox : VBox = new VBox()
-    vbox.getChildren.addAll(circle,square)
+    vbox.getChildren.addAll(circle,square,line,polygon)
     val options : CustomMenuItem = new CustomMenuItem()
     options.setContent(vbox)
 
@@ -99,13 +101,28 @@ class customToolBar {
 
     buttonList = shapeButton :: buttonList
 
+    line.setOnAction(event => {
+      selectTool(ToolType.geometricShape)
+      shapePen = shapePen.changeShape(ShapeType.line)
+      shapeButton.setGraphic(getLine(Color.BLACK,false))
+    })
+
+    polygon.setOnAction(event => {
+      selectTool(ToolType.geometricShape)
+      shapePen = shapePen.changeShape(ShapeType.polygon)
+      shapeButton.setGraphic(getHexagon(Color.BLACK,fill = false))
+    })
+
     circle.setOnAction(event => {
       selectTool(ToolType.geometricShape)
+      shapePen = shapePen.changeShape(ShapeType.circle)
+      shapeButton.setGraphic(getCircle(Color.BLACK,fill = false))
     })
 
     square.setOnAction(event => {
       selectTool(ToolType.geometricShape)
-
+      shapePen = shapePen.changeShape(ShapeType.square)
+      shapeButton.setGraphic(getSquare(Color.BLACK,false))
     })
 
     shapeButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -191,7 +208,7 @@ class customToolBar {
       //TODO can't select custom colors!
       val colorPicker = new ColorPicker()
       colorPicker.setOnAction(a => {
-        dropDown.setGraphic(getCircle(colorPicker.getValue))
+        dropDown.setGraphic(getCircle(colorPicker.getValue,true))
         penList.foreach(p1 => if(p1._2 == toolName)  {
           penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(colorPicker.getValue), p1._2))
         })
@@ -201,35 +218,26 @@ class customToolBar {
       colorPickerMenu.setContent(colorPicker)
       colorPickerMenu.setHideOnClick(false)
 
-
-      def getCircle(color: Color):Circle = {
-        val circle = new Circle()
-        circle.setFill(color)
-        circle.setRadius(10)
-
-        circle
-      }
-
-      redColor.setGraphic(getCircle(Color.RED))
-      blackColor.setGraphic(getCircle(Color.BLACK))
-      blueColor.setGraphic(getCircle(Color.BLUE))
+      redColor.setGraphic(getCircle(Color.RED,true))
+      blackColor.setGraphic(getCircle(Color.BLACK,true))
+      blueColor.setGraphic(getCircle(Color.BLUE,true))
 
       redColor.setOnAction(p => {
-        dropDown.setGraphic(getCircle(Color.RED))
+        dropDown.setGraphic(getCircle(Color.RED,true))
         penList.foreach(p1 => if(p1._2 == toolName)  {
           penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.RED), p1._2))
         })
       })
 
       blueColor.setOnAction(p => {
-        dropDown.setGraphic(getCircle(Color.BLUE))
+        dropDown.setGraphic(getCircle(Color.BLUE,true))
         penList.foreach(p1 => if(p1._2 == toolName)  {
           penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.BLUE), p1._2))
         })
       })
 
       blackColor.setOnAction(p => {
-        dropDown.setGraphic(getCircle(Color.BLACK))
+        dropDown.setGraphic(getCircle(Color.BLACK,true))
         penList.foreach(p1 => if(p1._2 == toolName)  {
           penList = penList.updated(penList.indexOf(p1), (p1._1.changeColor(Color.BLACK), p1._2))
         })
@@ -239,7 +247,7 @@ class customToolBar {
 
       penList.foreach(p => if(p._2 == toolName)  {
 
-        dropDown.setGraphic(getCircle(p._1.color))
+        dropDown.setGraphic(getCircle(p._1.color, true))
 
         val slOpacity: Slider = getSliderMenu(p._1.opacity.get(), (0,1), 0.1)
         val slWidth: Slider = getSliderMenu(p._1.width.get(), (1,15))
@@ -278,6 +286,57 @@ class customToolBar {
     } else if(toolName == ToolType.geometricShape) {
       selectedTool = toolName
 
+      val dropDown = new MenuButton()
+
+      val redColor = new Button()
+      val blackColor = new Button()
+      val blueColor = new Button()
+
+      val setColors = new CustomMenuItem()
+      val colorPickerMenu = new CustomMenuItem()
+
+      val hboxColors = new HBox()
+      hboxColors.getChildren.addAll(redColor, blackColor, blueColor)
+      hboxColors.setAlignment(Pos.CENTER)
+      hboxColors.setSpacing(10)
+
+      setColors.setContent(hboxColors)
+      setColors.setHideOnClick(false)
+
+      //TODO can't select custom colors!
+      val colorPicker = new ColorPicker()
+      colorPicker.setOnAction(a => {
+        dropDown.setGraphic(getCircle(colorPicker.getValue,true))
+        shapePen = shapePen.changeColor(colorPicker.getValue)
+      })
+      //colorPicker.getStyleClass.add("button")
+
+      colorPickerMenu.setContent(colorPicker)
+      colorPickerMenu.setHideOnClick(false)
+
+      redColor.setGraphic(getCircle(Color.RED,true))
+      blackColor.setGraphic(getCircle(Color.BLACK,true))
+      blueColor.setGraphic(getCircle(Color.BLUE,true))
+
+      redColor.setOnAction(p => {
+        dropDown.setGraphic(getCircle(Color.RED,true))
+        shapePen = shapePen.changeColor(Color.RED)
+      })
+
+      blueColor.setOnAction(p => {
+        dropDown.setGraphic(getCircle(Color.BLUE,true))
+        shapePen = shapePen.changeColor(Color.BLUE)
+      })
+
+      blackColor.setOnAction(p => {
+        dropDown.setGraphic(getCircle(Color.BLACK,true))
+        shapePen = shapePen.changeColor(Color.BLACK)
+      })
+
+      dropDown.setGraphic(getCircle(shapePen.color, true))
+
+      dropDown.getItems.addAll(setColors, colorPickerMenu)
+
       val slOpacity: Slider = getSliderMenu(shapePen.opacity.get(), (0,1), 0.1)
       val slWidth: Slider = getSliderMenu(shapePen.width.get(), (1,15))
 
@@ -293,14 +352,69 @@ class customToolBar {
         }
       })
 
-      return optionsHBox.getChildren.addAll(toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
+      return optionsHBox.getChildren.addAll(dropDown,toMenuItem(slWidth,"images/width.png"), toMenuItem(slOpacity, "images/opacity.png"))
 
     }
 
 
   }
 
+  def getLine(color: Color, fill:Boolean):Polygon = {
+    val line = new Polygon()
+    line.setStroke(color)
+    line.setStrokeWidth(2)
+    if(fill)
+      line.setFill(color)
+    else {
+      line.setFill(Color.TRANSPARENT)
+    }
+    line.getPoints.addAll(1.0, 1.0, 20.0, 20.0)
 
+    line
+  }
+
+  def getHexagon(color: Color, fill:Boolean):Polygon = {
+    val hex = new Polygon()
+    hex.setStroke(color)
+    hex.setStrokeWidth(2)
+    if(fill)
+      hex.setFill(color)
+    else {
+      hex.setFill(Color.TRANSPARENT)
+    }
+    hex.getPoints.addAll(1.0, 9.0, 10.0, 1.0, 19.0, 9.0, 15.0 ,19.0 ,5.0 ,19.0)
+
+    hex
+  }
+
+  def getSquare(color: Color, fill:Boolean):Rectangle = {
+    val square = new Rectangle()
+    square.setStroke(color)
+    square.setStrokeWidth(2)
+    if(fill)
+      square.setFill(color)
+    else {
+      square.setFill(Color.TRANSPARENT)
+    }
+    square.setHeight(20)
+    square.setWidth(20)
+
+    square
+  }
+
+
+  def getCircle(color: Color, fill:Boolean):Circle = {
+    val circle = new Circle()
+    circle.setStrokeWidth(2)
+    circle.setStroke(color)
+    if(fill)
+      circle.setFill(color)
+    else
+      circle.setFill(Color.TRANSPARENT)
+    circle.setRadius(10)
+
+    circle
+  }
 
   def getSliderMenu(initial: Double, range:(Int,Int), majorTickUnit: Double = 2):Slider = {
     val slider = new Slider(range._1,range._2, initial)

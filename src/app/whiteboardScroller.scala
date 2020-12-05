@@ -34,9 +34,7 @@ object whiteboardScroller{
     var camadas:List[Polyline] = List()
     var currentLayer = new Polyline()
 
-    var currentRectangle:Rectangle = new Rectangle()
-
-    var isGeometricShape = true
+    var isGeometricShape = false
     var isLine = false
     var isFirstPoint = true
     var firstPoint:Point2D = null
@@ -44,31 +42,171 @@ object whiteboardScroller{
     var polygon : Group = null
     var lineToAdd:Line = null
 
+    var isCircle = false
+    var currentCircle: Circle = null
+
+    var isSquare = true
+    var currentRectangle:Rectangle = null
+
     page.setOnMouseClicked(event => {
       if(toolBar.selectedTool == ToolType.geometricShape){
-        if(isGeometricShape){
+
+        if(toolBar.shapePen.shape == ShapeType.square){
+          if(isFirstPoint){
+            currentRectangle = new Rectangle()
+            currentRectangle.setX(event.getX)
+            currentRectangle.setY(event.getY)
+            currentRectangle.setWidth(0)
+            currentRectangle.setHeight(0)
+
+            currentRectangle.setStroke(toolBar.shapePen.color)
+            currentRectangle.setStrokeWidth(toolBar.shapePen.width.get)
+            currentRectangle.setFill(toolBar.shapePen.color)
+            currentRectangle.setOpacity(toolBar.shapePen.opacity.get)
+
+            page.getChildren.add(currentRectangle)
+            firstPoint = new Point2D(event.getX, event.getY)
+            isFirstPoint = false
+
+          }else{
+            isFirstPoint = true
+          }
+        }
+
+        if(toolBar.shapePen.shape == ShapeType.circle){
+          if(isFirstPoint){
+            currentCircle = new Circle()
+            currentCircle.setCenterX(event.getX)
+            currentCircle.setCenterY(event.getY)
+            currentCircle.setStroke(toolBar.shapePen.color)
+            currentCircle.setStrokeWidth(toolBar.shapePen.width.get)
+            currentCircle.setFill(toolBar.shapePen.color)
+            currentCircle.setOpacity(toolBar.shapePen.opacity.get)
+
+            page.getChildren.add(currentCircle)
+            firstPoint = new Point2D(event.getX, event.getY)
+            isFirstPoint = false
+          }else{
+            isFirstPoint = true
+          }
+        }
+
+        if(toolBar.shapePen.shape == ShapeType.polygon){
           if(isFirstPoint){
             polygon = new Group()
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-            currentLine.setStroke(Color.BLACK)
+            currentLine.setStroke(toolBar.shapePen.color)
+            currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+            currentLine.setOpacity(toolBar.shapePen.opacity.get)
+
             polygon.getChildren.add(currentLine)
 
             page.getChildren.add(polygon)
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
           }else{
-            if(firstPoint.distance(event.getX, event.getY) != 0){
+            if(firstPoint.distance(event.getX, event.getY) >20){
               currentLine.setEndX(event.getX)
               currentLine.setEndY(event.getY)
 
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-              currentLine.setStroke(Color.BLACK)
+
+              currentLine.setStroke(toolBar.shapePen.color)
+              currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+              currentLine.setOpacity(toolBar.shapePen.opacity.get)
+
               polygon.getChildren.add(currentLine)
             }else{
               isFirstPoint = true
             }
           }
         }
+
+        if(toolBar.shapePen.shape == ShapeType.line){
+          if(isFirstPoint){
+            currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+            currentLine.setStroke(Color.BLACK)
+
+            page.getChildren.add(currentLine)
+            firstPoint = new Point2D(event.getX, event.getY)
+            isFirstPoint = false
+          }else{
+            isFirstPoint = true
+          }
+        }
+
+      }
+    })
+
+    page.setOnMouseMoved(event => {
+      if(toolBar.selectedTool.equals(ToolType.eraser)){
+        eraserCircle.setOpacity(1)
+        eraserCircle.setCenterX(event.getX)
+        eraserCircle.setCenterY(event.getY)
+      }else{
+        eraserCircle.setOpacity(0)
+      }
+
+      if(toolBar.selectedTool == ToolType.geometricShape){
+
+        if(toolBar.shapePen.shape == ShapeType.square){
+          if(!isFirstPoint){
+
+              val deltaX = event.getX - firstPoint.getX
+              val deltaY = event.getY - firstPoint.getY
+              if (deltaX < 0) {
+                currentRectangle.setX(event.getX)
+                currentRectangle.setWidth(-deltaX)
+              }
+              else {
+                currentRectangle.setX(firstPoint.getX)
+                currentRectangle.setWidth(event.getX - firstPoint.getX)
+              }
+              if (deltaY < 0) {
+                currentRectangle.setY(event.getY)
+                currentRectangle.setHeight(-deltaY)
+              }
+              else {
+                currentRectangle.setY(firstPoint.getY)
+                currentRectangle.setHeight(event.getY - firstPoint.getY)
+              }
+
+
+          }
+        }
+
+        if(toolBar.shapePen.shape == ShapeType.circle){
+          if(!isFirstPoint){
+            val currentPoint = new Point2D(event.getX, event.getY)
+            val radius = currentPoint.distance(new Point2D(currentCircle.getCenterX, currentCircle.getCenterY))
+            currentCircle.setRadius(radius)
+          }
+        }
+
+        if(toolBar.shapePen.shape == ShapeType.polygon){
+          if(!isFirstPoint){
+            if(firstPoint.distance(new Point2D(event.getX, event.getY)) < 20){
+              currentLine.setEndX(firstPoint.getX)
+              currentLine.setEndY(firstPoint.getY)
+            }else{
+              currentLine.setEndX(event.getX)
+              currentLine.setEndY(event.getY)
+            }
+          }
+        }
+
+        if(toolBar.shapePen.shape == ShapeType.line){
+          if(!isFirstPoint){
+            if(firstPoint.distance(new Point2D(event.getX, event.getY)) < 20){
+              currentLine.setEndX(firstPoint.getX)
+              currentLine.setEndY(firstPoint.getY)
+            }else{
+              currentLine.setEndX(event.getX)
+              currentLine.setEndY(event.getY)
+            }
+          }
+        }
+
       }
 
     })
@@ -97,7 +235,6 @@ object whiteboardScroller{
 
           contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
         })
-
 
 
         page.getChildren.add(currentLayer)
@@ -156,26 +293,6 @@ object whiteboardScroller{
       if(toolBar.selectedTool.equals(ToolType.eraser)){
         eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
       }
-    })
-
-    page.setOnMouseMoved(event => {
-      if(toolBar.selectedTool.equals(ToolType.eraser)){
-        eraserCircle.setOpacity(1)
-        eraserCircle.setCenterX(event.getX)
-        eraserCircle.setCenterY(event.getY)
-      }else{
-        eraserCircle.setOpacity(0)
-      }
-
-      if(toolBar.selectedTool == ToolType.geometricShape){
-        if(isGeometricShape){
-          if(!isFirstPoint){
-            currentLine.setEndX(event.getX)
-            currentLine.setEndY(event.getY)
-          }
-        }
-      }
-
     })
 
     page.setOnMouseDragged(event => {
