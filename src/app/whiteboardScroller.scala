@@ -1,11 +1,13 @@
 package app
 
+import javafx.animation.{Interpolator, KeyFrame, KeyValue, Timeline}
 import javafx.geometry.{Insets, Point2D, Pos}
 import javafx.scene.Group
 import javafx.scene.control.{ContextMenu, MenuItem}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.{Circle, Line, Polyline, Rectangle}
+import javafx.scene.shape.{Circle, Line, Polyline, Rectangle, Shape, StrokeLineJoin}
+import javafx.util.Duration
 
 import scala.util.control.Breaks
 
@@ -47,6 +49,8 @@ object whiteboardScroller{
 
     var isSquare = true
     var currentRectangle:Rectangle = null
+
+    var selectionPolyline = new Polyline()
 
     page.setOnMouseClicked(event => {
       if(toolBar.selectedTool == ToolType.geometricShape){
@@ -211,7 +215,72 @@ object whiteboardScroller{
 
     })
 
+    page.setOnMouseReleased(event => {
+      if(toolBar.selectedTool == ToolType.selector){
+        selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(0))
+        selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(1))
+
+        val keyValue1 = new KeyValue(
+          selectionPolyline.strokeDashOffsetProperty,
+          double2Double(0.0)
+        )
+
+        val keyValue2 = new KeyValue(
+          selectionPolyline.strokeDashOffsetProperty,
+          double2Double(40.0)
+        )
+
+        val timeline = new Timeline(
+
+          new KeyFrame(Duration.ZERO,
+            keyValue1),
+          new KeyFrame(Duration.seconds(2), keyValue2)
+        )
+
+        timeline.setCycleCount(Int.MaxValue)
+
+        timeline.play()
+
+
+        //selection over
+
+        camadas.foreach(c => {
+          val shape = Shape.intersect(selectionPolyline, c)
+          if(shape.getBoundsInLocal.getWidth != -1){
+            println(Console.BOLD + Console.YELLOW + "SOMETHING WAS FUCKING SELECTED!!!!" + Console.RESET)
+            c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
+          }else{
+            c.setStyle("")
+          }
+        })
+
+      }
+
+    })
+
     page.setOnMousePressed(event => {
+
+      if(toolBar.selectedTool == ToolType.selector){
+
+        if(selectionPolyline != null){
+          page.getChildren.remove(selectionPolyline)
+        }
+
+        eraserCircle.setOpacity(0)
+
+        selectionPolyline = new Polyline()
+        selectionPolyline.setSmooth(true)
+        selectionPolyline.setStrokeMiterLimit(1)
+        selectionPolyline.setStrokeWidth(2)
+        selectionPolyline.getStrokeDashArray.addAll(20)
+        selectionPolyline.setFill(Color.TRANSPARENT)
+
+        page.getChildren.add(selectionPolyline)
+
+        selectionPolyline.getPoints.add(event.getX)
+        selectionPolyline.getPoints.add(event.getY)
+      }
+
       if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
 
         eraserCircle.setOpacity(0)
@@ -222,6 +291,16 @@ object whiteboardScroller{
 
         val tempCurrentLayer = currentLayer
         camadas = tempCurrentLayer :: camadas
+
+        tempCurrentLayer.setOnMouseDragged(e => {
+          if(toolBar.selectedTool == ToolType.move){
+
+            //DRAG CARALHO
+            tempCurrentLayer.setTranslateX(e.getX)
+            tempCurrentLayer.setTranslateY(e.getY)
+          }
+
+        })
 
         currentLayer.setOnContextMenuRequested(click => {
 
@@ -297,7 +376,17 @@ object whiteboardScroller{
 
     page.setOnMouseDragged(event => {
 
+      if(toolBar.selectedTool == ToolType.selector){
+
+        if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+          selectionPolyline.getPoints.add(event.getX)
+          selectionPolyline.getPoints.add(event.getY)
+        }
+
+      }
+
       if(toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker){
+        println("AI O CARALHO " +  toolBar.selectedTool)
 
         if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
           currentLayer.getPoints.add(event.getX)

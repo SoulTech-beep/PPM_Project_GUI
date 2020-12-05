@@ -1,6 +1,6 @@
 package app
 
-import app.ToolType.ToolType
+import app.ToolType.{ToolType, selector}
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
@@ -26,6 +26,7 @@ object ToolType extends Enumeration {
   val image:String="IMAGE"
   val video:String = "VIDEO"
   val pdf:String = "PDF"
+  val move:String = "MOVE"
 }
 
 class customToolBar {
@@ -61,6 +62,8 @@ class customToolBar {
     selectedTool = ToolType.pen
     selectedPen = penTool
 
+    setSelectionButton()
+
     setShapeButton()
     setEraserButton()
 
@@ -70,6 +73,10 @@ class customToolBar {
 
     setPenButton("images/marker.png", ToolType.marker)
     setPenButton("images/ball-point.png", ToolType.pen)
+
+    getSeparator()
+
+    setMoveButton()
 
     toolbar.getItems.add(optionsHBox)
     optionsHBox.setSpacing(10)
@@ -134,6 +141,51 @@ class customToolBar {
     shapeButton.setGraphic(icon)
 
     toolbar.getItems.add(0,shapeButton)
+
+  }
+
+  def setSelectionButton(): Unit = {
+
+    val selectionButton:Button = new Button()
+
+    buttonList = selectionButton::buttonList
+
+    selectionButton.setOnAction(event => {
+      selectedTool = ToolType.selector
+      optionsHBox.getChildren.clear()
+    })
+
+    selectionButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    val icon = new ImageView(new Image("images/lasso.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    selectionButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,selectionButton)
+
+  }
+
+  def setMoveButton():Unit = {
+    val moveButton = new Button()
+
+    buttonList = moveButton :: buttonList
+
+    moveButton.setOnAction(_ => {
+      selectedTool = ToolType.move
+      optionsHBox.getChildren.clear()
+    })
+
+    moveButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    val icon = new ImageView(new Image("images/move.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    moveButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,moveButton)
 
   }
 
