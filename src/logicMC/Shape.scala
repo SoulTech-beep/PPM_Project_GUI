@@ -1,6 +1,6 @@
 package logicMC
 
-import logicMC.ShapeType.ShapeType
+import .ShapeType
 
 case class Shape(shapeType: ShapeType, id : Int, size: (Double,Double), position: (Double,Double)) extends BlackBox {
 

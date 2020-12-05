@@ -45,38 +45,32 @@ object whiteboardScroller{
     var lineToAdd:Line = null
 
     page.setOnMouseClicked(event => {
-      if(isGeometricShape){
-        if(isFirstPoint){
-          polygon = new Group()
-          currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-          currentLine.setStroke(Color.BLACK)
-          polygon.getChildren.add(currentLine)
-
-          page.getChildren.add(polygon)
-          firstPoint = new Point2D(event.getX, event.getY)
-          isFirstPoint = false
-        }else{
-          if(firstPoint.distance(event.getX, event.getY) != 0){
-            currentLine.setEndX(event.getX)
-            currentLine.setEndY(event.getY)
-
+      if(toolBar.selectedTool == ToolType.geometricShape){
+        if(isGeometricShape){
+          if(isFirstPoint){
+            polygon = new Group()
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
             currentLine.setStroke(Color.BLACK)
             polygon.getChildren.add(currentLine)
+
+            page.getChildren.add(polygon)
+            firstPoint = new Point2D(event.getX, event.getY)
+            isFirstPoint = false
           }else{
-            isFirstPoint = true
+            if(firstPoint.distance(event.getX, event.getY) != 0){
+              currentLine.setEndX(event.getX)
+              currentLine.setEndY(event.getY)
+
+              currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+              currentLine.setStroke(Color.BLACK)
+              polygon.getChildren.add(currentLine)
+            }else{
+              isFirstPoint = true
+            }
           }
         }
       }
-    })
 
-    page.setOnMouseMoved(event => {
-      if(isGeometricShape){
-        if(!isFirstPoint){
-          currentLine.setEndX(event.getX)
-          currentLine.setEndY(event.getY)
-        }
-      }
     })
 
     page.setOnMousePressed(event => {
@@ -171,6 +165,15 @@ object whiteboardScroller{
         eraserCircle.setCenterY(event.getY)
       }else{
         eraserCircle.setOpacity(0)
+      }
+
+      if(toolBar.selectedTool == ToolType.geometricShape){
+        if(isGeometricShape){
+          if(!isFirstPoint){
+            currentLine.setEndX(event.getX)
+            currentLine.setEndY(event.getY)
+          }
+        }
       }
 
     })

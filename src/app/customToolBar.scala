@@ -41,7 +41,7 @@ class customToolBar {
   var buttonList:List[Node] = List()
   var penList:List[(Pen,ToolType)] = List()
   var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
-  var shapePen:Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
+  var shapePen:GeometricShape = GeometricShape(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1), ShapeType.square)
 
 
   def setToolbar(tb: ToolBar): Unit = {
@@ -105,6 +105,7 @@ class customToolBar {
 
     square.setOnAction(event => {
       selectTool(ToolType.geometricShape)
+
     })
 
     shapeButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
