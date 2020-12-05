@@ -1,10 +1,11 @@
-import javafx.beans.value.{ChangeListener, ObservableValue}
-import javafx.geometry.{Bounds, Insets, Pos}
-import javafx.scene.control.{Button, ContextMenu, MenuItem}
-import javafx.scene.input.MouseButton
+package app
+
+import javafx.geometry.{Insets, Point2D, Pos}
+import javafx.scene.Group
+import javafx.scene.control.{ContextMenu, MenuItem}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.{Circle, Polyline, Shape}
+import javafx.scene.shape.{Circle, Line, Polyline, Rectangle}
 
 import scala.util.control.Breaks
 
@@ -33,9 +34,52 @@ object whiteboardScroller{
     var camadas:List[Polyline] = List()
     var currentLayer = new Polyline()
 
+    var currentRectangle:Rectangle = new Rectangle()
+
+    var isGeometricShape = true
+    var isLine = false
+    var isFirstPoint = true
+    var firstPoint:Point2D = null
+    var currentLine:Line = null
+    var polygon : Group = null
+    var lineToAdd:Line = null
+
+    page.setOnMouseClicked(event => {
+      if(isGeometricShape){
+        if(isFirstPoint){
+          polygon = new Group()
+          currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+          currentLine.setStroke(Color.BLACK)
+          polygon.getChildren.add(currentLine)
+
+          page.getChildren.add(polygon)
+          firstPoint = new Point2D(event.getX, event.getY)
+          isFirstPoint = false
+        }else{
+          if(firstPoint.distance(event.getX, event.getY) != 0){
+            currentLine.setEndX(event.getX)
+            currentLine.setEndY(event.getY)
+
+            currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+            currentLine.setStroke(Color.BLACK)
+            polygon.getChildren.add(currentLine)
+          }else{
+            isFirstPoint = true
+          }
+        }
+      }
+    })
+
+    page.setOnMouseMoved(event => {
+      if(isGeometricShape){
+        if(!isFirstPoint){
+          currentLine.setEndX(event.getX)
+          currentLine.setEndY(event.getY)
+        }
+      }
+    })
+
     page.setOnMousePressed(event => {
-
-
       if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
 
         eraserCircle.setOpacity(0)
@@ -128,6 +172,7 @@ object whiteboardScroller{
       }else{
         eraserCircle.setOpacity(0)
       }
+
     })
 
     page.setOnMouseDragged(event => {
@@ -170,9 +215,74 @@ object whiteboardScroller{
 
       })
 
+    /*verticalLines(width, height, page)
+    horizontalLine(width, height, page)*/
+
+    dottedPage(width, height, page)
 
 
     page
+  }
+
+  def dottedPage(width:Double, height:Double, pane:Pane):Unit = {
+    val j = (30 to height.toInt-30) by 30
+    val i = (30 to width.toInt - 30) by 30
+
+    j.foreach(h => {
+      i.foreach(w => {
+        val circle = new Circle()
+
+        circle.setCenterX(w)
+        circle.setCenterY(h)
+
+        circle.setRadius(1.5)
+        circle.setFill(Color.LIGHTGRAY)
+        circle.setStroke(Color.LIGHTGRAY)
+
+        pane.getChildren.add(0, circle)
+      })
+    })
+
+  }
+
+  def horizontalLine( width : Double, height: Double, pane:Pane):Unit = {
+    val j = (30 to height.toInt-30) by 30
+
+    j.foreach(h => {
+      val line = new Line()
+
+      line.setStartX(0)
+      line.setEndX(width)
+
+      line.setStartY(h)
+      line.setEndY(h)
+
+      line.setStrokeWidth(2)
+      line.setFill(Color.LIGHTGRAY)
+      line.setStroke(Color.LIGHTGRAY)
+
+      pane.getChildren.add(0, line)
+    })
+  }
+
+  def verticalLines( width : Double, height: Double, pane:Pane):Unit = {
+    val i = (30 to width.toInt - 30) by 30
+
+    i.foreach(w => {
+      val line = new Line()
+
+      line.setStartX(w)
+      line.setEndX(w)
+
+      line.setStartY(0)
+      line.setEndY(height)
+
+      line.setStrokeWidth(2)
+      line.setFill(Color.LIGHTGRAY)
+      line.setStroke(Color.LIGHTGRAY)
+
+      pane.getChildren.add(0, line)
+    })
   }
 
   def getCanvas(toolBar:customToolBar):ZoomableScrollPane = {
@@ -180,23 +290,16 @@ object whiteboardScroller{
     var selecting = false
 
     /////
-
     val canvas = new ZoomableScrollPane()
     val pages = new VBox()
 
-    val page1 = new Pane()
-    val page2 = new Pane()
-    val page3 = whiteboardScroller.createPage(Color.GREENYELLOW, 600, 600, toolBar)
+    val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar)
 
-    page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
-    page2.setBackground(new Background(new BackgroundFill(Color.web("#2d3436"), CornerRadii.EMPTY, Insets.EMPTY)))
-
-    page1.setPrefSize(1200, 800)
-    page2.setPrefSize(1200, 800)
+    //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 
     pages.setMaxWidth(1200)
 
-    pages.getChildren.addAll(page3,page1,page2)
+    pages.getChildren.addAll(page3)
 
     pages.setSpacing(80)
     pages.setAlignment(Pos.CENTER)
