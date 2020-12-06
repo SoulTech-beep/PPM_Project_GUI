@@ -53,7 +53,7 @@ class customToolBar {
     toolbar.getItems.clear()
 
     val penTool: Pen = Pen(0,new SimpleObjectProperty[Color](Color.BLACK), new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
-    val markerTool:Pen = Pen(1, new SimpleObjectProperty[Color](Color.YELLOW), new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
+    val markerTool:Pen = Pen(1, new SimpleObjectProperty[Color](Color.RED), new SimpleDoubleProperty(15),new SimpleDoubleProperty(1))
 
     penList = (penTool, ToolType.pen) :: penList
     penList = (markerTool, ToolType.marker) :: penList
