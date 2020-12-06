@@ -15,6 +15,7 @@ case class Pen(id: Int, color: ObjectProperty[Color], width: SimpleDoublePropert
   def changeOpacity(new_opacity:Double):Pen = {
     /*this.opacity.set(new_opacity)
     this*/
+    //new commit
     Pen.changeOpacity(this, new_opacity)
   }
 
