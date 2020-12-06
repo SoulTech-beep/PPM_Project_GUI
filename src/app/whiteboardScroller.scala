@@ -19,6 +19,8 @@ class whiteboardScroller {
 
 object whiteboardScroller {
 
+  //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
+
   def makeDraggable(node: Node): Unit = {
     var dragX: Double = 0
     var dragY: Double = 0
