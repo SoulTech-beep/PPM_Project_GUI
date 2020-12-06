@@ -1,8 +1,8 @@
 package app
 
 import app.ToolType.{ToolType, selector}
-import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.value.{ChangeListener, ObservableValue}
+import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
+import javafx.beans.value.{ChangeListener, ObservableValue, WritableValue}
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -42,8 +42,7 @@ class customToolBar {
   var buttonList:List[Node] = List()
   var penList:List[(Pen,ToolType)] = List()
   var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
-  var shapePen:GeometricShape = GeometricShape(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1), ShapeType.square)
-
+  var shapePen:GeometricShape = GeometricShape(0,new SimpleObjectProperty[Color](Color.BLACK), new SimpleDoubleProperty(1), new SimpleDoubleProperty(1), ShapeType.square)
 
   def setToolbar(tb: ToolBar): Unit = {
     toolbar = tb;
@@ -53,8 +52,8 @@ class customToolBar {
 
     toolbar.getItems.clear()
 
-    val penTool: Pen = Pen(0,Color.BLACK, new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
-    val markerTool:Pen = Pen(1, Color.YELLOW, new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
+    val penTool: Pen = Pen(0,new SimpleObjectProperty[Color](Color.BLACK), new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
+    val markerTool:Pen = Pen(1, new SimpleObjectProperty[Color](Color.YELLOW), new SimpleDoubleProperty(5),new SimpleDoubleProperty(0.5))
 
     penList = (penTool, ToolType.pen) :: penList
     penList = (markerTool, ToolType.marker) :: penList
@@ -299,7 +298,7 @@ class customToolBar {
 
       penList.foreach(p => if(p._2 == toolName)  {
 
-        dropDown.setGraphic(getCircle(p._1.color, true))
+        dropDown.setGraphic(getCircle(p._1.color.get(), true))
 
         val slOpacity: Slider = getSliderMenu(p._1.opacity.get(), (0,1), 0.1)
         val slWidth: Slider = getSliderMenu(p._1.width.get(), (1,15))
@@ -385,7 +384,7 @@ class customToolBar {
         shapePen = shapePen.changeColor(Color.BLACK)
       })
 
-      dropDown.setGraphic(getCircle(shapePen.color, true))
+      dropDown.setGraphic(getCircle(shapePen.color.get, true))
 
       dropDown.getItems.addAll(setColors, colorPickerMenu)
 

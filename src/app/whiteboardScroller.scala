@@ -82,9 +82,9 @@ object whiteboardScroller {
             currentRectangle.setWidth(0)
             currentRectangle.setHeight(0)
 
-            currentRectangle.setStroke(toolBar.shapePen.color)
+            currentRectangle.setStroke(toolBar.shapePen.color.get())
             currentRectangle.setStrokeWidth(toolBar.shapePen.width.get)
-            currentRectangle.setFill(toolBar.shapePen.color)
+            currentRectangle.setFill(toolBar.shapePen.color.get())
             currentRectangle.setOpacity(toolBar.shapePen.opacity.get)
 
             page.getChildren.add(currentRectangle)
@@ -101,9 +101,9 @@ object whiteboardScroller {
             currentCircle = new Circle()
             currentCircle.setCenterX(event.getX)
             currentCircle.setCenterY(event.getY)
-            currentCircle.setStroke(toolBar.shapePen.color)
+            currentCircle.setStroke(toolBar.shapePen.color.get())
             currentCircle.setStrokeWidth(toolBar.shapePen.width.get)
-            currentCircle.setFill(toolBar.shapePen.color)
+            currentCircle.setFill(toolBar.shapePen.color.get)
             currentCircle.setOpacity(toolBar.shapePen.opacity.get)
 
             page.getChildren.add(currentCircle)
@@ -118,7 +118,7 @@ object whiteboardScroller {
           if (isFirstPoint) {
             polygon = new Group()
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-            currentLine.setStroke(toolBar.shapePen.color)
+            currentLine.setStroke(toolBar.shapePen.color.get)
             currentLine.setStrokeWidth(toolBar.shapePen.width.get)
             currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
@@ -134,7 +134,7 @@ object whiteboardScroller {
 
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
 
-              currentLine.setStroke(toolBar.shapePen.color)
+              currentLine.setStroke(toolBar.shapePen.color.get)
               currentLine.setStrokeWidth(toolBar.shapePen.width.get)
               currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
@@ -312,16 +312,6 @@ object whiteboardScroller {
         val tempCurrentLayer = currentLayer
         camadas = tempCurrentLayer :: camadas
 
-
-        /*tempCurrentLayer.setOnMouseDragged(e => {
-          if(toolBar.selectedTool == ToolType.move){
-
-            //DRAG
-            tempCurrentLayer.setTranslateX(e.getX)
-            tempCurrentLayer.setTranslateY(e.getY)
-          }
-
-        })*/
         tempCurrentLayer.setOnMousePressed(me => {
           dragX = me.getX
           dragY = me.getY
@@ -349,7 +339,6 @@ object whiteboardScroller {
           }
         })
 
-
         currentLayer.setOnContextMenuRequested(click => {
 
           val delete = new MenuItem("Delete")
@@ -363,13 +352,12 @@ object whiteboardScroller {
           contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
         })
 
-
         page.getChildren.add(currentLayer)
 
         currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
         currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
         currentLayer.setSmooth(true)
-        currentLayer.setStroke(Color.RED)
+        currentLayer.setStroke(toolBar.selectedPen.color.get())
         currentLayer.getPoints.add(event.getX)
         currentLayer.getPoints.add(event.getY)
 
