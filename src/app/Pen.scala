@@ -1,9 +1,9 @@
 package app
 
-import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty}
 import javafx.scene.paint.Color
 
-case class Pen(id: Int, color: Color, width: SimpleDoubleProperty, opacity: SimpleDoubleProperty) extends PenTrait{
+case class Pen(id: Int, color: ObjectProperty[Color], width: SimpleDoubleProperty, opacity: SimpleDoubleProperty) extends PenTrait{
 
   @Override
   def changeColor(color: Color) : Pen = Pen.changeColor(this, color)
@@ -24,7 +24,10 @@ case class Pen(id: Int, color: Color, width: SimpleDoubleProperty, opacity: Simp
 
 object Pen{
 
-  def changeColor(pen:Pen, color:Color):Pen = Pen(id= pen.id, color = color, width = pen.width, opacity = pen.opacity)
+  def changeColor(pen:Pen, color:Color):Pen = {
+    pen.color.set(color)
+    Pen(id= pen.id, color = pen.color, width = pen.width, opacity = pen.opacity)
+  }
 
   def changeWidth(pen: Pen, width:Double):Pen = {
     pen.width.set(width)

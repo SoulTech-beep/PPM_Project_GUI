@@ -1,7 +1,7 @@
 package app
 
 import app.ShapeType.ShapeType
-import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty}
 import javafx.scene.paint.Color
 
 object ShapeType extends Enumeration {
@@ -15,7 +15,7 @@ object ShapeType extends Enumeration {
 
 }
 
-case class GeometricShape(id: Int, color: Color, width: SimpleDoubleProperty, opacity: SimpleDoubleProperty, shape: ShapeType) extends PenTrait {
+case class GeometricShape(id: Int, color: ObjectProperty[Color], width: SimpleDoubleProperty, opacity: SimpleDoubleProperty, shape: ShapeType) extends PenTrait {
 
   def changeShape(st: ShapeType):GeometricShape = GeometricShape.changeShape(this, st)
 
@@ -27,8 +27,6 @@ case class GeometricShape(id: Int, color: Color, width: SimpleDoubleProperty, op
 
   @Override
   def changeOpacity(new_opacity:Double):GeometricShape= {
-    /*this.opacity.set(new_opacity)
-    this*/
     GeometricShape.changeOpacity(this, new_opacity)
   }
 
@@ -37,7 +35,10 @@ case class GeometricShape(id: Int, color: Color, width: SimpleDoubleProperty, op
 
 object GeometricShape {
 
-  def changeColor(pen:GeometricShape, color:Color):GeometricShape= GeometricShape(id= pen.id, color = color, width = pen.width, opacity = pen.opacity, pen.shape)
+  def changeColor(pen:GeometricShape, color:Color):GeometricShape= {
+    pen.color.set(color)
+    GeometricShape(id= pen.id, color = pen.color, width = pen.width, opacity = pen.opacity, pen.shape)
+  }
 
   def changeWidth(pen: GeometricShape, width:Double):GeometricShape= {
     pen.width.set(width)

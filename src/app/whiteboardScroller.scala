@@ -1,8 +1,8 @@
 package app
 
 import javafx.animation.{Interpolator, KeyFrame, KeyValue, Timeline}
-import javafx.geometry.{Insets, Point2D, Pos}
-import javafx.scene.Group
+import javafx.geometry.{Bounds, Insets, Point2D, Pos}
+import javafx.scene.{Group, Node}
 import javafx.scene.control.{ContextMenu, MenuItem}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
@@ -13,13 +13,29 @@ import scala.util.control.Breaks
 
 class whiteboardScroller {
 
-  val pages:List[Pane] = List()
-  val toolbar:customToolBar = new customToolBar()
+  val pages: List[Pane] = List()
+  val toolbar: customToolBar = new customToolBar()
 }
 
-object whiteboardScroller{
+object whiteboardScroller {
 
-  def createPage(backgroundColor: Color, width : Double, height: Double, toolBar: customToolBar):Pane = {
+  def makeDraggable(node: Node): Unit = {
+    var dragX: Double = 0
+    var dragY: Double = 0
+
+    node.setOnMousePressed(me => {
+      dragX = me.getX
+      dragY = me.getY
+    })
+
+    node.setOnMouseDragged(me => {
+      node.setLayoutX(node.getLayoutX + me.getX - dragX)
+      node.setLayoutY(node.getLayoutY + me.getY - dragY)
+
+    })
+  }
+
+  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar): Pane = {
     val page = new Pane()
     page.setPrefSize(width, height)
     page.setMaxSize(width, height)
@@ -33,30 +49,33 @@ object whiteboardScroller{
     eraserCircle.setFill(Color.TRANSPARENT)
     page.getChildren.add(eraserCircle)
 
-    var camadas:List[Polyline] = List()
+    var camadas: List[Polyline] = List()
     var currentLayer = new Polyline()
 
     var isGeometricShape = false
     var isLine = false
     var isFirstPoint = true
-    var firstPoint:Point2D = null
-    var currentLine:Line = null
-    var polygon : Group = null
-    var lineToAdd:Line = null
+    var firstPoint: Point2D = null
+    var currentLine: Line = null
+    var polygon: Group = null
+    var lineToAdd: Line = null
 
     var isCircle = false
     var currentCircle: Circle = null
 
     var isSquare = true
-    var currentRectangle:Rectangle = null
+    var currentRectangle: Rectangle = null
 
     var selectionPolyline = new Polyline()
 
-    page.setOnMouseClicked(event => {
-      if(toolBar.selectedTool == ToolType.geometricShape){
+    var dragX: Double = 0
+    var dragY: Double = 0
 
-        if(toolBar.shapePen.shape == ShapeType.square){
-          if(isFirstPoint){
+    page.setOnMouseClicked(event => {
+      if (toolBar.selectedTool == ToolType.geometricShape) {
+
+        if (toolBar.shapePen.shape == ShapeType.square) {
+          if (isFirstPoint) {
             currentRectangle = new Rectangle()
             currentRectangle.setX(event.getX)
             currentRectangle.setY(event.getY)
@@ -72,13 +91,13 @@ object whiteboardScroller{
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-          }else{
+          } else {
             isFirstPoint = true
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.circle){
-          if(isFirstPoint){
+        if (toolBar.shapePen.shape == ShapeType.circle) {
+          if (isFirstPoint) {
             currentCircle = new Circle()
             currentCircle.setCenterX(event.getX)
             currentCircle.setCenterY(event.getY)
@@ -90,13 +109,13 @@ object whiteboardScroller{
             page.getChildren.add(currentCircle)
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
-          }else{
+          } else {
             isFirstPoint = true
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.polygon){
-          if(isFirstPoint){
+        if (toolBar.shapePen.shape == ShapeType.polygon) {
+          if (isFirstPoint) {
             polygon = new Group()
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
             currentLine.setStroke(toolBar.shapePen.color)
@@ -108,8 +127,8 @@ object whiteboardScroller{
             page.getChildren.add(polygon)
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
-          }else{
-            if(firstPoint.distance(event.getX, event.getY) >20){
+          } else {
+            if (firstPoint.distance(event.getX, event.getY) > 20) {
               currentLine.setEndX(event.getX)
               currentLine.setEndY(event.getY)
 
@@ -120,21 +139,21 @@ object whiteboardScroller{
               currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
               polygon.getChildren.add(currentLine)
-            }else{
+            } else {
               isFirstPoint = true
             }
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.line){
-          if(isFirstPoint){
+        if (toolBar.shapePen.shape == ShapeType.line) {
+          if (isFirstPoint) {
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
             currentLine.setStroke(Color.BLACK)
 
             page.getChildren.add(currentLine)
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
-          }else{
+          } else {
             isFirstPoint = true
           }
         }
@@ -143,68 +162,68 @@ object whiteboardScroller{
     })
 
     page.setOnMouseMoved(event => {
-      if(toolBar.selectedTool.equals(ToolType.eraser)){
+      if (toolBar.selectedTool.equals(ToolType.eraser)) {
         eraserCircle.setOpacity(1)
         eraserCircle.setCenterX(event.getX)
         eraserCircle.setCenterY(event.getY)
-      }else{
+      } else {
         eraserCircle.setOpacity(0)
       }
 
-      if(toolBar.selectedTool == ToolType.geometricShape){
+      if (toolBar.selectedTool == ToolType.geometricShape) {
 
-        if(toolBar.shapePen.shape == ShapeType.square){
-          if(!isFirstPoint){
+        if (toolBar.shapePen.shape == ShapeType.square) {
+          if (!isFirstPoint) {
 
-              val deltaX = event.getX - firstPoint.getX
-              val deltaY = event.getY - firstPoint.getY
-              if (deltaX < 0) {
-                currentRectangle.setX(event.getX)
-                currentRectangle.setWidth(-deltaX)
-              }
-              else {
-                currentRectangle.setX(firstPoint.getX)
-                currentRectangle.setWidth(event.getX - firstPoint.getX)
-              }
-              if (deltaY < 0) {
-                currentRectangle.setY(event.getY)
-                currentRectangle.setHeight(-deltaY)
-              }
-              else {
-                currentRectangle.setY(firstPoint.getY)
-                currentRectangle.setHeight(event.getY - firstPoint.getY)
-              }
+            val deltaX = event.getX - firstPoint.getX
+            val deltaY = event.getY - firstPoint.getY
+            if (deltaX < 0) {
+              currentRectangle.setX(event.getX)
+              currentRectangle.setWidth(-deltaX)
+            }
+            else {
+              currentRectangle.setX(firstPoint.getX)
+              currentRectangle.setWidth(event.getX - firstPoint.getX)
+            }
+            if (deltaY < 0) {
+              currentRectangle.setY(event.getY)
+              currentRectangle.setHeight(-deltaY)
+            }
+            else {
+              currentRectangle.setY(firstPoint.getY)
+              currentRectangle.setHeight(event.getY - firstPoint.getY)
+            }
 
 
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.circle){
-          if(!isFirstPoint){
+        if (toolBar.shapePen.shape == ShapeType.circle) {
+          if (!isFirstPoint) {
             val currentPoint = new Point2D(event.getX, event.getY)
             val radius = currentPoint.distance(new Point2D(currentCircle.getCenterX, currentCircle.getCenterY))
             currentCircle.setRadius(radius)
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.polygon){
-          if(!isFirstPoint){
-            if(firstPoint.distance(new Point2D(event.getX, event.getY)) < 20){
+        if (toolBar.shapePen.shape == ShapeType.polygon) {
+          if (!isFirstPoint) {
+            if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
               currentLine.setEndX(firstPoint.getX)
               currentLine.setEndY(firstPoint.getY)
-            }else{
+            } else {
               currentLine.setEndX(event.getX)
               currentLine.setEndY(event.getY)
             }
           }
         }
 
-        if(toolBar.shapePen.shape == ShapeType.line){
-          if(!isFirstPoint){
-            if(firstPoint.distance(new Point2D(event.getX, event.getY)) < 20){
+        if (toolBar.shapePen.shape == ShapeType.line) {
+          if (!isFirstPoint) {
+            if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
               currentLine.setEndX(firstPoint.getX)
               currentLine.setEndY(firstPoint.getY)
-            }else{
+            } else {
               currentLine.setEndX(event.getX)
               currentLine.setEndY(event.getY)
             }
@@ -216,7 +235,7 @@ object whiteboardScroller{
     })
 
     page.setOnMouseReleased(event => {
-      if(toolBar.selectedTool == ToolType.selector){
+      if (toolBar.selectedTool == ToolType.selector) {
         selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(0))
         selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(1))
 
@@ -246,10 +265,10 @@ object whiteboardScroller{
 
         camadas.foreach(c => {
           val shape = Shape.intersect(selectionPolyline, c)
-          if(shape.getBoundsInLocal.getWidth != -1){
+          if (shape.getBoundsInLocal.getWidth != -1) {
             println(Console.BOLD + Console.YELLOW + "SOMETHING WAS FUCKING SELECTED!!!!" + Console.RESET)
             c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
-          }else{
+          } else {
             c.setStyle("")
           }
         })
@@ -260,9 +279,9 @@ object whiteboardScroller{
 
     page.setOnMousePressed(event => {
 
-      if(toolBar.selectedTool == ToolType.selector){
+      if (toolBar.selectedTool == ToolType.selector) {
 
-        if(selectionPolyline != null){
+        if (selectionPolyline != null) {
           page.getChildren.remove(selectionPolyline)
         }
 
@@ -279,6 +298,7 @@ object whiteboardScroller{
 
         selectionPolyline.getPoints.add(event.getX)
         selectionPolyline.getPoints.add(event.getY)
+
       }
 
       if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
@@ -292,15 +312,43 @@ object whiteboardScroller{
         val tempCurrentLayer = currentLayer
         camadas = tempCurrentLayer :: camadas
 
-        tempCurrentLayer.setOnMouseDragged(e => {
+
+        /*tempCurrentLayer.setOnMouseDragged(e => {
           if(toolBar.selectedTool == ToolType.move){
 
-            //DRAG CARALHO
+            //DRAG
             tempCurrentLayer.setTranslateX(e.getX)
             tempCurrentLayer.setTranslateY(e.getY)
           }
 
+        })*/
+        tempCurrentLayer.setOnMousePressed(me => {
+          dragX = me.getX
+          dragY = me.getY
         })
+
+        tempCurrentLayer.setOnMouseDragged(me => {
+          me.setDragDetect(false)
+
+          if (toolBar.selectedTool == ToolType.move) {
+
+            val deltaX = me.getX - dragX
+            val deltaY = me.getY - dragY
+
+            if (tempCurrentLayer.getBoundsInParent.getMinX + deltaX >= 0 && tempCurrentLayer.getBoundsInParent.getMaxX + deltaX <= page.getWidth) {
+              tempCurrentLayer.setLayoutX(tempCurrentLayer.getLayoutX + me.getX - dragX)
+            }
+
+
+            if (tempCurrentLayer.getBoundsInParent.getMinY + deltaY >= 0 && tempCurrentLayer.getBoundsInParent.getMaxY + deltaY <= page.getHeight) {
+              tempCurrentLayer.setLayoutY(tempCurrentLayer.getLayoutY + me.getY - dragY)
+            }
+
+            me.consume()
+
+          }
+        })
+
 
         currentLayer.setOnContextMenuRequested(click => {
 
@@ -350,8 +398,8 @@ object whiteboardScroller{
 
           val loop = new Breaks
 
-          loop.breakable{
-           range.foreach(p => if(p%2 == 0){
+          loop.breakable {
+            range.foreach(p => if (p % 2 == 0) {
               if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
                 porApagar = c :: porApagar
                 page.getChildren.remove(c)
@@ -369,30 +417,29 @@ object whiteboardScroller{
 
 
     page.setOnMouseEntered(_ => {
-      if(toolBar.selectedTool.equals(ToolType.eraser)){
+      if (toolBar.selectedTool.equals(ToolType.eraser)) {
         eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
       }
     })
 
     page.setOnMouseDragged(event => {
 
-      if(toolBar.selectedTool == ToolType.selector){
+      if (toolBar.selectedTool == ToolType.selector) {
 
-        if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+        if (event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
           selectionPolyline.getPoints.add(event.getX)
           selectionPolyline.getPoints.add(event.getY)
         }
 
       }
 
-      if(toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker){
-        println("AI O CARALHO " +  toolBar.selectedTool)
+      if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
 
-        if(event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
+        if (event.getX < page.getWidth && event.getX >= 0 && event.getY >= 0 && event.getY < page.getHeight) {
           currentLayer.getPoints.add(event.getX)
           currentLayer.getPoints.add(event.getY)
         }
-      }else if(toolBar.selectedTool == ToolType.eraser){
+      } else if (toolBar.selectedTool == ToolType.eraser) {
 
         eraserCircle.setOpacity(1)
         eraserCircle.setCenterX(event.getX)
@@ -400,13 +447,13 @@ object whiteboardScroller{
 
         var porApagar: List[Polyline] = List()
 
-        camadas.foreach(c =>  {
+        camadas.foreach(c => {
           var i = 0
 
           val eraserRadius = toolBar.eraserFinal.radius.get()
           val points = c.getPoints
 
-          while (i < points.size()-1) {
+          while (i < points.size() - 1) {
 
             if (points.get(i) > event.getX - eraserRadius && points.get(i) < event.getX + eraserRadius && points.get(i + 1) > event.getY - eraserRadius && points.get(i + 1) < event.getY + eraserRadius) {
               porApagar = c :: porApagar
@@ -422,7 +469,7 @@ object whiteboardScroller{
 
       }
 
-      })
+    })
 
     /*verticalLines(width, height, page)
     horizontalLine(width, height, page)*/
@@ -433,8 +480,8 @@ object whiteboardScroller{
     page
   }
 
-  def dottedPage(width:Double, height:Double, pane:Pane):Unit = {
-    val j = (30 to height.toInt-30) by 30
+  def dottedPage(width: Double, height: Double, pane: Pane): Unit = {
+    val j = (30 to height.toInt - 30) by 30
     val i = (30 to width.toInt - 30) by 30
 
     j.foreach(h => {
@@ -454,8 +501,8 @@ object whiteboardScroller{
 
   }
 
-  def horizontalLine( width : Double, height: Double, pane:Pane):Unit = {
-    val j = (30 to height.toInt-30) by 30
+  def horizontalLine(width: Double, height: Double, pane: Pane): Unit = {
+    val j = (30 to height.toInt - 30) by 30
 
     j.foreach(h => {
       val line = new Line()
@@ -474,7 +521,7 @@ object whiteboardScroller{
     })
   }
 
-  def verticalLines( width : Double, height: Double, pane:Pane):Unit = {
+  def verticalLines(width: Double, height: Double, pane: Pane): Unit = {
     val i = (30 to width.toInt - 30) by 30
 
     i.foreach(w => {
@@ -494,7 +541,7 @@ object whiteboardScroller{
     })
   }
 
-  def getCanvas(toolBar:customToolBar):ZoomableScrollPane = {
+  def getCanvas(toolBar: customToolBar): ZoomableScrollPane = {
 
     var selecting = false
 

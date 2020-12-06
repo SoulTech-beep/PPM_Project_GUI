@@ -23,28 +23,6 @@ class ZoomableScrollPane extends ScrollPane{
       override def handle(event: ZoomEvent): Unit = {
         tar.setScaleX(tar.getScaleX * event.getZoomFactor)
         tar.setScaleY(tar.getScaleY * event.getZoomFactor)
-        println("Rectangle: Zoom event" + ", inertia: " + event.isInertia + ", direct: " + event.isDirect)
-
-/*
-        val innerBounds = zoomNode.getLayoutBounds
-        val viewportBounds = getViewportBounds
-        // calculate pixel offsets from [0, 1] range
-        val valX = getHvalue * (innerBounds.getWidth - viewportBounds.getWidth)
-        val valY = getVvalue * (innerBounds.getHeight - viewportBounds.getHeight)
-        scaleValue = scaleValue * 0.1
-        updateScale()
-        layout() // refresh ScrollPane scroll positions & target bounds
-        // convert target coordinates to zoomTarget coordinates
-        val posInZoomTarget = target.parentToLocal(zoomNode.parentToLocal(new Point2D(event.getX, event.getY)))
-        // calculate adjustment of scroll position (pixels)
-        val adjustment = target.getLocalToParentTransform.deltaTransform(posInZoomTarget.multiply(0.1 - 1))
-        // convert back to [0, 1] range
-        // (too large/small values are automatically corrected by ScrollPane)
-        val updatedInnerBounds = zoomNode.getBoundsInLocal
-        setHvalue((valX + adjustment.getX) / (updatedInnerBounds.getWidth - viewportBounds.getWidth))
-        setVvalue((valY + adjustment.getY) / (updatedInnerBounds.getHeight - viewportBounds.getHeight))
-*/
-
         event.consume()
       }
     })
