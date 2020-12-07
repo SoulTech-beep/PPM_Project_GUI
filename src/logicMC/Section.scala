@@ -5,6 +5,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.VBox
+import javafx.scene.paint.Color
 import logicMC.Auxiliary.getImageView
 import logicMC.Section.{ID, Name}
 
@@ -179,7 +180,7 @@ object Section{
   }
 
 
-  def addWhiteboardWithValues(mainSection : Section, section: Section, color:String, sizeX:Double, sizeY:Double, name:String, style:PageStyle):(Section, Section) = {
+  def addWhiteboardWithValues(mainSection : Section, section: Section, color:Color, sizeX:Double, sizeY:Double, name:String, style:PageStyle):(Section, Section) = {
 
     val id = ( section.whiteboards foldRight 0) ((a,b) => if(a.id > b) a.id else b)
     val new_wb = Whiteboard(id+1,color,(sizeX.toDouble, sizeY.toDouble),List(), name, style)

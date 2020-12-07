@@ -6,6 +6,7 @@ import javafx.scene.Scene
 import javafx.scene.control._
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.VBox
+import javafx.scene.paint.Color
 import javafx.stage.{Modality, Stage}
 import logicMC.Auxiliary.getImageView
 import logicMC.Whiteboard.Size
@@ -30,7 +31,7 @@ object BlackBox {
 
 }
 
-case class Whiteboard(id: Int, color: String, size: Size, children : List[BlackBox], name: String, style:PageStyle){
+case class Whiteboard(id: Int, color: Color, size: Size, children : List[BlackBox], name: String, style:PageStyle){
 
   def changeName(name:String):Whiteboard = {
     Whiteboard.changeName(this, name)
@@ -45,7 +46,7 @@ object Whiteboard{
     Whiteboard(w.id, w.color, w.size, w.children,name, w.style)
   }
 
-  def changeColor( w : Whiteboard, new_color: String): Whiteboard = {
+  def changeColor( w : Whiteboard, new_color: Color): Whiteboard = {
     Whiteboard(w.id, new_color, w.size, w.children,w.name, w.style)
   }
 

@@ -3,6 +3,7 @@ package app
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.image.Image
+import javafx.scene.paint.Color
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 import logicMC.{Section, Whiteboard}
@@ -37,13 +38,13 @@ object FxApp {
     Section("0.1", "António", List(
       Section("0.1.1", "Laranja", List(
         Section("0.1.1.1", "Henrique", List(
-          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, "Pink", (20,20), List(), "AR", PageStyle.DOTTED)))
+          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, Color.PINK, (20,20), List(), "AR", PageStyle.DOTTED)))
         ), List())
       ), List()),
       Section("0.1.2", "Sapo", List(), List())
     ), List()),
     Section("0.2", "Miguel", List(), List())
-  ), List(new Whiteboard(0, "Blue", (20,20), List(), "IA", PageStyle.LINED)))
+  ), List(new Whiteboard(0, Color.BLUE, (20,20), List(), "IA", PageStyle.LINED)))
 
   var app_state = (originalSection, originalSection)
 

@@ -1,0 +1,24 @@
+.start-stop.toggle-button {
+    unselected-color: #b2bec3;
+    selected-color: #636e72;
+
+    -fx-background-color: unselected-color;
+}
+
+.start-stop.toggle-button:hover {
+    -fx-scale-y: 1.1;
+    -fx-scale-x: 1.1;
+}
+
+.start-stop.toggle-button:selected {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);
+    -fx-background-color: selected-color;
+}
+
+.customTextField:focused {
+    -fx-focus-color: transparent;
+}
+
+.customTextField{
+    -fx-background-radius:25px;
+}

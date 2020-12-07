@@ -1,11 +1,12 @@
 package app
 
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
-import javafx.geometry.{Insets, Point2D, Pos}
+import javafx.geometry.{Bounds, Insets, Point2D, Pos}
 import javafx.scene.Node
 import javafx.scene.control.{ContextMenu, MenuItem}
+import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout._
-import javafx.scene.paint.Color
+import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
 import javafx.util.Duration
 
@@ -52,7 +53,7 @@ object whiteboardScroller {
     page.getChildren.add(eraserCircle)
 
     var camadas: List[Polyline] = List()
-    var camadas_shapes : List[Node] = List()
+    var camadas_node : List[Node] = List()
 
     var selectedShapes : List[Node] = List()
     var selectedPolyline :List[Polyline] = List()
@@ -74,6 +75,19 @@ object whiteboardScroller {
     var dragY: Double = 0
 
     page.setOnMouseClicked(event => {
+
+      if(toolBar.selectedTool == ToolType.image) {
+        if(toolBar.imagePath != "") {
+          val image:Image = new Image(toolBar.imagePath)
+          val iP:ImagePattern = new ImagePattern(image)
+          val square = new Rectangle(image.getWidth,image.getHeight,iP)
+          page.getChildren.add(square)
+
+          camadas_node = square :: camadas_node
+        }
+      }
+
+
       if (toolBar.selectedTool == ToolType.geometricShape) {
 
         if (toolBar.shapePen.shape == ShapeType.square) {
@@ -93,7 +107,7 @@ object whiteboardScroller {
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-            camadas_shapes = currentRectangle::camadas_shapes
+            camadas_node = currentRectangle::camadas_node
           } else {
             isFirstPoint = true
           }
@@ -113,7 +127,7 @@ object whiteboardScroller {
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-            camadas_shapes = currentCircle::camadas_shapes
+            camadas_node = currentCircle::camadas_node
           } else {
             isFirstPoint = true
           }
@@ -170,7 +184,7 @@ object whiteboardScroller {
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-            camadas_shapes = currentLine::camadas_shapes
+            camadas_node = currentLine::camadas_node
           } else {
             isFirstPoint = true
           }
@@ -255,6 +269,34 @@ object whiteboardScroller {
     })
 
     page.setOnMouseReleased(_ => {
+
+      if(toolBar.selectedTool == ToolType.move) {
+
+        selectedShapes.foreach(teste => {
+
+
+          teste.setLayoutX(teste.getLayoutX + teste.getTranslateX)
+          teste.setLayoutY(teste.getLayoutY + teste.getTranslateY)
+
+          teste.setTranslateX(0)
+          teste.setTranslateY(0)
+
+          camadas_node = camadas_node.updated(camadas_node.indexOf(teste), teste)
+        })
+
+        selectedPolyline.foreach(teste => {
+          teste.setLayoutX(teste.getLayoutX + teste.getTranslateX)
+          teste.setLayoutY(teste.getLayoutY + teste.getTranslateY)
+
+          teste.setTranslateX(0)
+          teste.setTranslateY(0)
+
+
+        })
+
+
+      }
+
       if (toolBar.selectedTool == ToolType.selector) {
         selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(0))
         selectionPolyline.getPoints.add(selectionPolyline.getPoints.get(1))
@@ -284,8 +326,8 @@ object whiteboardScroller {
         selectedPolyline = List()
 
         camadas.foreach(c => {
-          val shape = Shape.intersect(selectionPolyline, c)
-          if (shape.getBoundsInLocal.getWidth != -1) {
+          val shape = selectionPolyline.intersects(c.getBoundsInParent)
+          if (shape) {
 
             selectedPolyline = c :: selectedPolyline
 
@@ -295,65 +337,22 @@ object whiteboardScroller {
           }
         })
 
-        camadas_shapes.foreach(c => {
-            val shape = Shape.intersect(selectionPolyline, c.asInstanceOf[Shape])
-            if (shape.getBoundsInLocal.getWidth != -1) {
-
-              selectedShapes = c::selectedShapes
-
-              c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
-
-            } else {
-              c.setStyle("")
-            }
-        })
+        camadas_node.foreach(c => {
 
 
+          val shape = selectionPolyline.intersects(c.asInstanceOf[Shape].getBoundsInParent)
+          if (shape) {
 
-        selectionPolyline.setOnMousePressed(me => {
-          dragX = me.getX
-          dragY = me.getY
-        })
+            selectedShapes = c::selectedShapes
 
-        selectionPolyline.setOnMouseDragged(me => {
-          if(toolBar.selectedTool == ToolType.move){
+            c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
 
-            me.setDragDetect(false)
-
-            val deltaX = me.getX - dragX
-            val deltaY = me.getY - dragY
-
-            if (selectionPolyline.getBoundsInParent.getMinX + deltaX >= 0 && selectionPolyline.getBoundsInParent.getMaxX + deltaX <= page.getWidth) {
-              selectionPolyline.setLayoutX(selectionPolyline.getLayoutX + me.getX - dragX)
-
-              selectedShapes.foreach(teste => {
-                teste.setTranslateX( teste.getTranslateX + me.getX - dragX)
-              })
-
-              selectedPolyline.foreach(teste => {
-                teste.setTranslateX( teste.getTranslateX + me.getX - dragX)
-              })
-
-            }
-
-            if (selectionPolyline.getBoundsInParent.getMinY + deltaY >= 0 && selectionPolyline.getBoundsInParent.getMaxY + deltaY <= page.getHeight) {
-              selectionPolyline.setLayoutY(selectionPolyline.getLayoutY + me.getY - dragY)
-
-              selectedShapes.foreach(teste => {
-                teste.setTranslateY(teste.getTranslateY + me.getY - dragY)
-              })
-
-              selectedPolyline.foreach(teste => {
-                teste.setTranslateY(teste.getTranslateY + me.getY - dragY)
-              })
-
-            }
-
-            me.consume()
-
+          } else {
+            c.setStyle("")
           }
-
         })
+
+        selectedPolyline = selectionPolyline :: selectedPolyline
 
       }
 
@@ -361,116 +360,104 @@ object whiteboardScroller {
 
     page.setOnMousePressed(event => {
 
-      if (toolBar.selectedTool == ToolType.selector) {
+      if(toolBar.selectedTool == ToolType.move) {
+        dragX = event.getX
+        dragY = event.getY
+
+        val newsel: Polyline = camadas.find(c => c.intersects(dragX,dragY,1,1) ).getOrElse(null)
+
+        if(newsel == null)
+          selectedPolyline = List()
+        else if(!selectedPolyline.contains(newsel))
+          selectedPolyline = List(newsel)
+
+
+      } else {
 
         if (selectionPolyline != null) {
           page.getChildren.remove(selectionPolyline)
         }
 
-        eraserCircle.setOpacity(0)
+        if (toolBar.selectedTool == ToolType.selector) {
 
-        selectionPolyline = new Polyline()
-        selectionPolyline.setSmooth(true)
-        selectionPolyline.setStrokeMiterLimit(1)
-        selectionPolyline.setStrokeWidth(2)
-        selectionPolyline.getStrokeDashArray.addAll(20)
-        selectionPolyline.setFill(Color.TRANSPARENT)
+          eraserCircle.setOpacity(0)
 
-        page.getChildren.add(selectionPolyline)
+          selectionPolyline = new Polyline()
+          selectionPolyline.setSmooth(true)
+          selectionPolyline.setStrokeMiterLimit(1)
+          selectionPolyline.setStrokeWidth(2)
+          selectionPolyline.getStrokeDashArray.addAll(20)
+          selectionPolyline.setFill(Color.TRANSPARENT)
 
-        selectionPolyline.getPoints.add(event.getX)
-        selectionPolyline.getPoints.add(event.getY)
+          page.getChildren.add(selectionPolyline)
 
-      }
+          selectionPolyline.getPoints.add(event.getX)
+          selectionPolyline.getPoints.add(event.getY)
 
-      if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
+        }
 
-        eraserCircle.setOpacity(0)
+        if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
 
-        currentLayer = new Polyline()
-        currentLayer.setSmooth(true)
-        currentLayer.setStrokeMiterLimit(1)
+          eraserCircle.setOpacity(0)
 
-        val tempCurrentLayer = currentLayer
-        camadas = tempCurrentLayer :: camadas
+          currentLayer = new Polyline()
+          currentLayer.setSmooth(true)
+          currentLayer.setStrokeMiterLimit(1)
 
-        tempCurrentLayer.setOnMousePressed(me => {
-          dragX = me.getX
-          dragY = me.getY
-        })
+          val tempCurrentLayer = currentLayer
+          camadas = tempCurrentLayer :: camadas
 
-        tempCurrentLayer.setOnMouseDragged(me => {
-          me.setDragDetect(false)
+          currentLayer.setOnContextMenuRequested(click => {
 
-          if (toolBar.selectedTool == ToolType.move) {
+            val delete = new MenuItem("Delete")
+            val contextMenu = new ContextMenu(delete)
 
-            val deltaX = me.getX - dragX
-            val deltaY = me.getY - dragY
+            delete.setOnAction(_ => {
+              camadas = camadas.filter(p => p != currentLayer)
+              page.getChildren.remove(tempCurrentLayer)
+            })
 
-            if (tempCurrentLayer.getBoundsInParent.getMinX + deltaX >= 0 && tempCurrentLayer.getBoundsInParent.getMaxX + deltaX <= page.getWidth) {
-              tempCurrentLayer.setLayoutX(tempCurrentLayer.getLayoutX + me.getX - dragX)
-            }
-
-            if (tempCurrentLayer.getBoundsInParent.getMinY + deltaY >= 0 && tempCurrentLayer.getBoundsInParent.getMaxY + deltaY <= page.getHeight) {
-              tempCurrentLayer.setLayoutY(tempCurrentLayer.getLayoutY + me.getY - dragY)
-            }
-
-            me.consume()
-
-          }
-        })
-
-        currentLayer.setOnContextMenuRequested(click => {
-
-          val delete = new MenuItem("Delete")
-          val contextMenu = new ContextMenu(delete)
-
-          delete.setOnAction(_ => {
-            camadas = camadas.filter(p => p != currentLayer)
-            page.getChildren.remove(tempCurrentLayer)
+            contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
           })
 
-          contextMenu.show(currentLayer, click.getScreenX, click.getScreenY)
-        })
+          page.getChildren.add(currentLayer)
 
-        page.getChildren.add(currentLayer)
+          currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
+          currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
+          currentLayer.setSmooth(true)
+          currentLayer.setStroke(toolBar.selectedPen.color.get())
+          currentLayer.getPoints.add(event.getX)
+          currentLayer.getPoints.add(event.getY)
 
-        currentLayer.setStrokeWidth(toolBar.selectedPen.width.get())
-        currentLayer.setOpacity(toolBar.selectedPen.opacity.get())
-        currentLayer.setSmooth(true)
-        currentLayer.setStroke(toolBar.selectedPen.color.get())
-        currentLayer.getPoints.add(event.getX)
-        currentLayer.getPoints.add(event.getY)
+        } else if (toolBar.selectedTool == ToolType.eraser) {
+          println("erasing")
 
-      } else if (toolBar.selectedTool == ToolType.eraser) {
-        println("erasing")
+          var porApagar: List[Polyline] = List()
 
-        var porApagar: List[Polyline] = List()
+          camadas.foreach(c => {
 
-        camadas.foreach(c => {
+            val range = (0 until c.getPoints.size).toList //it's going to c.getPoints.size-1
 
-          val range = (0 until c.getPoints.size).toList //it's going to c.getPoints.size-1
+            val eraserRadius = toolBar.eraserFinal.radius.get()
+            val points = c.getPoints
 
-          val eraserRadius = toolBar.eraserFinal.radius.get()
-          val points = c.getPoints
+            val loop = new Breaks
 
-          val loop = new Breaks
+            loop.breakable {
+              range.foreach(p => if (p % 2 == 0) {
+                if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
+                  porApagar = c :: porApagar
+                  page.getChildren.remove(c)
+                  loop.break()
+                  println("HEHE NO BREAK")
+                }
+              })
+            }
 
-          loop.breakable {
-            range.foreach(p => if (p % 2 == 0) {
-              if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
-                porApagar = c :: porApagar
-                page.getChildren.remove(c)
-                loop.break()
-                println("HEHE NO BREAK")
-              }
-            })
-          }
-
-        })
-        camadas = camadas.filter(e => !porApagar.contains(e))
-      }
-    })
+          })
+          camadas = camadas.filter(e => !porApagar.contains(e))
+        }
+      }})
 
     page.setOnMouseEntered(_ => {
       if (toolBar.selectedTool.equals(ToolType.eraser)) {
@@ -478,6 +465,22 @@ object whiteboardScroller {
       }
     })
     page.setOnMouseDragged(event => {
+
+      if(toolBar.selectedTool == ToolType.move) {
+
+        selectedShapes.foreach(teste => {
+          teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
+          teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+        })
+
+        selectedPolyline.foreach(teste => {
+          teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
+          teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+        })
+
+        dragX = event.getX
+        dragY = event.getY
+      }
 
       if (toolBar.selectedTool == ToolType.selector) {
 

@@ -148,68 +148,24 @@ class Controller{
   }
 
 def addWhiteboardButtonOnClick():Unit = {
-  /*addWhiteboardButton.setOnAction(event => {
 
-
-    val popupStage: Stage = new Stage()
-    popupStage.setTitle("Add Section")
-    popupStage.initModality(Modality.APPLICATION_MODAL)
-
-    val nameTextField = new TextField()
-    nameTextField.setPromptText("Whiteboard name")
-
-    val colorTextField = new TextField()
-    colorTextField.setPromptText("Color name")
-
-    val xTextField = new TextField()
-    xTextField.setPromptText("X")
-
-    val yTextField = new TextField()
-    yTextField.setPromptText("Y")
-
-    val okButton = new Button("Add Whiteboard")
-
-
-    val colorPicker = Auxiliary.getColorPicker()
-
-    val innervBox = new VBox(nameTextField, colorPicker._1, xTextField, yTextField, okButton)
-    innervBox.setSpacing(20)
-    innervBox.setAlignment(Pos.CENTER)
-    innervBox.setPadding(new Insets(10,10,10,10))
-
-    val scene = new Scene(innervBox)
-
-    popupStage.setScene(scene)
-    popupStage.show()
-
-    okButton.setOnMouseClicked(p => {
-      //TODO check if name isn't empty
-      if(!nameTextField.getText.isBlank){
-
-
-        app.FxApp.app_state = Section.addWhiteboardWithValues(app.FxApp.app_state._1, app.FxApp.app_state._2,colorPicker._2.get().toString, xTextField.getText.toDouble, yTextField.getText.toDouble, nameTextField.getText)
-        println("color: " + colorPicker._2.get())
-        updateVisualState(app.FxApp.app_state._2)
-
-        popupStage.close()
-      }
-    })
-
-  })
-*/
   addWhiteboardButton.setOnAction(_ =>  {
-    val fxmlLoader = new FXMLLoader(getClass.getResource("WhiteboardCreate.fxml"))
+    val fxmlLoader = new FXMLLoader(getClass.getResource("./WhiteboardCreate.fxml"))
 
     val mainViewRoot: Parent = fxmlLoader.load()
 
     val scene = new Scene(mainViewRoot)
+    scene.getStylesheets.add("testStyle.css")
 
     val createWhiteboardController = fxmlLoader.getController.asInstanceOf[WhiteboardCreate]
     createWhiteboardController.setState(FxApp.app_state)
 
     val secondStage: Stage = new Stage()
     secondStage.setScene(scene)
+    secondStage.initModality(Modality.APPLICATION_MODAL)
     secondStage.show()
+
+    secondStage.setResizable(false)
 
     secondStage.setOnCloseRequest(_ => {
       updateVisualState(FxApp.app_state._2)

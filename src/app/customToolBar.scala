@@ -11,6 +11,8 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Polygon, Rectangle}
+import javafx.stage.{FileChooser, Stage}
+import javafx.stage.FileChooser.ExtensionFilter
 import logicMC.Eraser
 
 object ToolType extends Enumeration {
@@ -39,6 +41,7 @@ class customToolBar {
 
   val optionsHBox:HBox = new HBox()
 
+  var imagePath:String = ""
   var buttonList:List[Node] = List()
   var penList:List[(Pen,ToolType)] = List()
   var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
@@ -61,6 +64,7 @@ class customToolBar {
     selectedTool = ToolType.pen
     selectedPen = penTool
 
+    setImageButton()
     setSelectionButton()
 
     setShapeButton()
@@ -68,7 +72,7 @@ class customToolBar {
 
     getSeparator()
 
-    //TODO we gotta add some separatores here!
+    //TODO we gotta add some separators here!
 
     setPenButton("images/marker.png", ToolType.marker)
     setPenButton("images/ball-point.png", ToolType.pen)
@@ -141,6 +145,40 @@ class customToolBar {
 
     toolbar.getItems.add(0,shapeButton)
 
+  }
+
+  def setImageButton(): Unit = {
+    val imageButton:Button = new Button()
+
+    imageButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    buttonList = imageButton :: buttonList
+
+    imageButton.setOnAction(_ => {
+      imagePath = ""
+      selectedTool = ToolType.image
+      optionsHBox.getChildren.clear()
+      getFileChooser()
+    })
+
+    val icon = new ImageView(new Image("images/image.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    imageButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,imageButton)
+
+  }
+
+  def getFileChooser():FileChooser = {
+    val secondStage: Stage = new Stage()
+    val fileChooser = new FileChooser
+    fileChooser.setTitle("Select Image")
+    fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
+    val selectedFile = fileChooser.showOpenDialog(secondStage)
+    if(selectedFile != null) imagePath = selectedFile.toURI().toString()
+    fileChooser
   }
 
   def setSelectionButton(): Unit = {
