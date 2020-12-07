@@ -41,7 +41,8 @@ class customToolBar {
 
   val optionsHBox:HBox = new HBox()
 
-  var imagePath:String = ""
+  var imagePath: String = ""
+  var videoPath: String = ""
   var buttonList:List[Node] = List()
   var penList:List[(Pen,ToolType)] = List()
   var eraserFinal:Eraser = new Eraser(new SimpleDoubleProperty(50))
@@ -64,6 +65,7 @@ class customToolBar {
     selectedTool = ToolType.pen
     selectedPen = penTool
 
+    setVideoButton()
     setImageButton()
     setSelectionButton()
 
@@ -158,7 +160,7 @@ class customToolBar {
       imagePath = ""
       selectedTool = ToolType.image
       optionsHBox.getChildren.clear()
-      getFileChooser()
+      getFileChooser("Image")
     })
 
     val icon = new ImageView(new Image("images/image.png"))
@@ -171,13 +173,46 @@ class customToolBar {
 
   }
 
-  def getFileChooser():FileChooser = {
+  def setVideoButton(): Unit = {
+    val videoButton: Button = new Button()
+
+    videoButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    buttonList = videoButton :: buttonList
+
+    videoButton.setOnAction(_ => {
+      videoPath = ""
+      selectedTool = ToolType.video
+      optionsHBox.getChildren.clear()
+      getFileChooser("Video")
+    })
+
+    val icon = new ImageView(new Image("images/video.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    videoButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,videoButton)
+
+  }
+
+  def getFileChooser(fileType : String):FileChooser = {
     val secondStage: Stage = new Stage()
     val fileChooser = new FileChooser
-    fileChooser.setTitle("Select Image")
-    fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
-    val selectedFile = fileChooser.showOpenDialog(secondStage)
-    if(selectedFile != null) imagePath = selectedFile.toURI().toString()
+    if(fileType == "Image"){
+      fileChooser.setTitle("Select Image")
+      fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
+      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      if(selectedFile != null) imagePath = selectedFile.toURI().toString()
+    }
+    else if(fileType == "Video") {
+      fileChooser.setTitle("Select Video")
+      fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Video Files", "*.mp4", "*.avi"))
+      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      if(selectedFile != null) videoPath = selectedFile.toURI().toString()
+    }
+
     fileChooser
   }
 

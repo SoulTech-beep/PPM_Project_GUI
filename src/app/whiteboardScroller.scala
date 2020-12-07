@@ -3,9 +3,10 @@ package app
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.geometry.{Insets, Point2D, Pos}
 import javafx.scene.Node
-import javafx.scene.control.{ContextMenu, MenuItem}
+import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextField}
 import javafx.scene.image.Image
 import javafx.scene.layout._
+import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
 import javafx.util.Duration
@@ -54,9 +55,11 @@ object whiteboardScroller {
 
     var camadas: List[Polyline] = List()
     var camadas_node : List[Node] = List()
+    var camadas_SPMediaView :List[StackPane] = List()
 
     var selectedShapes : List[Node] = List()
     var selectedPolyline :List[Polyline] = List()
+    var selectedSPMediaView : List[StackPane] = List()
 
     var currentLayer = new Polyline()
 
@@ -78,15 +81,113 @@ object whiteboardScroller {
 
       if(toolBar.selectedTool == ToolType.image) {
         if(toolBar.imagePath != "") {
+
           val image:Image = new Image(toolBar.imagePath)
           val iP:ImagePattern = new ImagePattern(image)
           val square = new Rectangle(image.getWidth,image.getHeight,iP)
+
+          square.setOnContextMenuRequested(click => {
+
+            val delete = new MenuItem("Delete")
+
+            val resize : CustomMenuItem = new CustomMenuItem()
+
+            val width = new TextField(square.getWidth.toString)
+            val height = new TextField(square.getHeight.toString)
+            val set = new Button("Change size")
+            val vBox = new VBox(width, height, set)
+            vBox.setSpacing(10)
+            vBox.setAlignment(Pos.CENTER)
+
+            resize.setContent(vBox)
+            set.setOnAction(_ => {
+              square.setWidth(width.getText.toDouble)
+              square.setHeight(height.getText.toDouble)
+            })
+
+
+            val contextMenu = new ContextMenu(resize, delete)
+
+            delete.setOnAction(_ => {
+              camadas_node = camadas_node.filter(p => p != currentLayer)
+              page.getChildren.remove(square)
+            })
+
+            contextMenu.show(square, click.getScreenX, click.getScreenY)
+          })
+
           page.getChildren.add(square)
 
           camadas_node = square :: camadas_node
         }
       }
 
+      if(toolBar.selectedTool == ToolType.video) {
+        if(toolBar.videoPath != "") {
+          val video: Media = new Media(toolBar.videoPath)
+          val player: MediaPlayer = new MediaPlayer(video)
+          val mediaView: MediaView = new MediaView(player)
+
+          val play: Button = new Button()
+          play.setText("play")
+          play.setOnAction(e => {
+            player.play()
+          })
+
+          val pause: Button = new Button()
+          pause.setText("pause")
+          pause.setOnAction(e => {
+            player.pause()
+          })
+
+
+          val fast: Button = new Button()
+          fast.setText("fast")
+          fast.setOnAction(e => {
+            player.setRate(1.5)
+          })
+
+          val slow: Button = new Button()
+          slow.setText("slow")
+          slow.setOnAction(e => {
+            player.setRate(0.5)
+          })
+
+          val restart: Button = new Button()
+          restart.setText("restart")
+          restart.setOnAction(e => {
+            player.seek(player.getStartTime)
+            player.play
+          })
+
+
+          val videoToolBar: HBox = new HBox()
+          videoToolBar.getChildren.addAll(play,pause,fast,slow,restart)
+
+          val sp: StackPane = new StackPane()
+          sp.getChildren.addAll( mediaView, videoToolBar)
+
+          page.getChildren.add(sp)
+
+          sp.setOnMouseEntered(e =>{
+            videoToolBar.setVisible(true)
+          })
+          sp.setOnMouseExited(e =>{
+            videoToolBar.setVisible(false)
+          })
+          videoToolBar.setVisible(false)
+
+          videoToolBar.setAlignment(Pos.BOTTOM_CENTER)
+          videoToolBar.setSpacing(20)
+
+          HBox.setMargin(videoToolBar, new Insets(0,0,20,0))
+          videoToolBar.setPadding(new Insets(0,0,20,0))
+
+          camadas_SPMediaView = sp :: camadas_SPMediaView
+          toolBar.videoPath = ""
+          toolBar.selectedTool = ToolType.move
+        }
+      }
 
       if (toolBar.selectedTool == ToolType.geometricShape) {
 
@@ -274,7 +375,6 @@ object whiteboardScroller {
 
         selectedShapes.foreach(teste => {
 
-
           teste.setLayoutX(teste.getLayoutX + teste.getTranslateX)
           teste.setLayoutY(teste.getLayoutY + teste.getTranslateY)
 
@@ -285,12 +385,12 @@ object whiteboardScroller {
         })
 
         selectedPolyline.foreach(teste => {
+
           teste.setLayoutX(teste.getLayoutX + teste.getTranslateX)
           teste.setLayoutY(teste.getLayoutY + teste.getTranslateY)
 
           teste.setTranslateX(0)
           teste.setTranslateY(0)
-
 
         })
 
@@ -364,7 +464,7 @@ object whiteboardScroller {
         dragX = event.getX
         dragY = event.getY
 
-        val newsel: Polyline = camadas.find(c => c.intersects(dragX,dragY,1,1) ).getOrElse(null)
+        val newsel: Polyline = camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
 
         if(newsel == null)
           selectedPolyline = List()
@@ -429,6 +529,8 @@ object whiteboardScroller {
           currentLayer.getPoints.add(event.getX)
           currentLayer.getPoints.add(event.getY)
 
+          currentLayer.setOnMouseClicked(_ => println("clickado"))
+
         } else if (toolBar.selectedTool == ToolType.eraser) {
           println("erasing")
 
@@ -445,7 +547,10 @@ object whiteboardScroller {
 
             loop.breakable {
               range.foreach(p => if (p % 2 == 0) {
-                if (points.get(p) > event.getX - eraserRadius && points.get(p) < event.getX + eraserRadius && points.get(p + 1) > event.getY - eraserRadius && points.get(p + 1) < event.getY + eraserRadius) {
+                if (points.get(p) + c.getLayoutX > event.getX - eraserRadius && points.get(p) +c.getLayoutX < event.getX + eraserRadius && points.get(p + 1) +c.getLayoutY > event.getY - eraserRadius && points.get(p + 1) +c.getLayoutY< event.getY + eraserRadius) {
+
+                  println("a apagar: " + c)
+
                   porApagar = c :: porApagar
                   page.getChildren.remove(c)
                   loop.break()
@@ -464,18 +569,37 @@ object whiteboardScroller {
         eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
       }
     })
+
     page.setOnMouseDragged(event => {
 
       if(toolBar.selectedTool == ToolType.move) {
 
+          //TODO Selecting multiple objects have some problem :D
         selectedShapes.foreach(teste => {
-          teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
-          teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+
+          if(teste.getBoundsInParent.getMinX + event.getX - dragX >= 0 && teste.getBoundsInParent.getMaxX + event.getX - dragX <= page.getWidth){
+            teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
+          }
+
+          if(teste.getBoundsInParent.getMinY + event.getY - dragY >= 0 && teste.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
+            teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+
+          }
+
+
         })
 
         selectedPolyline.foreach(teste => {
-          teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
-          teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+
+          if(teste.getBoundsInParent.getMinX + event.getX - dragX >= 0 && teste.getBoundsInParent.getMaxX + event.getX - dragX <= page.getWidth){
+            teste.setTranslateX(teste.getTranslateX + event.getX - dragX)
+          }
+
+          if(teste.getBoundsInParent.getMinY + event.getY - dragY >= 0 && teste.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
+            teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
+
+          }
+
         })
 
         dragX = event.getX
@@ -513,7 +637,7 @@ object whiteboardScroller {
 
           while (i < points.size() - 1) {
 
-            if (points.get(i) > event.getX - eraserRadius && points.get(i) < event.getX + eraserRadius && points.get(i + 1) > event.getY - eraserRadius && points.get(i + 1) < event.getY + eraserRadius) {
+            if (points.get(i) + c.getLayoutX > event.getX - eraserRadius && points.get(i) + c.getLayoutX < event.getX + eraserRadius && points.get(i + 1) + c.getLayoutY > event.getY - eraserRadius && points.get(i + 1) + c.getLayoutY < event.getY + eraserRadius) {
               porApagar = c :: porApagar
               page.getChildren.remove(c)
               i = points.size()
@@ -602,13 +726,20 @@ object whiteboardScroller {
 
     val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar)
 
+    val addPageButton = new Button("Add new page")
+    VBox.setMargin(addPageButton, new Insets(0,0,50,0))
+
+    addPageButton.setOnAction(_ => {
+      pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(Color.ORANGERED, 1200, 1200, toolBar))
+    })
+
     //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 
     pages.setMaxWidth(1200)
 
-    pages.getChildren.addAll(page3)
+    pages.getChildren.addAll(page3, addPageButton)
 
-    pages.setSpacing(80)
+    pages.setSpacing(50)
     pages.setAlignment(Pos.CENTER)
 
     canvas.init(pages)
