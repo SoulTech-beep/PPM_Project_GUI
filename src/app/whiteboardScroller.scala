@@ -1,10 +1,10 @@
 package app
 
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
-import javafx.geometry.{Bounds, Insets, Point2D, Pos}
+import javafx.geometry.{Insets, Point2D, Pos}
 import javafx.scene.Node
 import javafx.scene.control.{ContextMenu, MenuItem}
-import javafx.scene.image.{Image, ImageView}
+import javafx.scene.image.Image
 import javafx.scene.layout._
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._

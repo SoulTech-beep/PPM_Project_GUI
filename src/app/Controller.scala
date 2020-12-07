@@ -1,53 +1,61 @@
 package app
 
+import javafx.animation.{KeyFrame, KeyValue, Timeline}
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.fxml.{FXML, FXMLLoader}
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control._
+import javafx.scene.effect.GaussianBlur
+import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.layout._
+import javafx.scene.paint.Color
 import javafx.scene.{Parent, Scene}
 import javafx.stage.{Modality, Stage}
+import javafx.util.Duration
 import logicMC.{Auxiliary, Section, Whiteboard}
 
-class Controller{
+class Controller {
 
+  @FXML
+  private var mySplitPane: SplitPane = _
   //Left Side of SplitPane
   @FXML
-  private var leftAnchorPane:AnchorPane = _
+  private var leftAnchorPane: AnchorPane = _
   @FXML
   private var sectionsScrollPane: ScrollPane = _
 
   //Left Toolbar
   @FXML
-  private var goBackButton:Button = _
+  private var goBackButton: Button = _
   @FXML
-  private var leftSpacer:HBox = _
+  private var leftSpacer: HBox = _
   @FXML
   private var currentSectionLabel: Label = _
   @FXML
-  private var rightSpacer:HBox = _
-    //Add Button
-    @FXML
-    private var addSectionButton:MenuItem = _
-    @FXML
-    private var addWhiteboardButton:MenuItem = _
+  private var rightSpacer: HBox = _
+  //Add Button
+  @FXML
+  private var addSectionButton: MenuItem = _
+  @FXML
+  private var addWhiteboardButton: MenuItem = _
 
   //Right Side of SplitPane
   @FXML
-  private var rightStackPane:StackPane = _
+  private var rightStackPane: StackPane = _
 
   @FXML
-  private var toolbar:ToolBar = _
+  private var toolbar: ToolBar = _
 
   //FlowPane where all the sections and whiteboards will appear on the left side of the split pane
   private val sectionsVBox: FlowPane = new FlowPane()
 
   //Current section being shown on the left side of the split pane
-  private var currentSection:Section = _
+  private var currentSection: Section = _
 
   //private var app.customToolBar:app.customToolBar = new app.customToolBar
 
-  private var canvasScroller:ScrollPane = new ScrollPane()
+  private var canvasScroller: ScrollPane = new ScrollPane()
 
   @Override
   def initialize(): Unit = {
@@ -61,13 +69,13 @@ class Controller{
 
     //TODO remove: debug variables in order to help us previewing a whiteboard on the right side
     //canvasScroller = app.whiteboardScroller.getCanvas(app.customToolBar)
-    rightStackPane.getChildren.add(0,canvasScroller)
+    rightStackPane.getChildren.add(0, canvasScroller)
 
     addSectionButtonOnClick()
     addWhiteboardButtonOnClick()
   }
 
-  def layoutShenanigans():Unit = {
+  def layoutShenanigans(): Unit = {
     //When resizing the application window, the left anchor pane will not automatically expand
     SplitPane.setResizableWithParent(leftAnchorPane, false)
 
@@ -89,15 +97,15 @@ class Controller{
     sectionsScrollPane.setFitToHeight(true)
     sectionsVBox.setHgap(20)
     sectionsVBox.setVgap(20)
-    sectionsVBox.setPadding(new Insets(10,10,10,10))
+    sectionsVBox.setPadding(new Insets(10, 10, 10, 10))
 
     updateVisualState(FxApp.app_state._2)
 
   }
 
-  def updateVisualState(newCurrentSection: Section):Unit={
+  def updateVisualState(newCurrentSection: Section): Unit = {
 
-    if(newCurrentSection.id.length > 1)
+    if (newCurrentSection.id.length > 1)
       goBackButton.setDisable(false)
     else
       goBackButton.setDisable(true)
@@ -107,20 +115,20 @@ class Controller{
 
     sectionsVBox.getChildren.clear()
 
-    currentSection.sections.sortWith((p1,p2) => p1.id < p2.id).foreach(p => sectionsVBox.getChildren.add(getSectionPane(p)))
-    currentSection.whiteboards.sortWith((w1,w2)=> w1.id<w2.id).foreach(p => sectionsVBox.getChildren.add(getWhiteboardPane(p)))
+    currentSection.sections.sortWith((p1, p2) => p1.id < p2.id).foreach(p => sectionsVBox.getChildren.add(getSectionPane(p)))
+    currentSection.whiteboards.sortWith((w1, w2) => w1.id < w2.id).foreach(p => sectionsVBox.getChildren.add(getWhiteboardPane(p)))
 
   }
 
-  def getWhiteboardPane(whiteboard: Whiteboard):VBox = {
-    setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName))
+  def getWhiteboardPane(whiteboard: Whiteboard): VBox = {
+    setOnClickWhiteboardPane(Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName))
   }
 
-  def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox):VBox = {
-    vBox.setOnMouseClicked(event => {
+  def setOnClickWhiteboardPane(vBox: VBox): VBox = {
+    vBox.setOnMouseClicked(_ => {
       rightStackPane.getChildren.remove(canvasScroller)
 
-      val toolBar:customToolBar = new customToolBar
+      val toolBar: customToolBar = new customToolBar
       toolBar.setToolbar(toolbar)
       toolBar.initializeCustomToolBar()
 
@@ -134,93 +142,164 @@ class Controller{
     vBox
   }
 
-  def updateWhiteboardName(whiteboard: Whiteboard):Unit = {
+  def updateWhiteboardName(whiteboard: Whiteboard): Unit = {
     val index = currentSection.whiteboards.indexWhere(p => p.id == whiteboard.id)
     val newCurrentSectionWhiteboards = currentSection.whiteboards.updated(index, whiteboard)
 
-    val newCurrentSection = Section( currentSection.id,currentSection.name, currentSection.sections, newCurrentSectionWhiteboards)
+    val newCurrentSection = Section(currentSection.id, currentSection.name, currentSection.sections, newCurrentSectionWhiteboards)
 
     FxApp.app_state = Section.updateAll(FxApp.app_state._1, newCurrentSection)
   }
 
-  def getSectionPane(section: Section):VBox = {
+  def getSectionPane(section: Section): VBox = {
     Section.getSectionPane(section, FxApp.app_state._1, FxApp.app_state._2, updateVisualState)
   }
 
-def addWhiteboardButtonOnClick():Unit = {
+  /*def blurBackground():Unit = {
+    var gaussianBlur = new GaussianBlur(0)
+    val value = new SimpleDoubleProperty(0)
 
-  addWhiteboardButton.setOnAction(_ =>  {
-    val fxmlLoader = new FXMLLoader(getClass.getResource("./WhiteboardCreate.fxml"))
+    mySplitPane.setEffect(gaussianBlur)
 
-    val mainViewRoot: Parent = fxmlLoader.load()
+    value.addListener((_, _, newV)=> {
+      gaussianBlur.setRadius(newV.doubleValue())
+    })
 
-    val scene = new Scene(mainViewRoot)
-    scene.getStylesheets.add("testStyle.css")
+    val timeline = new Timeline()
+    val kv:KeyValue = new KeyValue(value, double2Double(30))
+    val kf = new KeyFrame(Duration.millis(1000), kv)
 
-    val createWhiteboardController = fxmlLoader.getController.asInstanceOf[WhiteboardCreate]
-    createWhiteboardController.setState(FxApp.app_state)
+    timeline.getKeyFrames.add(kf)
+    timeline.play()
+  }*/
 
-    val secondStage: Stage = new Stage()
-    secondStage.setScene(scene)
-    secondStage.initModality(Modality.APPLICATION_MODAL)
-    secondStage.show()
+  def blurBackground(startValue: Double, endValue: Double, duration: Double): Unit = {
+    val gaussianBlur = new GaussianBlur(startValue)
+    val value = new SimpleDoubleProperty(startValue)
 
-    secondStage.setResizable(false)
+    mySplitPane.setEffect(gaussianBlur)
 
-    secondStage.setOnCloseRequest(_ => {
-      updateVisualState(FxApp.app_state._2)
+    value.addListener((_, _, newV) => {
+      gaussianBlur.setRadius(newV.doubleValue())
+    })
+
+    val timeline = new Timeline()
+    val kv: KeyValue = new KeyValue(value, double2Double(endValue))
+    val kf = new KeyFrame(Duration.millis(duration), kv)
+
+    timeline.getKeyFrames.add(kf)
+    timeline.play()
+  }
+
+  def addWhiteboardButtonOnClick(): Unit = {
+
+    addWhiteboardButton.setOnAction(_ => {
+      val fxmlLoader = new FXMLLoader(getClass.getResource("./WhiteboardCreate.fxml"))
+
+      val mainViewRoot: Parent = fxmlLoader.load()
+
+      val scene = new Scene(mainViewRoot)
+      scene.getStylesheets.add("testStyle.css")
+
+      blurBackground(0, 30, 1000)
+
+      val createWhiteboardController = fxmlLoader.getController.asInstanceOf[WhiteboardCreate]
+      createWhiteboardController.setState(FxApp.app_state)
+
+      val secondStage: Stage = new Stage()
+      secondStage.setScene(scene)
+      secondStage.initModality(Modality.APPLICATION_MODAL)
+      secondStage.show()
+      secondStage.setTitle("Add Whiteboard")
+      secondStage.getIcons.add(new Image("images/addIcon.png"))
+
+      secondStage.setResizable(false)
+
+      secondStage.setOnCloseRequest(_ => {
+        updateVisualState(FxApp.app_state._2)
+        blurBackground(30, 0, 500)
       })
 
     })
-}
+  }
+
+  def getAddSectionPopup(stage: Stage):VBox = {
+    val vBox = new VBox()
+    vBox.setSpacing(20)
+    vBox.setAlignment(Pos.CENTER)
+    vBox.setPadding(new Insets(10, 10, 10, 10))
+
+    val nameTextField = new TextField()
+    nameTextField.setPromptText("Section name")
+    nameTextField.getStyleClass.add("customTextField")
+
+    nameTextField.setOnKeyPressed(p => {
+      if (p.getCode == KeyCode.ENTER) {
+        if (!nameTextField.getText.isBlank) {
+          FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+          updateVisualState(FxApp.app_state._2)
+
+          blurBackground(30, 0, 500)
+          stage.close()
+        }
+      }
+    })
+
+    val okButton = new Button("Add Section")
+    okButton.setFont(Auxiliary.getFont(16))
+
+    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
+    okButton.setStyle(style + "-fx-background-color:#55efc4;")
+
+    okButton.setOnMouseEntered(_ =>{
+      okButton.setStyle(style + "-fx-background-color:#00b894;")
+    })
+
+    okButton.setOnMouseExited(_ => {
+      okButton.setStyle(style + "-fx-background-color:#55efc4;")
+    })
+
+    okButton.setMaxWidth(Double.MaxValue)
+    okButton.setPrefHeight(35)
 
 
+    okButton.setOnMouseClicked(_ => {
+      //TODO check if name isn't empty
+      if (!nameTextField.getText.isBlank) {
+        FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+        updateVisualState(FxApp.app_state._2)
 
-  def addSectionButtonOnClick():Unit = {
-    addSectionButton.setOnAction(event => {
+        blurBackground(30, 0, 500)
+        stage.close()
+      }
+    })
 
-        val popupStage: Stage = new Stage()
-        popupStage.setTitle("Add Section")
-        popupStage.initModality(Modality.APPLICATION_MODAL)
+    vBox.getChildren.addAll(nameTextField, okButton)
 
-        val nameTextField = new TextField()
-        nameTextField.setPromptText("Section name")
+    vBox
+  }
 
-        nameTextField.setOnKeyPressed(p => {
-          if(p.getCode == KeyCode.ENTER){
-            if(!nameTextField.getText.isBlank) {
-              FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
-              updateVisualState(FxApp.app_state._2)
+  def addSectionButtonOnClick(): Unit = {
+    addSectionButton.setOnAction(_ => {
 
-              popupStage.close()
-            }
-          }
-        })
+      val popupStage: Stage = new Stage()
+      popupStage.setTitle("Add Section")
+      popupStage.initModality(Modality.APPLICATION_MODAL)
+      popupStage.getIcons.add(new Image("images/addIcon.png"))
+      popupStage.setResizable(false)
 
-        val okButton = new Button("Add Section")
+      val scene = new Scene(getAddSectionPopup(popupStage))
+      scene.getStylesheets.add("testStyle.css")
 
-        val innervBox = new VBox(nameTextField, okButton)
-        innervBox.setSpacing(20)
-        innervBox.setAlignment(Pos.CENTER)
-        innervBox.setPadding(new Insets(10,10,10,10))
+      popupStage.setScene(scene)
 
+      blurBackground(0, 30, 1000)
 
-        val scene = new Scene(innervBox)
+      popupStage.show()
 
-        popupStage.setScene(scene)
-        popupStage.show()
+      popupStage.setOnCloseRequest(_ => blurBackground(30, 0, 500))
 
-        okButton.setOnMouseClicked(p => {
-          //TODO check if name isn't empty
-          if(!nameTextField.getText.isBlank){
-            FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
-            updateVisualState(FxApp.app_state._2)
-
-            popupStage.close()
-          }
-        })
-
-      })
+    })
 
   }
 

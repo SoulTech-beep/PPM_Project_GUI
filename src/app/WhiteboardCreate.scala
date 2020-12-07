@@ -2,14 +2,15 @@ package app
 
 import app.PageSize.PageSize
 import app.PageStyle.PageStyle
+import javafx.beans.property.ObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control.{Button, TextField, ToggleButton, ToggleGroup}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.shape.{Circle, Line}
 import javafx.stage.{Stage, WindowEvent}
-import logicMC.Section
+import logicMC.Auxiliary.{getSpacer, getStyledHBox}
+import logicMC.{Auxiliary, Section}
 
 
 object PageStyle extends Enumeration {
@@ -36,9 +37,6 @@ class WhiteboardCreate() {
   private var whiteboardNameTextField: TextField = _
 
   @FXML
-  private var createButton: Button = _
-
-  @FXML
   private var colorVBox:VBox = _
 
   @FXML
@@ -47,69 +45,46 @@ class WhiteboardCreate() {
   @FXML
   private var pageVBox:VBox = _
 
+  @FXML
+  private var mainVBox :VBox = _
+
   var selectedSizeGroup: ToggleGroup = new ToggleGroup()
   var selectedSize:PageSize = PageSize.A4
 
   var selectedStyle:PageStyle = PageStyle.SIMPLE
   var selectedStyleButtons:List[Pane] = List()
 
-  var selectedColorShapes:List[Circle] = List()
-  var selectedColor : Color = Color.WHITE
+  var selectedColor : ObjectProperty[Color] = null
 
   var section: Section = _
 
   var appState: (Section, Section) = _
 
+  private var createButton: Button = _
+
   @Override
   def initialize():Unit = {
-    colorVBox.getChildren.add(getColorPicker())
+    colorVBox.getChildren.add(getColorPicker)
     sizeVBox.getChildren.add(getSizePicker())
 
     pageVBox.getChildren.add(getStylePicker())
 
     whiteboardNameTextField.getStyleClass.add("customTextField")
 
-
+    createButton = setCreateButton()
+    mainVBox.getChildren.add(createButton)
   }
 
   def horizontalLine(width: Double, height: Double, pane: Pane): Unit = {
-    val j = (10 to height.toInt - 10) by 10
-
-    j.foreach(h => {
-      val line = new Line()
-
-      line.setStartX(5)
-      line.setEndX(width-5)
-
-      line.setStartY(h)
-      line.setEndY(h)
-
-      line.setStrokeWidth(2)
-      line.setFill(Color.LIGHTGRAY)
-      line.setStroke(Color.LIGHTGRAY)
-
-      pane.getChildren.add(0, line)
-    })
+    Auxiliary.horizontalLine(width, height, pane, 10)
   }
 
   def verticalLines(width: Double, height: Double, pane: Pane): Unit = {
-    val i = (10 to width.toInt - 10) by 10
+   Auxiliary.verticalLines(width, height, pane, 10)
+  }
 
-    i.foreach(w => {
-      val line = new Line()
-
-      line.setStartX(w)
-      line.setEndX(w)
-
-      line.setStartY(5)
-      line.setEndY(height-5)
-
-      line.setStrokeWidth(2)
-      line.setFill(Color.LIGHTGRAY)
-      line.setStroke(Color.LIGHTGRAY)
-
-      pane.getChildren.add(0, line)
-    })
+  def dottedPage(width: Double, height: Double, pane: Pane): Unit = {
+    Auxiliary.dottedPage(width, height, pane, 10)
   }
 
   def getSquaredLines(width: Double, height: Double, pane: Pane):Unit = {
@@ -117,88 +92,13 @@ class WhiteboardCreate() {
     horizontalLine(width, height, pane)
   }
 
-  def getSpacer:HBox = {
-    val spacer = new HBox()
-    HBox.setHgrow(spacer, Priority.ALWAYS)
 
-    spacer
-  }
+  def getColorPicker: HBox ={
+    val colorPicker = Auxiliary.getColorPicker()
 
-  def setColorToggle(color:Color, setDefault: Boolean = false):Circle = {
+    selectedColor = colorPicker._2
 
-    val graphic = new Circle()
-    graphic.setFill(color)
-    graphic.setRadius(15)
-
-    selectedColorShapes = graphic :: selectedColorShapes
-
-    graphic.setStroke(Color.BLACK)
-    graphic.setStrokeWidth(1.0)
-
-    if(setDefault){
-      selectedColor = color
-      graphic.setStrokeWidth(1.5)
-      graphic.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);")
-    }
-
-    graphic.setOnMouseClicked(_ =>{
-      selectedColor = color
-      graphic.setStrokeWidth(1.5)
-      graphic.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);")
-
-      selectedColorShapes.foreach(f => {
-        if(f != graphic) {
-          f.setStrokeWidth(1)
-          f.setStyle("")
-        }
-      })
-    })
-
-    graphic.setOnMouseEntered(_ => {
-      graphic.setScaleX(1.1)
-      graphic.setScaleY(1.1)
-    })
-
-    graphic.setOnMouseExited(_ => {
-      graphic.setScaleX(1)
-      graphic.setScaleY(1)
-    })
-
-    graphic
-  }
-
-  def getColorPicker(): HBox ={
-    val hBox = new HBox()
-
-    hBox.getChildren.addAll(getSpacer, setColorToggle(Color.WHITE,setDefault = true))
-    hBox.getChildren.addAll(getSpacer, setColorToggle(Color.web("#ffeaa7")))
-    hBox.getChildren.addAll(getSpacer, setColorToggle(Color.web("#636e72")), getSpacer)
-
-    hBox.setAlignment(Pos.CENTER)
-    hBox.setPadding(new Insets(10, 0, 10, 0))
-
-    hBox
-  }
-
-  def dottedPage(width: Double, height: Double, pane: Pane): Unit = {
-    val j = (10 to height.toInt - 10) by 10
-    val i = (10 to width.toInt - 10) by 10
-
-    j.foreach(h => {
-      i.foreach(w => {
-        val circle = new Circle()
-
-        circle.setCenterX(w)
-        circle.setCenterY(h)
-
-        circle.setRadius(1.5)
-        circle.setFill(Color.LIGHTGRAY)
-        circle.setStroke(Color.LIGHTGRAY)
-
-        pane.getChildren.add(0, circle)
-      })
-    })
-
+    colorPicker._1
   }
 
   def setStyleToggle(style: PageStyle,function:(Double, Double, Pane) => Unit, setDefault:Boolean = false):Pane = {
@@ -207,52 +107,48 @@ class WhiteboardCreate() {
     selectedStyleButtons = pane :: selectedStyleButtons
 
     pane.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)))
-    pane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), BorderWidths.DEFAULT)))
+    resetBorder(pane)
 
     pane.setPrefSize(50, 50)
     function(50, 50, pane)
 
-    if(setDefault){
+    def select():Unit = {
       selectedStyle = style
       pane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), new BorderWidths(1.5))))
       pane.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);")
     }
 
+    def resetBorder(paneToReset:Pane):Unit = {
+      paneToReset.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), BorderWidths.DEFAULT)))
+
+    }
+
+    if(setDefault){
+      select()
+    }
+
     pane.setOnMouseClicked(_ =>{
-      selectedStyle = style
-      pane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), new BorderWidths(1.5))))
-      pane.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);")
+     select()
 
       selectedStyleButtons.foreach(f => {
         if(f != pane) {
-          f.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), BorderWidths.DEFAULT)))
+          resetBorder(f)
           f.setStyle("")
         }
       })
     })
 
-    pane.setOnMouseEntered(_ => {
-      pane.setScaleX(1.1)
-      pane.setScaleY(1.1)
-    })
-
-    pane.setOnMouseExited(_ => {
-      pane.setScaleX(1)
-      pane.setScaleY(1)
-    })
+    Auxiliary.setScaleAnimation(pane)
 
     pane
   }
 
   def getStylePicker():HBox = {
-    val hBox = new HBox()
+    val hBox = getStyledHBox()
 
     hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SIMPLE,(_:Double,_:Double,_:Pane)=>(), setDefault = true), getSpacer, setStyleToggle(PageStyle.DOTTED,dottedPage))
     hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SQUARED,getSquaredLines), getSpacer)
     hBox.getChildren.addAll(setStyleToggle(PageStyle.LINED,horizontalLine),getSpacer)
-
-    hBox.setAlignment(Pos.CENTER)
-    hBox.setPadding(new Insets(10, 0, 10, 0))
 
     hBox
   }
@@ -274,25 +170,54 @@ class WhiteboardCreate() {
   }
 
   def getSizePicker():HBox = {
-    val hBox = new HBox()
+    val hBox = getStyledHBox()
 
     hBox.getChildren.addAll(getSpacer, setSize("A4", pageSize= PageSize.A4, setDefault = true))
     hBox.getChildren.addAll(getSpacer, setSize("A3", PageSize.A3), getSpacer)
 
-    hBox.setAlignment(Pos.CENTER)
-    hBox.setPadding(new Insets(10, 0, 10, 0))
-
     hBox
   }
+
+
 
   def setState(appStateController: (Section, Section)): Unit = {
     appState = appStateController
   }
 
   def onCreateClicked(): Unit = {
-    FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor, selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
+    FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
     val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
     stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+  }
+
+  def setCreateButton():Button = {
+    val button = new Button()
+
+    VBox.setMargin(button, new Insets(0, 10, 10, 10))
+
+    button.setText("Create")
+    button.setFont(Auxiliary.getFont(16))
+
+    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
+
+    button.setStyle(style + "-fx-background-color:#55efc4;")
+
+    button.setOnMouseEntered(_ =>{
+      button.setStyle(style + "-fx-background-color:#00b894;")
+    })
+
+    button.setOnMouseExited(_ => {
+      button.setStyle(style + "-fx-background-color:#55efc4;")
+    })
+
+    button.setMaxWidth(Double.MaxValue)
+    button.setPrefHeight(35)
+
+    button.setOnAction(_ => {
+      onCreateClicked()
+    })
+
+    button
   }
 
 }
