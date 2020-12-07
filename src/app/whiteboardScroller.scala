@@ -8,19 +8,23 @@ import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
 import org.apache.pdfbox.rendering.ImageType
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
-import javafx.geometry.{Insets, Point2D, Pos}
+import javafx.beans.value.{ChangeListener, ObservableValue}
+import javafx.geometry.{Bounds, Insets, Point2D, Pos}
 import javafx.scene.{Node, Scene}
-import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextField}
+import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextArea, TextField}
 import javafx.scene.image.Image
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
+import javafx.scene.text.Text
 import javafx.stage.{Modality, Stage}
 import javafx.util.Duration
 import logicMC.Auxiliary
 import org.apache.pdfbox.pdmodel.PDDocument
 
+import scala.math.random
+import scala.reflect.io.Path.jfile2path
 import scala.util.control.Breaks
 
 class whiteboardScroller {
@@ -49,6 +53,35 @@ object whiteboardScroller {
     })
   }
 
+  def testeTexto():(TextArea, Text) = {
+    val textArea = new TextArea()
+    textArea.setPrefSize(200, 40)
+    textArea.setWrapText(true)
+
+    val textHolder = new Text()
+    var oldHeight = 0.0
+
+    textArea.setFont(Auxiliary.myFont)
+
+    textHolder.setWrappingWidth(200-20)
+
+    textHolder.textProperty().bind({
+      textArea.textProperty()
+    })
+
+    textHolder.layoutBoundsProperty().addListener(new ChangeListener[Bounds] {
+      override def changed(observableValue: ObservableValue[_ <: Bounds], oldValue: Bounds, newValue: Bounds): Unit = {
+        if(oldHeight != newValue.getHeight ){
+          println(newValue.getHeight)
+          oldHeight = newValue.getHeight
+          textArea.setPrefHeight(textHolder.getLayoutBounds.getHeight*1.07 + 20)
+        }
+      }
+    })
+
+    (textArea, textHolder)
+  }
+
   def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle): Pane = {
     val page = new Pane()
     page.setPrefSize(width, height)
@@ -73,6 +106,8 @@ object whiteboardScroller {
 
     var currentLayer = new Polyline()
 
+    var pdfNum : Int = 0
+
     var isFirstPoint = true
     var firstPoint: Point2D = null
     var currentLine: Line = null
@@ -90,20 +125,13 @@ object whiteboardScroller {
     page.setOnMouseClicked(event => {
 
       if(toolBar.selectedTool == ToolType.pdf) {
-        generateImageFromPDF(toolBar.imagePath.replaceAll("%20"," "), "png")
-        val listFiles: List[File] = getListOfFiles("src/output/" + toolBar.imagePath.split('/').last.replace(".pdf",""))
-        listFiles.foreach(f => {
-          println(f.getAbsolutePath)
-          val path:String = f.toURI().toString().replaceAll("%20"," ")
-          val image: Image = new Image(path)
-          val iP: ImagePattern = new ImagePattern(image)
-          val square = new Rectangle(image.getWidth, image.getHeight, iP)
-          square.setHeight(200)
-          square.setWidth(200*(image.getWidth/image.getHeight))
-
-          page.getChildren.add(square)
-        })
-
+        val s:String = toolBar.imagePath.replaceAll("%20"," ")
+        val num = pdfNum
+        generateImageFromPDF(s, "png", num)
+        val listFiles: List[File] = getListOfFiles("src/output/" + s.split('/').last.replace(".pdf",num.toString))
+        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200)
+        pdfNum = pdfNum + 1
+        toolBar.selectedTool = ToolType.move
       }
 
       if(toolBar.selectedTool == ToolType.image) {
@@ -148,6 +176,12 @@ object whiteboardScroller {
           camadas_node = square :: camadas_node
         }
       }
+      if(toolBar.selectedTool == ToolType.text){
+        val texto = testeTexto()
+        texto._2.setOpacity(0)
+        page.getChildren.addAll(texto._1, texto._2)
+      }
+
       //commit
       if(toolBar.selectedTool == ToolType.video) {
         if(toolBar.videoPath != "") {
@@ -752,8 +786,6 @@ object whiteboardScroller {
 
     //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 
-    pages.setMaxWidth(1200)
-
     pages.getChildren.addAll(page3, addPageButton(pages, toolBar, pane))
 
     pages.setSpacing(50)
@@ -764,17 +796,100 @@ object whiteboardScroller {
     canvas
   }
 
-  def generateImageFromPDF(filename: String, extension: String): Unit = {
+  //TODO tirar for
+  def generateImageFromPDF(filename: String, extension: String, ranNum: Int): Unit = {
 
     val document = PDDocument.load(new File(filename.replace("file:/","")))
     val pdfRenderer = new PDFRenderer(document)
-    val file:File = new File("src/output/" + filename.split('/').last.replace(".pdf",""))
+    val file:File = new File("src/output/" + filename.split('/').last.replace(".pdf",ranNum.toString))
     file.mkdir()
     for (page <- 0 until document.getNumberOfPages) {
       val bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB)
+      //TODO create output directory
       ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-%d.%s", page + 1, extension), 300)
     }
     document.close()
+  }
+
+  def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double):Unit = {
+    val sp:StackPane = new StackPane()
+    val path:String = fl(num).toURI().toString().replaceAll("%20"," ")
+    val image: Image = new Image(path)
+    val iP: ImagePattern = new ImagePattern(image)
+    val square = new Rectangle(image.getWidth, image.getHeight, iP)
+    square.setHeight(h)
+    square.setWidth(h*(image.getWidth/image.getHeight))
+    square.setStroke(Color.BLACK)
+    sp.getChildren.addAll(square)
+    square.setStrokeWidth(square.getWidth/100)
+
+    sp.setOnContextMenuRequested(click => {
+
+      val delete = new MenuItem("Delete")
+
+      val resize : CustomMenuItem = new CustomMenuItem()
+
+      val size = new TextField(square.getHeight.toString)
+      val set = new Button("Change size")
+      val vBox = new VBox(size, set)
+      vBox.setSpacing(10)
+      vBox.setAlignment(Pos.CENTER)
+
+      resize.setContent(vBox)
+      set.setOnAction(_ => {
+        square.setWidth(size.getText.toDouble*(image.getWidth/image.getHeight))
+        square.setHeight(size.getText.toDouble)
+      })
+
+      val contextMenu = new ContextMenu(resize, delete)
+
+      delete.setOnAction(_ => {
+        val dir : File = new File("src/output/" + filename)
+        dir.deleteRecursively()
+        page.getChildren.remove(sp)
+      })
+
+      contextMenu.show(square, click.getScreenX, click.getScreenY)
+
+
+
+    })
+
+    val moveBar: HBox = new HBox()
+
+    sp.setOnMouseEntered(e =>{
+      moveBar.setVisible(true)
+    })
+    sp.setOnMouseExited(e =>{
+      moveBar.setVisible(false)
+    })
+    moveBar.setVisible(false)
+
+    moveBar.setAlignment(Pos.BOTTOM_CENTER)
+    moveBar.setSpacing(20)
+
+    HBox.setMargin(moveBar, new Insets(0,0,20,0))
+    moveBar.setPadding(new Insets(0,0,20,0))
+
+    if(num != 0) {
+      val prevButton: Button = new Button("<")
+      prevButton.setOnAction(e => {
+        page.getChildren.remove(sp)
+        getPdfView(page,filename, fl, num - 1,square.getHeight)
+      })
+      moveBar.getChildren.add(prevButton)
+    }
+
+    if(fl.size > num+1) {
+      val nextButton: Button = new Button(">")
+      nextButton.setOnAction(e => {
+        page.getChildren.remove(sp)
+        getPdfView(page,filename, fl, num + 1,square.getHeight)
+      })
+      moveBar.getChildren.add(nextButton)
+    }
+    sp.getChildren.add(moveBar)
+    page.getChildren.add(sp)
   }
 
   def getListOfFiles(dir: String):List[File] = {

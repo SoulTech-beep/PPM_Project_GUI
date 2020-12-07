@@ -65,11 +65,13 @@ class customToolBar {
     selectedTool = ToolType.pen
     selectedPen = penTool
 
+    setTextButton()
     setPDFButton()
 
     setVideoButton()
     setImageButton()
     setSelectionButton()
+
 
     setShapeButton()
     setEraserButton()
@@ -220,6 +222,28 @@ class customToolBar {
     videoButton.setGraphic(icon)
 
     toolbar.getItems.add(0,videoButton)
+
+  }
+
+  def setTextButton(): Unit = {
+    val textButton: Button = new Button()
+
+    textButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    buttonList = textButton :: buttonList
+
+    textButton.setOnAction(_ => {
+      selectedTool = ToolType.text
+      optionsHBox.getChildren.clear()
+    })
+
+    val icon = new ImageView(new Image("images/text.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    textButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,textButton)
 
   }
 
