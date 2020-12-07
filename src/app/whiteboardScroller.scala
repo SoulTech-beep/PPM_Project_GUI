@@ -121,7 +121,7 @@ object whiteboardScroller {
           camadas_node = square :: camadas_node
         }
       }
-
+//commit
       if(toolBar.selectedTool == ToolType.video) {
         if(toolBar.videoPath != "") {
           val video: Media = new Media(toolBar.videoPath)
