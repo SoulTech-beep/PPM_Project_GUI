@@ -2,20 +2,21 @@ package app
 
 
 import java.io.File
-
 import app.PageStyle.PageStyle
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
 import org.apache.pdfbox.rendering.ImageType
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
-import javafx.geometry.{Insets, Point2D, Pos}
+import javafx.beans.value.{ChangeListener, ObservableValue}
+import javafx.geometry.{Bounds, Insets, Point2D, Pos}
 import javafx.scene.{Node, Scene}
-import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextField}
+import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, ScrollBar, TextArea, TextField}
 import javafx.scene.image.Image
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
+import javafx.scene.text.Text
 import javafx.stage.{Modality, Stage}
 import javafx.util.Duration
 import logicMC.Auxiliary
@@ -47,6 +48,35 @@ object whiteboardScroller {
       node.setLayoutY(node.getLayoutY + me.getY - dragY)
 
     })
+  }
+
+  def testeTexto():(TextArea, Text) = {
+    val textArea = new TextArea()
+    textArea.setPrefSize(200, 40)
+    textArea.setWrapText(true)
+
+    val textHolder = new Text()
+    var oldHeight = 0.0
+
+    textArea.setFont(Auxiliary.myFont)
+
+    textHolder.setWrappingWidth(200-20)
+
+    textHolder.textProperty().bind({
+      textArea.textProperty()
+    })
+
+    textHolder.layoutBoundsProperty().addListener(new ChangeListener[Bounds] {
+      override def changed(observableValue: ObservableValue[_ <: Bounds], oldValue: Bounds, newValue: Bounds): Unit = {
+        if(oldHeight != newValue.getHeight ){
+          println(newValue.getHeight)
+          oldHeight = newValue.getHeight
+          textArea.setPrefHeight(textHolder.getLayoutBounds.getHeight*1.07 + 20)
+        }
+      }
+    })
+
+    (textArea, textHolder)
   }
 
   def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle): Pane = {
@@ -149,6 +179,42 @@ object whiteboardScroller {
         }
       }
       //commit
+
+      if(toolBar.selectedTool == ToolType.text){
+        val ttt = testeTexto()
+        ttt._2.setOpacity(0)
+        page.getChildren.addAll(ttt._1, ttt._2)
+
+        /*text.setPrefHeight(40)
+        text.setMinWidth(40)
+
+
+        text.textProperty().addListener(new ChangeListener[String] {
+          override def changed(observableValue: ObservableValue[_ <: String], t: String, t1: String): Unit = {
+            val len = t1.length
+            text.setPrefWidth(len*10)
+
+            if(t1.isEmpty || t.isEmpty){
+              text.setPrefWidth(40)
+            }
+
+            val altura = t1.count(p => if(p=='\n') true else false)
+            text.setPrefHeight(altura*10)
+
+            if(t1.isEmpty || t.isEmpty){
+              text.setPrefHeight(40)
+            }
+
+          }
+        })*/
+
+
+
+
+
+      }
+
+
       if(toolBar.selectedTool == ToolType.video) {
         if(toolBar.videoPath != "") {
           val video: Media = new Media(toolBar.videoPath)
@@ -610,7 +676,6 @@ object whiteboardScroller {
 
           if(teste.getBoundsInParent.getMinY + event.getY - dragY >= 0 && teste.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
             teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
-
           }
 
 
@@ -772,7 +837,9 @@ object whiteboardScroller {
     file.mkdir()
     for (page <- 0 until document.getNumberOfPages) {
       val bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB)
-      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-%d.%s", page + 1, extension), 300)
+//      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-%d.%s", page + 1, extension), 300)
+      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-" + ( page + 1) + "." + extension), 300)
+
     }
     document.close()
   }
@@ -788,5 +855,4 @@ object whiteboardScroller {
 
 
 }
-
 
