@@ -47,7 +47,7 @@
       </VBox>
       <VBox fx:id="sizeVBox" layoutX="20.0" layoutY="250.0" style="-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0); -fx-background-radius: 15px;">
          <children>
-            <Label text="Size">
+            <Label text="Page Size">
                <padding>
                   <Insets left="5.0" top="5.0" />
                </padding>

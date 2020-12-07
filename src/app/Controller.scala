@@ -132,7 +132,7 @@ class Controller {
       toolBar.setToolbar(toolbar)
       toolBar.initializeCustomToolBar()
 
-      canvasScroller = whiteboardScroller.getCanvas(toolBar)
+      canvasScroller = whiteboardScroller.getCanvas(toolBar, mySplitPane)
       rightStackPane.getChildren.add(0, canvasScroller)
 
       //TODO if the one we click is the one being displayed, let's not remove and update everything...
@@ -174,21 +174,7 @@ class Controller {
   }*/
 
   def blurBackground(startValue: Double, endValue: Double, duration: Double): Unit = {
-    val gaussianBlur = new GaussianBlur(startValue)
-    val value = new SimpleDoubleProperty(startValue)
-
-    mySplitPane.setEffect(gaussianBlur)
-
-    value.addListener((_, _, newV) => {
-      gaussianBlur.setRadius(newV.doubleValue())
-    })
-
-    val timeline = new Timeline()
-    val kv: KeyValue = new KeyValue(value, double2Double(endValue))
-    val kf = new KeyFrame(Duration.millis(duration), kv)
-
-    timeline.getKeyFrames.add(kf)
-    timeline.play()
+    Auxiliary.blurBackground(startValue, endValue, duration, mySplitPane)
   }
 
   def addWhiteboardButtonOnClick(): Unit = {

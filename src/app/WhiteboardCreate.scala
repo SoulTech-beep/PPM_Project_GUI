@@ -1,6 +1,5 @@
 package app
 
-import app.PageSize.PageSize
 import app.PageStyle.PageStyle
 import javafx.beans.property.ObjectProperty
 import javafx.fxml.FXML
@@ -10,7 +9,8 @@ import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
 import logicMC.Auxiliary.{getSpacer, getStyledHBox}
-import logicMC.{Auxiliary, Section}
+import logicMC.PageSize.PageSize
+import logicMC.{Auxiliary, PageSize, Section}
 
 
 object PageStyle extends Enumeration {
@@ -21,14 +21,6 @@ object PageStyle extends Enumeration {
   val SQUARED = "SQUARED"
   val LINED = "LINED"
   val SIMPLE = "SIMPLE"
-}
-
-object PageSize extends Enumeration {
-
-  type PageSize = (Int, Int)
-
-  val A4: (Int, Int) = (210, 297)
-  val A3: (Int, Int) = (297, 420)
 }
 
 class WhiteboardCreate() {
@@ -60,7 +52,7 @@ class WhiteboardCreate() {
 
   var appState: (Section, Section) = _
 
-  private var createButton: Button = _
+  var createButton: Button = _
 
   @Override
   def initialize():Unit = {

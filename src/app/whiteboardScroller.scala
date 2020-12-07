@@ -1,15 +1,25 @@
 package app
 
+
+import java.io.File
+
+import app.PageStyle.PageStyle
+import org.apache.pdfbox.rendering.PDFRenderer
+import org.apache.pdfbox.tools.imageio.ImageIOUtil
+import org.apache.pdfbox.rendering.ImageType
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.geometry.{Insets, Point2D, Pos}
-import javafx.scene.Node
+import javafx.scene.{Node, Scene}
 import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextField}
 import javafx.scene.image.Image
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
+import javafx.stage.{Modality, Stage}
 import javafx.util.Duration
+import logicMC.Auxiliary
+import org.apache.pdfbox.pdmodel.PDDocument
 
 import scala.util.control.Breaks
 
@@ -39,7 +49,7 @@ object whiteboardScroller {
     })
   }
 
-  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar): Pane = {
+  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle): Pane = {
     val page = new Pane()
     page.setPrefSize(width, height)
     page.setMaxSize(width, height)
@@ -78,6 +88,23 @@ object whiteboardScroller {
     var dragY: Double = 0
 
     page.setOnMouseClicked(event => {
+
+      if(toolBar.selectedTool == ToolType.pdf) {
+        generateImageFromPDF(toolBar.imagePath.replaceAll("%20"," "), "png")
+        val listFiles: List[File] = getListOfFiles("src/output/" + toolBar.imagePath.split('/').last.replace(".pdf",""))
+        listFiles.foreach(f => {
+          println(f.getAbsolutePath)
+          val path:String = f.toURI().toString().replaceAll("%20"," ")
+          val image: Image = new Image(path)
+          val iP: ImagePattern = new ImagePattern(image)
+          val square = new Rectangle(image.getWidth, image.getHeight, iP)
+          square.setHeight(200)
+          square.setWidth(200*(image.getWidth/image.getHeight))
+
+          page.getChildren.add(square)
+        })
+
+      }
 
       if(toolBar.selectedTool == ToolType.image) {
         if(toolBar.imagePath != "") {
@@ -121,7 +148,7 @@ object whiteboardScroller {
           camadas_node = square :: camadas_node
         }
       }
-//commit
+      //commit
       if(toolBar.selectedTool == ToolType.video) {
         if(toolBar.videoPath != "") {
           val video: Media = new Media(toolBar.videoPath)
@@ -574,7 +601,7 @@ object whiteboardScroller {
 
       if(toolBar.selectedTool == ToolType.move) {
 
-          //TODO Selecting multiple objects have some problem :D
+        //TODO Selecting multiple objects have some problem :D
         selectedShapes.foreach(teste => {
 
           if(teste.getBoundsInParent.getMinX + event.getX - dragX >= 0 && teste.getBoundsInParent.getMaxX + event.getX - dragX <= page.getWidth){
@@ -652,92 +679,82 @@ object whiteboardScroller {
       }
 
     })
-    dottedPage(width, height, page)
+
+    def applyPageStyle(newPageStyle:PageStyle):Unit = newPageStyle match {
+      case PageStyle.DOTTED => Auxiliary.dottedPage(width, height, page, 30)
+      case PageStyle.LINED => Auxiliary.horizontalLine(width, height, page, 30)
+      case PageStyle.SQUARED => Auxiliary.squaredPage(width, height, page, 30)
+      case _ =>
+    }
+
+    applyPageStyle(pageStyle)
 
     page
   }
 
   def dottedPage(width: Double, height: Double, pane: Pane): Unit = {
-    val j = (30 to height.toInt - 30) by 30
-    val i = (30 to width.toInt - 30) by 30
-
-    j.foreach(h => {
-      i.foreach(w => {
-        val circle = new Circle()
-
-        circle.setCenterX(w)
-        circle.setCenterY(h)
-
-        circle.setRadius(1.5)
-        circle.setFill(Color.LIGHTGRAY)
-        circle.setStroke(Color.LIGHTGRAY)
-
-        pane.getChildren.add(0, circle)
-      })
-    })
-
+    Auxiliary.dottedPage(width, height, pane, 30)
   }
 
   def horizontalLine(width: Double, height: Double, pane: Pane): Unit = {
-    val j = (30 to height.toInt - 30) by 30
-
-    j.foreach(h => {
-      val line = new Line()
-
-      line.setStartX(0)
-      line.setEndX(width)
-
-      line.setStartY(h)
-      line.setEndY(h)
-
-      line.setStrokeWidth(2)
-      line.setFill(Color.LIGHTGRAY)
-      line.setStroke(Color.LIGHTGRAY)
-
-      pane.getChildren.add(0, line)
-    })
+    Auxiliary.horizontalLine(width, height, pane, 30)
   }
 
   def verticalLines(width: Double, height: Double, pane: Pane): Unit = {
-    val i = (30 to width.toInt - 30) by 30
-
-    i.foreach(w => {
-      val line = new Line()
-
-      line.setStartX(w)
-      line.setEndX(w)
-
-      line.setStartY(0)
-      line.setEndY(height)
-
-      line.setStrokeWidth(2)
-      line.setFill(Color.LIGHTGRAY)
-      line.setStroke(Color.LIGHTGRAY)
-
-      pane.getChildren.add(0, line)
-    })
+    Auxiliary.verticalLines(width, height, pane, 30)
   }
 
-  def getCanvas(toolBar: customToolBar): ZoomableScrollPane = {
+  def addPageButton(pages: VBox, toolBar:customToolBar, pane:Node):Button = {
+
+    val addPageButton = new Button("Add new page")
+    addPageButton.setFont(Auxiliary.getFont(14))
+    VBox.setMargin(addPageButton, new Insets(0,0,50,0))
+    addPageButton.setPrefSize(130, 50)
+
+    addPageButton.setOnAction(_ => {
+
+      val pagePicker = new PagePicker()
+
+      val scene= new Scene(pagePicker.initialize())
+      scene.getStylesheets.add("testStyle.css")
+
+      Auxiliary.blurBackground(0, 30, 1000, pane)
+
+      val stage:Stage = new Stage()
+      stage.setScene(scene)
+      stage.initModality(Modality.APPLICATION_MODAL)
+      stage.show()
+      stage.setTitle("Add Page")
+      stage.getIcons.add(new Image("images/addIcon.png"))
+      stage.setResizable(false)
+
+
+      stage.setOnCloseRequest(_ => {
+        Auxiliary.blurBackground(30, 0, 500, pane)
+
+        val values = pagePicker.getPage()
+
+        pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3))
+      })
+
+    })
+
+    addPageButton
+  }
+
+  def getCanvas(toolBar: customToolBar, pane: Node): ZoomableScrollPane = {
 
     /////
     val canvas = new ZoomableScrollPane()
     val pages = new VBox()
 
-    val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar)
-
-    val addPageButton = new Button("Add new page")
-    VBox.setMargin(addPageButton, new Insets(0,0,50,0))
-
-    addPageButton.setOnAction(_ => {
-      pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(Color.ORANGERED, 1200, 1200, toolBar))
-    })
+    val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar, PageStyle.DOTTED)
 
     //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 
     pages.setMaxWidth(1200)
 
-    pages.getChildren.addAll(page3, addPageButton)
+    pages.getChildren.addAll(page3, addPageButton(pages, toolBar, pane))
 
     pages.setSpacing(50)
     pages.setAlignment(Pos.CENTER)
@@ -745,6 +762,28 @@ object whiteboardScroller {
     canvas.init(pages)
 
     canvas
+  }
+
+  def generateImageFromPDF(filename: String, extension: String): Unit = {
+
+    val document = PDDocument.load(new File(filename.replace("file:/","")))
+    val pdfRenderer = new PDFRenderer(document)
+    val file:File = new File("src/output/" + filename.split('/').last.replace(".pdf",""))
+    file.mkdir()
+    for (page <- 0 until document.getNumberOfPages) {
+      val bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB)
+      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-%d.%s", page + 1, extension), 300)
+    }
+    document.close()
+  }
+
+  def getListOfFiles(dir: String):List[File] = {
+    val d = new File(dir)
+    if (d.exists && d.isDirectory) {
+      d.listFiles.filter(_.isFile).toList
+    } else {
+      List[File]()
+    }
   }
 
 

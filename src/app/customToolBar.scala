@@ -1,8 +1,8 @@
 package app
 
-import app.ToolType.{ToolType, selector}
-import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
-import javafx.beans.value.{ChangeListener, ObservableValue, WritableValue}
+import app.ToolType.ToolType
+import javafx.beans.property.{SimpleDoubleProperty, SimpleObjectProperty}
+import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -11,8 +11,8 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Polygon, Rectangle}
-import javafx.stage.{FileChooser, Stage}
 import javafx.stage.FileChooser.ExtensionFilter
+import javafx.stage.{FileChooser, Stage}
 import logicMC.Eraser
 
 object ToolType extends Enumeration {
@@ -64,6 +64,8 @@ class customToolBar {
 
     selectedTool = ToolType.pen
     selectedPen = penTool
+
+    setPDFButton()
 
     setVideoButton()
     setImageButton()
@@ -149,6 +151,30 @@ class customToolBar {
 
   }
 
+  def setPDFButton(): Unit = {
+    val pdfButton:Button = new Button()
+
+    pdfButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
+    buttonList = pdfButton :: buttonList
+
+    pdfButton.setOnAction(_ => {
+      imagePath = ""
+      selectedTool = ToolType.pdf
+      optionsHBox.getChildren.clear()
+      getFileChooser("PDF")
+    })
+
+    val icon = new ImageView(new Image("images/pdf.png"))
+    icon.setFitWidth(20)
+    icon.setFitHeight(20)
+
+    pdfButton.setGraphic(icon)
+
+    toolbar.getItems.add(0,pdfButton)
+
+  }
+
   def setImageButton(): Unit = {
     val imageButton:Button = new Button()
 
@@ -211,6 +237,11 @@ class customToolBar {
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Video Files", "*.mp4", "*.avi"))
       val selectedFile = fileChooser.showOpenDialog(secondStage)
       if(selectedFile != null) videoPath = selectedFile.toURI().toString()
+    } else if(fileType == "PDF") {
+      fileChooser.setTitle("Select PDF")
+      fileChooser.getExtensionFilters.addAll(new ExtensionFilter("PDF Files", "*.pdf"))
+      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      if(selectedFile != null) imagePath = selectedFile.toURI().toString()
     }
 
     fileChooser

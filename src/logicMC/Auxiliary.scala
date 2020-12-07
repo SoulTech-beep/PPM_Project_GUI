@@ -1,13 +1,16 @@
 package logicMC
 
-import javafx.beans.property.{ObjectProperty, SimpleObjectProperty}
+import javafx.animation.{KeyFrame, KeyValue, Timeline}
+import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Node
+import javafx.scene.effect.GaussianBlur
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, Pane, Priority}
 import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Line}
 import javafx.scene.text.{Font, FontWeight}
+import javafx.util.Duration
 import logicMC.Colors.Colors
 
 
@@ -15,6 +18,15 @@ import logicMC.Colors.Colors
 class Auxiliary(){
 
 }
+
+object PageSize extends Enumeration {
+
+   type PageSize = (Int, Int)
+
+   val A4: (Int, Int) = (210, 297)
+   val A3: (Int, Int) = (297, 420)
+}
+
 
 object Colors extends Enumeration {
    type Colors = Color
@@ -25,6 +37,11 @@ object Colors extends Enumeration {
 }
 
 object Auxiliary {
+
+   def squaredPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
+      verticalLines(width, height, pane, step)
+      horizontalLine(width, height, pane, step)
+   }
 
    def dottedPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
       val j = (step to height.toInt - step) by step
@@ -179,6 +196,24 @@ object Auxiliary {
       hBox.setPadding(new Insets(10, 0, 10, 0))
 
       hBox
+   }
+
+   def blurBackground(startValue: Double, endValue: Double, duration: Double, pane:Node): Unit = {
+      val gaussianBlur = new GaussianBlur(startValue)
+      val value = new SimpleDoubleProperty(startValue)
+
+      pane.setEffect(gaussianBlur)
+
+      value.addListener((_, _, newV) => {
+         gaussianBlur.setRadius(newV.doubleValue())
+      })
+
+      val timeline = new Timeline()
+      val kv: KeyValue = new KeyValue(value, double2Double(endValue))
+      val kf = new KeyFrame(Duration.millis(duration), kv)
+
+      timeline.getKeyFrames.add(kf)
+      timeline.play()
    }
 
 }
