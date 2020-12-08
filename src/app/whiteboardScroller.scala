@@ -40,7 +40,7 @@ object whiteboardScroller {
 
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
 
-  /*def makeDraggable(node: Node): Unit = {
+  def makeDraggable(node: Node): Unit = {
     var dragX: Double = 0
     var dragY: Double = 0
 
@@ -54,9 +54,10 @@ object whiteboardScroller {
       node.setLayoutY(node.getLayoutY + me.getY - dragY)
 
     })
-  }*/
+  }
 
   def testeTexto():(TextArea, Text) = {
+
     val textArea = new TextArea()
     textArea.setPrefSize(200, 40)
     textArea.setWrapText(true)
@@ -955,7 +956,6 @@ object whiteboardScroller {
     cm.getItems.clear()
     val resize : CustomMenuItem = new CustomMenuItem()
     val delete = new MenuItem("Delete")
-
 
     cm.setAutoHide(true)
     fResize(resize)

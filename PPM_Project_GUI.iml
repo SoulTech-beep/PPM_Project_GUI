@@ -10,7 +10,18 @@
     <orderEntry type="library" name="scala-sdk-2.13.31" level="application" />
     <orderEntry type="library" name="scala-sdk-2.13.3" level="application" />
     <orderEntry type="library" name="scala-sdk-2.12.12" level="application" />
-    <orderEntry type="library" name="lib" level="project" />
-    <orderEntry type="library" name="pdfbox-app-2.0.21" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/lib" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
   </component>
 </module>
