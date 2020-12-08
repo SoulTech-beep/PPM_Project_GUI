@@ -4,26 +4,24 @@ package app
 import java.io.File
 
 import app.PageStyle.PageStyle
-import org.apache.pdfbox.rendering.PDFRenderer
-import org.apache.pdfbox.tools.imageio.ImageIOUtil
-import org.apache.pdfbox.rendering.ImageType
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Point2D, Pos}
-import javafx.scene.{Node, Scene}
-import javafx.scene.control.{Button, ContextMenu, CustomMenuItem, MenuItem, TextArea, TextField}
+import javafx.scene.control._
 import javafx.scene.image.Image
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
 import javafx.scene.text.Text
+import javafx.scene.{Node, Scene}
 import javafx.stage.{Modality, Stage}
 import javafx.util.Duration
 import logicMC.Auxiliary
 import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
+import org.apache.pdfbox.tools.imageio.ImageIOUtil
 
-import scala.math.random
 import scala.reflect.io.Path.jfile2path
 import scala.util.control.Breaks
 
@@ -178,15 +176,42 @@ object whiteboardScroller {
           camadas_node = square :: camadas_node
         }
       }
-      if(toolBar.selectedTool == ToolType.text){
-        val texto = testeTexto()
-        texto._2.setOpacity(0)
-        page.getChildren.addAll(texto._1, texto._2)
+      //commit
+
+      if (toolBar.selectedTool == ToolType.text) {
+        val ttt = testeTexto()
+        ttt._2.setOpacity(0)
+        page.getChildren.addAll(ttt._1, ttt._2)
+
+        /*text.setPrefHeight(40)
+        text.setMinWidth(40)
+
+
+        text.textProperty().addListener(new ChangeListener[String] {
+          override def changed(observableValue: ObservableValue[_ <: String], t: String, t1: String): Unit = {
+            val len = t1.length
+            text.setPrefWidth(len*10)
+
+            if(t1.isEmpty || t.isEmpty){
+              text.setPrefWidth(40)
+            }
+
+            val altura = t1.count(p => if(p=='\n') true else false)
+            text.setPrefHeight(altura*10)
+
+            if(t1.isEmpty || t.isEmpty){
+              text.setPrefHeight(40)
+            }
+
+          }
+        })*/
+
+
       }
 
-      //commit
-      if(toolBar.selectedTool == ToolType.video) {
-        if(toolBar.videoPath != "") {
+
+      if (toolBar.selectedTool == ToolType.video) {
+        if (toolBar.videoPath != "") {
           val video: Media = new Media(toolBar.videoPath)
           val player: MediaPlayer = new MediaPlayer(video)
           val mediaView: MediaView = new MediaView(player)
@@ -225,17 +250,17 @@ object whiteboardScroller {
 
 
           val videoToolBar: HBox = new HBox()
-          videoToolBar.getChildren.addAll(play,pause,fast,slow,restart)
+          videoToolBar.getChildren.addAll(play, pause, fast, slow, restart)
 
           val sp: StackPane = new StackPane()
-          sp.getChildren.addAll( mediaView, videoToolBar)
+          sp.getChildren.addAll(mediaView, videoToolBar)
 
           page.getChildren.add(sp)
 
-          sp.setOnMouseEntered(e =>{
+          sp.setOnMouseEntered(e => {
             videoToolBar.setVisible(true)
           })
-          sp.setOnMouseExited(e =>{
+          sp.setOnMouseExited(e => {
             videoToolBar.setVisible(false)
           })
           videoToolBar.setVisible(false)
@@ -243,8 +268,8 @@ object whiteboardScroller {
           videoToolBar.setAlignment(Pos.BOTTOM_CENTER)
           videoToolBar.setSpacing(20)
 
-          HBox.setMargin(videoToolBar, new Insets(0,0,20,0))
-          videoToolBar.setPadding(new Insets(0,0,20,0))
+          HBox.setMargin(videoToolBar, new Insets(0, 0, 20, 0))
+          videoToolBar.setPadding(new Insets(0, 0, 20, 0))
 
           camadas_SPMediaView = sp :: camadas_SPMediaView
           toolBar.videoPath = ""
@@ -399,7 +424,7 @@ object whiteboardScroller {
         camadas_node.foreach(c => {
 
 
-          val shape = selectionPolyline.intersects(c.getBoundsInParent)
+          val shape = selectionPolyline.intersects(c.asInstanceOf[Node].getBoundsInParent)
           if (shape) {
 
             selectedShapes = c::selectedShapes
@@ -590,7 +615,6 @@ object whiteboardScroller {
         eraserCircle.setRadius(toolBar.eraserFinal.radius.get())
       }
     })
-
 
     page.setOnMouseDragged(event => {
 
@@ -917,5 +941,3 @@ object whiteboardScroller {
 
 
 }
-
-

@@ -3,7 +3,6 @@ package logicMC
 import app.PageStyle.PageStyle
 import javafx.geometry.Pos
 import javafx.scene.control.Label
-import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import logicMC.Auxiliary.getImageView
@@ -20,19 +19,6 @@ object Section{
   type Size = (Double, Double)
   type ID = String
   type Name = String
-
-
-  /*def getNewSection(s: logicMC.Section, somethingToChange: Any)(section: Boolean):logicMC.Section = somethingToChange match {
-    case something:ID => logicMC.Section(something, s.name, s.sections, s.whiteboards)
-    case something:Name => logicMC.Section(s.id, something, s.sections, s.whiteboards)
-    case something:List[Any] => {
-      if(section){
-        logicMC.Section(s.id, s.name,something.asInstanceOf[List[logicMC.Section]], s.whiteboards)
-      }else{
-         logicMC.Section(s.id, s.name, s.sections, something.asInstanceOf[List[logicMC.Whiteboard]])
-      }
-    }
-  }*/
 
   def describe(mainSection: Section, section: Section):(Section, Section) = {
     println("---[ Sections Description ]---")
@@ -175,7 +161,7 @@ object Section{
     (mainSection, section)
   }
 
-  def goToMainMenu(mainSection: Section, section: Section):(Section, Section) = {
+  def goToMainMenu(mainSection: Section):(Section, Section) = {
     (mainSection, mainSection)
   }
 
