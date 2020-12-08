@@ -40,7 +40,7 @@ object whiteboardScroller {
 
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
 
-  def makeDraggable(node: Node): Unit = {
+  /*def makeDraggable(node: Node): Unit = {
     var dragX: Double = 0
     var dragY: Double = 0
 
@@ -54,7 +54,7 @@ object whiteboardScroller {
       node.setLayoutY(node.getLayoutY + me.getY - dragY)
 
     })
-  }
+  }*/
 
   def testeTexto():(TextArea, Text) = {
     val textArea = new TextArea()
@@ -147,56 +147,34 @@ object whiteboardScroller {
           toolBar.imagePath = ""
           toolBar.selectedTool = ToolType.move
 
-          def deleteImage(): Unit = {
+          def deleteImage(delete: MenuItem): Unit = {
             //TODO SERA QUE REALMENTE AS REMOVE OU É COMO O VIDEO??
-
-            camadas_node = camadas_node.filter(p => p != square)
-            page.getChildren.remove(square)
+            delete.setOnAction(_ => {
+              camadas_node = camadas_node.filter(p => p != square)
+              page.getChildren.remove(square)
+            })
           }
 
-          def resizeImage(newSize: Double): Unit = {
-            square.setWidth(newSize * (image.getWidth / image.getHeight))
-            square.setHeight(newSize)
-          }
+          def resizeImage(resize: CustomMenuItem): Unit = {
+            val height = new TextField(square.getHeight.toString)
+            val width = new TextField(square.getWidth.toString)
+            val set = new Button("Change size")
+            val vBox = new VBox(height, width, set)
+            vBox.setSpacing(10)
+            vBox.setAlignment(Pos.CENTER)
+            resize.setContent(vBox)
 
-          square.setOnContextMenuRequested(click => contextMenuNode(click, square, square.getHeight.toString)(resizeImage)(deleteImage))
+            set.setOnAction(_ => {
+              square.setWidth(width.getText.toDouble)
+              square.setHeight(height.getText.toDouble)
+            })
+          }
+          val cm: ContextMenu = new ContextMenu()
+          square.setOnContextMenuRequested(click => contextMenuNode(cm, click, square)(resizeImage)(deleteImage))
+
         }
       }
-//          square.setOnContextMenuRequested(click => {
-//
-//            val delete = new MenuItem("Delete")
-//
-//            val resize : CustomMenuItem = new CustomMenuItem()
-//
-//            val width = new TextField(square.getWidth.toString)
-//            val height = new TextField(square.getHeight.toString)
-//            val set = new Button("Change size")
-//            val vBox = new VBox(width, height, set)
-//            vBox.setSpacing(10)
-//            vBox.setAlignment(Pos.CENTER)
-//
-//            resize.setContent(vBox)
-//            set.setOnAction(_ => {
-//              square.setWidth(width.getText.toDouble)
-//              square.setHeight(height.getText.toDouble)
-//            })
-//
-//
-//            val contextMenu = new ContextMenu(resize, delete)
-//
-//            delete.setOnAction(_ => {
-//              camadas_node = camadas_node.filter(p => p != currentLayer)
-//              page.getChildren.remove(square)
-//            })
-//
-//            contextMenu.show(square, click.getScreenX, click.getScreenY)
-//          })
-//
-//          page.getChildren.add(square)
-//
-//          camadas_node = square :: camadas_node
-//        }
-        //}
+
 
       if(toolBar.selectedTool == ToolType.text){
         val texto = testeTexto()
@@ -210,8 +188,10 @@ object whiteboardScroller {
           val video: Media = new Media(toolBar.videoPath)
           val player: MediaPlayer = new MediaPlayer(video)
           val mediaView: MediaView = new MediaView(player)
-          mediaView.setFitHeight(page.getHeight/2)
-          mediaView.setFitWidth(page.getWidth/2)
+
+          mediaView.setFitHeight(video.getHeight)
+          mediaView.setFitWidth(video.getWidth)
+
 
           val play: Button = new Button()
           play.setText("play")
@@ -272,19 +252,37 @@ object whiteboardScroller {
           toolBar.videoPath = ""
           toolBar.selectedTool = ToolType.move
 
-          def deleteVideo(): Unit ={
-            //TODO NAO E SUFICIENTE, ISTO SO TIRA PARTE GRAFICA
-            page.getChildren.remove(sp)
-            camadas_node = camadas_node.filter(p => p != sp)
-
+          def deleteVideo(delete: MenuItem): Unit ={
+            delete.setOnAction(_ => {
+              player.dispose()
+              page.getChildren.remove(sp)
+              camadas_node = camadas_node.filter(p => p != sp)
+            })
           }
 
-          def resizeVideo(newSize: Double): Unit = {
-            mediaView.setFitWidth(newSize*(mediaView.getFitWidth/mediaView.getFitHeight))
-            mediaView.setFitHeight(newSize)
+          def resizeVideo(resize: CustomMenuItem): Unit = {
+            val size = new TextField()
+            if(mediaView.getFitHeight > 0) {size.setText(mediaView.getFitHeight.toString)}
+            else {size.setText(video.getHeight.toString)}
+
+            val set = new Button("Change size")
+            val vBox = new VBox(size, set)
+            vBox.setSpacing(10)
+            vBox.setAlignment(Pos.CENTER)
+            resize.setContent(vBox)
+
+            set.setOnAction(_ => {
+              val newSize:Double = size.getText().toDouble
+
+              if(sp.getBoundsInParent.getMinY + newSize < page.getMaxHeight && sp.getBoundsInParent.getMinX + newSize*(video.getWidth.toDouble/video.getHeight) < page.getMaxWidth ) {
+                mediaView.setFitWidth(newSize*(video.getWidth.toDouble/video.getHeight))
+                mediaView.setFitHeight(newSize)
+              }
+            })
           }
 
-          sp.setOnContextMenuRequested(click => contextMenuNode(click, sp, mediaView.getFitHeight.toString) (resizeVideo) (deleteVideo))
+          val cm: ContextMenu = new ContextMenu()
+          sp.setOnContextMenuRequested(click => contextMenuNode(cm, click, sp) (resizeVideo) (deleteVideo))
         }
       }
 
@@ -423,9 +421,7 @@ object whiteboardScroller {
         camadas.foreach(c => {
           val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
-
             selectedPolyline = c :: selectedPolyline
-
             c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
           } else {
             c.setStyle("")
@@ -433,21 +429,14 @@ object whiteboardScroller {
         })
 
         camadas_node.foreach(c => {
-
-
           val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
-
             selectedShapes = c::selectedShapes
-
             c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
-
           } else {
             c.setStyle("")
           }
         })
-
-        selectedPolyline = selectionPolyline :: selectedPolyline
 
       }
 
@@ -456,6 +445,7 @@ object whiteboardScroller {
     page.setOnMousePressed(event => {
 
       if(toolBar.selectedTool == ToolType.move) {
+        println("é o tooltype.move")
         dragX = event.getX
         dragY = event.getY
 
@@ -468,8 +458,10 @@ object whiteboardScroller {
 
 
       } else {
+        println("NÃO é o tooltype.move")
 
         if (selectionPolyline != null) {
+          println("vamos remover a selectionPolyline")
           page.getChildren.remove(selectionPolyline)
         }
 
@@ -642,9 +634,17 @@ object whiteboardScroller {
           if(teste.getBoundsInParent.getMinY + event.getY - dragY >= 0 && teste.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
             teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
           }
-
-
         })
+
+        //just to move the selectionPolyline!
+        if(selectionPolyline.getBoundsInParent.getMinX + event.getX - dragX >= 0 && selectionPolyline.getBoundsInParent.getMaxX + event.getX - dragX <= page.getWidth){
+          selectionPolyline.setTranslateX(selectionPolyline.getTranslateX + event.getX - dragX)
+        }
+
+        if(selectionPolyline.getBoundsInParent.getMinY + event.getY - dragY >= 0 && selectionPolyline.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
+          selectionPolyline.setTranslateY(selectionPolyline.getTranslateY + event.getY - dragY)
+
+        }
 
         selectedPolyline.foreach(teste => {
 
@@ -861,7 +861,7 @@ object whiteboardScroller {
 
   def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double):Unit = {
     val sp:StackPane = new StackPane()
-    val path:String = fl(num).toURI().toString().replaceAll("%20"," ")
+    val path:String = fl(num).toURI.toString.replaceAll("%20"," ")
     val image: Image = new Image(path)
     val iP: ImagePattern = new ImagePattern(image)
     val square = new Rectangle(image.getWidth, image.getHeight, iP)
@@ -871,22 +871,35 @@ object whiteboardScroller {
     sp.getChildren.add(square)
     square.setStrokeWidth(square.getWidth/100)
 
-    def deletePdf(): Unit ={
-      println("cheguei ao delete")
-      val dir : File = new File("src/output/" + filename)
-      dir.deleteRecursively()
-      println(page.getChildren)
-      page.getChildren.remove(sp)
-      println(page.getChildren)
-      camadas_node = camadas_node.filter(p => p != sp)
+    def deletePdf(delete: MenuItem): Unit ={
+      delete.setOnAction(_ => {
+        val dir : File = new File("src/output/" + filename)
+        dir.deleteRecursively()
+        page.getChildren.remove(sp)
+        camadas_node = camadas_node.filter(p => p != sp)
+      })
+    }
+    def resizePdf(resize: CustomMenuItem): Unit = {
+      val size = new TextField(square.getHeight.toString)
+      val set = new Button("Change size")
+      val vBox = new VBox(size, set)
+      vBox.setSpacing(10)
+      vBox.setAlignment(Pos.CENTER)
+      resize.setContent(vBox)
+
+      set.setOnAction(_ => {
+        val newSize:Double = size.getText().toDouble
+        if(sp.getBoundsInParent.getMinY + newSize < page.getMaxHeight && sp.getBoundsInParent.getMinX + newSize*(image.getWidth/image.getHeight) < page.getMaxWidth ) {
+          square.setHeight(size.getText().toDouble)
+          square.setWidth(size.getText().toDouble * (image.getWidth / image.getHeight))
+        }
+      })
 
     }
-    def resizePdf(newSize: Double): Unit = {
-      square.setWidth(newSize*(image.getWidth/image.getHeight))
-      square.setHeight(newSize)
-    }
 
-    sp.setOnContextMenuRequested(click => contextMenuNode(click, sp, square.getHeight.toString) (resizePdf) (deletePdf))
+    val cm: ContextMenu = new ContextMenu()
+
+    sp.setOnContextMenuRequested(click => contextMenuNode(cm, click, sp) (resizePdf) (deletePdf))
 
     val moveBar: HBox = new HBox()
 
@@ -938,24 +951,18 @@ object whiteboardScroller {
 
 
 
-  def contextMenuNode(click: ContextMenuEvent, node : Node, nodeSize: String)(fResize: Double => Unit) (fDelete: () => Unit) :Unit = {
+  def contextMenuNode(cm: ContextMenu, click: ContextMenuEvent, node : Node)(fResize: CustomMenuItem  => Unit) (fDelete: MenuItem => Unit) :Unit = {
+    cm.getItems.clear()
+    val resize : CustomMenuItem = new CustomMenuItem()
+    val delete = new MenuItem("Delete")
 
-      println("fiz o context menu !!!")
-      val resize : CustomMenuItem = new CustomMenuItem()
-      val delete = new MenuItem("Delete")
-      val contextMenu = new ContextMenu(resize, delete)
 
-      var size = new TextField(nodeSize)
-      val set = new Button("Change size")
-      val vBox = new VBox(size, set)
-      vBox.setSpacing(10)
-      vBox.setAlignment(Pos.CENTER)
-      resize.setContent(vBox)
+    cm.setAutoHide(true)
+    fResize(resize)
+    fDelete(delete)
+    cm.getItems.addAll(resize, delete)
 
-      set.setOnAction(_ => fResize(size.getText.toDouble))
-      delete.setOnAction(_ => fDelete())
-
-      contextMenu.show(node, click.getScreenX, click.getScreenY)
+    cm.show(node, click.getScreenX, click.getScreenY)
 
   }
 }

@@ -104,6 +104,7 @@ class Controller {
   }
 
   def updateVisualState(newCurrentSection: Section): Unit = {
+    FxApp.app_state = (FxApp.app_state._1, newCurrentSection)
 
     if (newCurrentSection.id.length > 1)
       goBackButton.setDisable(false)
