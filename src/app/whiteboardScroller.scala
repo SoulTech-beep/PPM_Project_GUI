@@ -35,6 +35,10 @@ class whiteboardScroller {
 
 object whiteboardScroller {
 
+  var camadas: List[Polyline] = List()
+  var camadas_node : List[Node] = List()
+  var camadas_SPMediaView :List[StackPane] = List()
+
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
 
   def makeDraggable(node: Node): Unit = {
@@ -96,9 +100,6 @@ object whiteboardScroller {
     eraserCircle.setFill(Color.TRANSPARENT)
     page.getChildren.add(eraserCircle)
 
-    var camadas: List[Polyline] = List()
-    var camadas_node : List[Node] = List()
-    var camadas_SPMediaView :List[StackPane] = List()
 
     var selectedShapes : List[Node] = List()
     var selectedPolyline :List[Polyline] = List()
@@ -857,6 +858,7 @@ object whiteboardScroller {
         val dir : File = new File("src/output/" + filename)
         dir.deleteRecursively()
         page.getChildren.remove(sp)
+        camadas_node = camadas_node.filter(p => p != sp)
       })
 
       contextMenu.show(square, click.getScreenX, click.getScreenY)
@@ -900,6 +902,7 @@ object whiteboardScroller {
     }
     sp.getChildren.add(moveBar)
     page.getChildren.add(sp)
+    camadas_node = sp :: camadas_node
   }
 
   def getListOfFiles(dir: String):List[File] = {
