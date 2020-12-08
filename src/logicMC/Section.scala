@@ -92,22 +92,17 @@ object Section{
           //estávamos na secção original e como tal é só devolver o updatedSection.sections (que foi atualizado algures no método onde fizemos algo)
           return updatedSection.sections
         }
-        println("head.id: " + head.id + "\tupdatedSection.id:" + updatedSection.id)
         if(head.id == updatedSection.id.substring(0, head.id.length) ) {
-          println("1: " + head + tail)
           //é um pai do henrique ou então é o próprio henrique
               if( head.id.length == updatedSection.id.length){
-                println("2")
                 //é o próprio henrique
                 updatedSection::tail
               }else {
-                println("3")
                 logicMC.Section(head.id, head.name, updateAllAuxiliary(head.sections, updatedSection), head.whiteboards)::tail
               //é um pai  mas nao é aquele que queremos atualizar, é um pai do henrique
               }
 
         }else{
-          println("4: " + head + tail)
           head::updateAllAuxiliary(tail, updatedSection)
         }
   }
@@ -118,7 +113,6 @@ object Section{
     val sectionToEnter = section.sections.indexWhere( p => p.id.split('.').last.toInt == sectionIDtoEnter.toInt)
 
     if(sectionToEnter == -1){
-      println("NO SECTION")
       (mainSection, section)
     }else{
       (mainSection, section.sections.apply(sectionToEnter))
@@ -141,7 +135,6 @@ object Section{
   @tailrec
   def auxiliaryExit(list: List[Section], id:String):Section = list match{
     case head::tail =>
-      println("id: " + id + "\thead.id: " + head.id)
       if(head.id == id.substring(0, head.id.length) ) {
         //é um pai do henrique ou então é o próprio henrique
         if( head.id.length == id.length){
@@ -196,7 +189,6 @@ object Section{
         }
 
       }else{
-        println("4: " + head + tail)
         head::auxiliaryRemoveSection(tail, sectionToRemove)
       }
   }
