@@ -31,6 +31,7 @@ class whiteboardScroller {
 
   val pages: List[Pane] = List()
   val toolbar: customToolBar = new customToolBar()
+
 }
 
 object whiteboardScroller {
@@ -398,7 +399,7 @@ object whiteboardScroller {
         camadas_node.foreach(c => {
 
 
-          val shape = selectionPolyline.intersects(c.asInstanceOf[Shape].getBoundsInParent)
+          val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
 
             selectedShapes = c::selectedShapes
