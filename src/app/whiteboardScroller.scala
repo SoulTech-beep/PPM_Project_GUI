@@ -323,8 +323,19 @@ object whiteboardScroller {
             } else {
               polygon.getPoints.addAll(polygon.getPoints.get(0), polygon.getPoints.get(1))
               page.getChildren.remove(currentLine)
-
               isFirstPoint = true
+
+              //ContextMenu
+              def deletePolygon(delete: MenuItem): Unit ={
+                delete.setOnAction(_ => {
+                  page.getChildren.remove(polygon)
+                  camadas = camadas.filter(p => p != polygon)
+                })
+              }
+
+              val cm: ContextMenu = new ContextMenu()
+              polygon.setOnContextMenuRequested(click => contextMenuNode(cm, click, polygon) (_ => ()) (deletePolygon))
+
             }
           }
         }
@@ -363,6 +374,7 @@ object whiteboardScroller {
 
       if (toolBar.selectedTool == ToolType.geometricShape && toolBar.shapePen.shape != ShapeType.polygon)
         isFirstPoint=true
+
 
       if(toolBar.selectedTool == ToolType.move) {
 
@@ -485,9 +497,12 @@ object whiteboardScroller {
 
         if (toolBar.selectedTool == ToolType.geometricShape) {
 
+          var node: Node = new Node {}
+
           if (toolBar.shapePen.shape == ShapeType.square) {
             if (isFirstPoint) {
               currentRectangle = new Rectangle()
+              node = currentRectangle
               currentRectangle.setX(event.getX)
               currentRectangle.setY(event.getY)
               currentRectangle.setWidth(0)
@@ -511,6 +526,7 @@ object whiteboardScroller {
           if (toolBar.shapePen.shape == ShapeType.circle) {
             if (isFirstPoint) {
               currentCircle = new Circle()
+              node = currentCircle
               currentCircle.setCenterX(event.getX)
               currentCircle.setCenterY(event.getY)
               currentCircle.setStroke(toolBar.shapePen.color.get())
@@ -531,6 +547,7 @@ object whiteboardScroller {
           if (toolBar.shapePen.shape == ShapeType.line) {
             if (isFirstPoint) {
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+              node = currentCircle
               currentLine.setStroke(Color.BLACK)
 
               page.getChildren.add(currentLine)
@@ -543,6 +560,16 @@ object whiteboardScroller {
             }
           }
 
+
+          def deleteShape(delete: MenuItem): Unit ={
+            delete.setOnAction(_ => {
+              page.getChildren.remove(node)
+              camadas_node = camadas_node.filter(p => p != node)
+            })
+          }
+
+          val cm: ContextMenu = new ContextMenu()
+          node.setOnContextMenuRequested(click => contextMenuNode(cm, click, node) (_ => ()) (deleteShape))
         }
 
         if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
