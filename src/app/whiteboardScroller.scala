@@ -818,7 +818,7 @@ object whiteboardScroller {
     for (page <- 0 until document.getNumberOfPages) {
       val bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB)
       //TODO create output directory
-      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-%d.%s", page + 1, extension), 300)
+      ImageIOUtil.writeImage(bim, String.format("src/output/" + file.getName + "/pdf-" + ( page + 1) + "." + extension), 300)
     }
     document.close()
   }
