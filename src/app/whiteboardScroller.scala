@@ -326,6 +326,17 @@ object whiteboardScroller {
               page.getChildren.remove(currentLine)
 
               isFirstPoint = true
+
+              def deletePolygon(delete:MenuItem):Unit = {
+                delete.setOnAction(_ => {
+                  page.getChildren.remove(polygon)
+                  camadas = camadas.filter(p=> p!= polygon)
+                })
+              }
+
+              val contextMenu = new ContextMenu()
+              polygon.setOnContextMenuRequested(click => contextMenuNode(contextMenu, click,polygon)(_ => ()) (deletePolygon))
+
             }
           }
         }
@@ -446,23 +457,28 @@ object whiteboardScroller {
     page.setOnMousePressed(event => {
 
       if(toolBar.selectedTool == ToolType.move) {
-        println("é o tooltype.move")
         dragX = event.getX
         dragY = event.getY
 
         val newsel: Polyline = camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
+        val newselNodes: Node = camadas_node.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
 
-        if(newsel == null)
-          selectedPolyline = List()
-        else if(!selectedPolyline.contains(newsel))
+        if(newsel == null) {
+          if(newselNodes == null) {
+            page.getChildren.remove(selectionPolyline)
+            selectedPolyline = List()
+            selectedShapes = List()
+          }  else if (!selectedShapes.contains(newselNodes)) {
+            selectedPolyline = List()
+            selectedShapes = List(newselNodes)
+          }
+        } else if(!selectedPolyline.contains(newsel)) {
           selectedPolyline = List(newsel)
-
-
+          selectedShapes = List()
+        }
       } else {
-        println("NÃO é o tooltype.move")
 
         if (selectionPolyline != null) {
-          println("vamos remover a selectionPolyline")
           page.getChildren.remove(selectionPolyline)
         }
 
@@ -486,9 +502,12 @@ object whiteboardScroller {
 
         if (toolBar.selectedTool == ToolType.geometricShape) {
 
+          var node:Node = new Node{}
+
           if (toolBar.shapePen.shape == ShapeType.square) {
             if (isFirstPoint) {
               currentRectangle = new Rectangle()
+              node = currentRectangle
               currentRectangle.setX(event.getX)
               currentRectangle.setY(event.getY)
               currentRectangle.setWidth(0)
@@ -512,6 +531,7 @@ object whiteboardScroller {
           if (toolBar.shapePen.shape == ShapeType.circle) {
             if (isFirstPoint) {
               currentCircle = new Circle()
+              node = currentCircle
               currentCircle.setCenterX(event.getX)
               currentCircle.setCenterY(event.getY)
               currentCircle.setStroke(toolBar.shapePen.color.get())
@@ -532,6 +552,7 @@ object whiteboardScroller {
           if (toolBar.shapePen.shape == ShapeType.line) {
             if (isFirstPoint) {
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+              node = currentLine
               currentLine.setStroke(Color.BLACK)
 
               page.getChildren.add(currentLine)
@@ -543,6 +564,16 @@ object whiteboardScroller {
               isFirstPoint = true
             }
           }
+
+          def deleteShape(delete:MenuItem):Unit = {
+            delete.setOnAction( _ => {
+              page.getChildren.remove(node)
+              camadas_node = camadas_node.filter(p => p!= node)
+            })
+          }
+
+          val contextMenu = new ContextMenu()
+          node.setOnContextMenuRequested(click => contextMenuNode(contextMenu, click, node) (_ => ()) (deleteShape))
 
         }
 
@@ -579,10 +610,8 @@ object whiteboardScroller {
           currentLayer.getPoints.add(event.getX)
           currentLayer.getPoints.add(event.getY)
 
-          currentLayer.setOnMouseClicked(_ => println("clickado"))
 
         } else if (toolBar.selectedTool == ToolType.eraser) {
-          println("erasing")
 
           var porApagar: List[Polyline] = List()
 
@@ -599,12 +628,10 @@ object whiteboardScroller {
               range.foreach(p => if (p % 2 == 0) {
                 if (points.get(p) + c.getLayoutX > event.getX - eraserRadius && points.get(p) +c.getLayoutX < event.getX + eraserRadius && points.get(p + 1) +c.getLayoutY > event.getY - eraserRadius && points.get(p + 1) +c.getLayoutY< event.getY + eraserRadius) {
 
-                  println("a apagar: " + c)
 
                   porApagar = c :: porApagar
                   page.getChildren.remove(c)
                   loop.break()
-                  println("HEHE NO BREAK")
                 }
               })
             }
