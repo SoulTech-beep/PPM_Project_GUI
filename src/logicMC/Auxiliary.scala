@@ -91,8 +91,6 @@ object Auxiliary {
    def horizontalLine(width: Double, height: Double, pane: Pane, step:Int): Unit = {
       val j = (step to height.toInt - step) by step
 
-      println(j + "\t" + "width-5:" + (width-5))
-
       j.foreach(h => {
          pane.getChildren.add(0, drawLine(5, width-5, h, h))
       })

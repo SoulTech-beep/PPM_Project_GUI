@@ -14,6 +14,8 @@ import logicMC.{Auxiliary, Colors, PageSize}
 
 class PagePicker {
 
+  var buttonClicked = false
+
   var colorVBox: VBox = new VBox()
   var sizeVBox: VBox = new VBox()
   var pageVBox: VBox = new VBox()
@@ -49,6 +51,10 @@ class PagePicker {
       p.setPadding(new Insets(5, 5, 5, 5))
     })
 
+  }
+
+  def wasClicked:Boolean = {
+    buttonClicked
   }
 
   def getPage():(Color, PageSize, PageStyle) = {
@@ -204,6 +210,7 @@ class PagePicker {
     button.setPrefHeight(35)
 
     button.setOnAction(_ => {
+      buttonClicked = true
       val stage = button.getScene.getWindow.asInstanceOf[Stage]
       stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
     })

@@ -7,7 +7,7 @@ import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.geometry.{Bounds, Insets, Point2D, Pos}
 import javafx.scene.control._
 import javafx.scene.image.Image
-import javafx.scene.input.ContextMenuEvent
+import javafx.scene.input.{ContextMenuEvent, KeyCode}
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
@@ -20,8 +20,10 @@ import logicMC.Auxiliary
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
-
 import java.io.File
+
+import javafx.event.ActionEvent
+
 import scala.reflect.io.Path.jfile2path
 import scala.util.control.Breaks
 
@@ -39,6 +41,12 @@ object whiteboardScroller {
   var camadas_SPMediaView :List[StackPane] = List()
 
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
+
+  def setOnEnter(button:Button, textFields: TextField*):Unit = {
+    textFields.foreach(textField => textField.setOnKeyPressed(key => if(key.getCode == KeyCode.ENTER){
+     button.fireEvent(new ActionEvent())
+   }))
+  }
 
   def makeDraggable(node: Node): Unit = {
     var dragX: Double = 0
@@ -130,7 +138,7 @@ object whiteboardScroller {
         val num = pdfNum
         generateImageFromPDF(s, "png", num)
         val listFiles: List[File] = getListOfFiles("src/output/" + s.split('/').last.replace(".pdf",num.toString))
-        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200)
+        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200, new Point2D(20,20))
         pdfNum = pdfNum + 1
         toolBar.selectedTool = ToolType.move
       }
@@ -159,15 +167,21 @@ object whiteboardScroller {
           def resizeImage(resize: CustomMenuItem): Unit = {
             val height = new TextField(square.getHeight.toString)
             val width = new TextField(square.getWidth.toString)
-            val set = new Button("Change size")
-            val vBox = new VBox(height, width, set)
+            val setButton = new Button("Change size")
+            val vBox = new VBox(height, width, setButton)
             vBox.setSpacing(10)
             vBox.setAlignment(Pos.CENTER)
             resize.setContent(vBox)
 
-            set.setOnAction(_ => {
-              square.setWidth(width.getText.toDouble)
-              square.setHeight(height.getText.toDouble)
+            setOnEnter(setButton, height, width)
+
+            setButton.setOnAction(_ => {
+
+              if(square.getBoundsInParent.getMinY + height.getText.toDouble < page.getMaxHeight && square.getBoundsInParent.getMinX + width.getText.toDouble < page.getMaxWidth ) {
+                square.setHeight(height.getText().toDouble)
+                square.setWidth(width.getText().toDouble )
+              }
+
             })
           }
           val cm: ContextMenu = new ContextMenu()
@@ -176,14 +190,12 @@ object whiteboardScroller {
         }
       }
 
-
       if(toolBar.selectedTool == ToolType.text){
         val texto = testeTexto()
         texto._2.setOpacity(0)
         page.getChildren.addAll(texto._1, texto._2)
       }
 
-      //commit
       if(toolBar.selectedTool == ToolType.video) {
         if(toolBar.videoPath != "") {
           val video: Media = new Media(toolBar.videoPath)
@@ -271,6 +283,8 @@ object whiteboardScroller {
             vBox.setSpacing(10)
             vBox.setAlignment(Pos.CENTER)
             resize.setContent(vBox)
+
+            setOnEnter(set, size)
 
             set.setOnAction(_ => {
               val newSize:Double = size.getText().toDouble
@@ -431,8 +445,9 @@ object whiteboardScroller {
         selectedPolyline = List()
 
         camadas.foreach(c => {
-          val shape = selectionPolyline.intersects(c.getBoundsInParent)
-          if (shape) {
+          val shape = Shape.intersect(selectionPolyline, c)
+          //val shape = selectionPolyline.intersects(c.getBoundsInParent)
+          if (shape.getLayoutBounds.getWidth != -1) {
             selectedPolyline = c :: selectedPolyline
             c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
           } else {
@@ -460,22 +475,60 @@ object whiteboardScroller {
         dragX = event.getX
         dragY = event.getY
 
-        val newsel: Polyline = camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
+        val rectangle = new Rectangle(1, 1)
+        rectangle.setX(event.getX)
+        rectangle.setY(event.getY)
+
+        //TODO rectangle as global variable
+        page.getChildren.add(rectangle)
+
+        val newsel :Polyline = camadas.find(c => {
+
+          val shape = Shape.intersect(rectangle, c)
+          if(shape.getLayoutBounds.getWidth != -1){
+            true
+          }else{
+            false
+          }
+        }).getOrElse(null)
+
+        page.getChildren.remove(rectangle)
+
+        //val newsel: Polyline = camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
         val newselNodes: Node = camadas_node.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
 
         if(newsel == null) {
+
+          selectedShapes.foreach(c => c.setStyle(""))
+          selectedPolyline.foreach(c => c.setStyle(""))
+
           if(newselNodes == null) {
             page.getChildren.remove(selectionPolyline)
+
             selectedPolyline = List()
             selectedShapes = List()
+
           }  else if (!selectedShapes.contains(newselNodes)) {
+            page.getChildren.remove(selectionPolyline)
+
             selectedPolyline = List()
             selectedShapes = List(newselNodes)
+            newselNodes.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
           }
         } else if(!selectedPolyline.contains(newsel)) {
+          selectedShapes.foreach(c => c.setStyle(""))
+          selectedPolyline.foreach(c => c.setStyle(""))
+
+          page.getChildren.remove(selectionPolyline)
+
           selectedPolyline = List(newsel)
           selectedShapes = List()
+
+
+          newsel.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
         }
+
+
       } else {
 
         if (selectionPolyline != null) {
@@ -553,7 +606,10 @@ object whiteboardScroller {
             if (isFirstPoint) {
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
               node = currentLine
-              currentLine.setStroke(Color.BLACK)
+
+              currentLine.setStroke(toolBar.shapePen.color.get())
+              currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+              currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
               page.getChildren.add(currentLine)
               firstPoint = new Point2D(event.getX, event.getY)
@@ -821,8 +877,8 @@ object whiteboardScroller {
     VBox.setMargin(addPageButton, new Insets(0,0,50,0))
     addPageButton.setPrefSize(130, 50)
 
-    addPageButton.setOnAction(_ => {
 
+    addPageButton.setOnAction(_ => {
       val pagePicker = new PagePicker()
 
       val scene= new Scene(pagePicker.initialize())
@@ -842,9 +898,13 @@ object whiteboardScroller {
       stage.setOnCloseRequest(_ => {
         Auxiliary.blurBackground(30, 0, 500, pane)
 
-        val values = pagePicker.getPage()
 
-        pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3))
+        if(pagePicker.wasClicked){
+          val values = pagePicker.getPage()
+
+          pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3))
+        }
+
       })
 
     })
@@ -887,7 +947,7 @@ object whiteboardScroller {
     document.close()
   }
 
-  def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double):Unit = {
+  def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double, point: Point2D):Unit = {
     val sp:StackPane = new StackPane()
     val path:String = fl(num).toURI.toString.replaceAll("%20"," ")
     val image: Image = new Image(path)
@@ -915,6 +975,8 @@ object whiteboardScroller {
       vBox.setAlignment(Pos.CENTER)
       resize.setContent(vBox)
 
+      setOnEnter(set, size)
+
       set.setOnAction(_ => {
         val newSize:Double = size.getText().toDouble
         if(sp.getBoundsInParent.getMinY + newSize < page.getMaxHeight && sp.getBoundsInParent.getMinX + newSize*(image.getWidth/image.getHeight) < page.getMaxWidth ) {
@@ -922,7 +984,6 @@ object whiteboardScroller {
           square.setWidth(size.getText().toDouble * (image.getWidth / image.getHeight))
         }
       })
-
     }
 
     val cm: ContextMenu = new ContextMenu()
@@ -949,7 +1010,7 @@ object whiteboardScroller {
       val prevButton: Button = new Button("<")
       prevButton.setOnAction(e => {
         page.getChildren.remove(sp)
-        getPdfView(page,filename, fl, num - 1,square.getHeight)
+        getPdfView(page,filename, fl, num - 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY))
       })
       moveBar.getChildren.add(prevButton)
     }
@@ -958,12 +1019,16 @@ object whiteboardScroller {
       val nextButton: Button = new Button(">")
       nextButton.setOnAction(e => {
         page.getChildren.remove(sp)
-        getPdfView(page,filename, fl, num + 1,square.getHeight)
+        getPdfView(page,filename, fl, num + 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY))
       })
       moveBar.getChildren.add(nextButton)
     }
     sp.getChildren.add(moveBar)
     page.getChildren.add(sp)
+
+    sp.setLayoutX(point.getX)
+    sp.setLayoutY(point.getY)
+
     camadas_node = sp :: camadas_node
   }
 
