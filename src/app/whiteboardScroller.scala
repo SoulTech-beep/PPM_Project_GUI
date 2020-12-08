@@ -251,50 +251,6 @@ object whiteboardScroller {
       }
 
       if (toolBar.selectedTool == ToolType.geometricShape) {
-
-        if (toolBar.shapePen.shape == ShapeType.square) {
-          if (isFirstPoint) {
-            currentRectangle = new Rectangle()
-            currentRectangle.setX(event.getX)
-            currentRectangle.setY(event.getY)
-            currentRectangle.setWidth(0)
-            currentRectangle.setHeight(0)
-
-            currentRectangle.setStroke(toolBar.shapePen.color.get())
-            currentRectangle.setStrokeWidth(toolBar.shapePen.width.get)
-            currentRectangle.setFill(toolBar.shapePen.color.get())
-            currentRectangle.setOpacity(toolBar.shapePen.opacity.get)
-
-            page.getChildren.add(currentRectangle)
-            firstPoint = new Point2D(event.getX, event.getY)
-            isFirstPoint = false
-
-            camadas_node = currentRectangle::camadas_node
-          } else {
-            isFirstPoint = true
-          }
-        }
-
-        if (toolBar.shapePen.shape == ShapeType.circle) {
-          if (isFirstPoint) {
-            currentCircle = new Circle()
-            currentCircle.setCenterX(event.getX)
-            currentCircle.setCenterY(event.getY)
-            currentCircle.setStroke(toolBar.shapePen.color.get())
-            currentCircle.setStrokeWidth(toolBar.shapePen.width.get)
-            currentCircle.setFill(toolBar.shapePen.color.get)
-            currentCircle.setOpacity(toolBar.shapePen.opacity.get)
-
-            page.getChildren.add(currentCircle)
-            firstPoint = new Point2D(event.getX, event.getY)
-            isFirstPoint = false
-
-            camadas_node = currentCircle::camadas_node
-          } else {
-            isFirstPoint = true
-          }
-        }
-
         if (toolBar.shapePen.shape == ShapeType.polygon) {
           if (isFirstPoint) {
             polygon = new Polyline()
@@ -311,7 +267,7 @@ object whiteboardScroller {
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-            camadas = polygon::camadas
+            camadas = polygon :: camadas
           } else {
             if (firstPoint.distance(event.getX, event.getY) > 20) {
               currentLine.setEndX(event.getX)
@@ -336,22 +292,6 @@ object whiteboardScroller {
             }
           }
         }
-
-        if (toolBar.shapePen.shape == ShapeType.line) {
-          if (isFirstPoint) {
-            currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-            currentLine.setStroke(Color.BLACK)
-
-            page.getChildren.add(currentLine)
-            firstPoint = new Point2D(event.getX, event.getY)
-            isFirstPoint = false
-
-            camadas_node = currentLine::camadas_node
-          } else {
-            isFirstPoint = true
-          }
-        }
-
       }
     })
 
@@ -364,43 +304,7 @@ object whiteboardScroller {
         eraserCircle.setOpacity(0)
       }
 
-      //TODO Change this to on mouse moved
       if (toolBar.selectedTool == ToolType.geometricShape) {
-
-        if (toolBar.shapePen.shape == ShapeType.square) {
-          if (!isFirstPoint) {
-
-            val deltaX = event.getX - firstPoint.getX
-            val deltaY = event.getY - firstPoint.getY
-            if (deltaX < 0) {
-              currentRectangle.setX(event.getX)
-              currentRectangle.setWidth(-deltaX)
-            }
-            else {
-              currentRectangle.setX(firstPoint.getX)
-              currentRectangle.setWidth(event.getX - firstPoint.getX)
-            }
-            if (deltaY < 0) {
-              currentRectangle.setY(event.getY)
-              currentRectangle.setHeight(-deltaY)
-            }
-            else {
-              currentRectangle.setY(firstPoint.getY)
-              currentRectangle.setHeight(event.getY - firstPoint.getY)
-            }
-
-
-          }
-        }
-
-        if (toolBar.shapePen.shape == ShapeType.circle) {
-          if (!isFirstPoint) {
-            val currentPoint = new Point2D(event.getX, event.getY)
-            val radius = currentPoint.distance(new Point2D(currentCircle.getCenterX, currentCircle.getCenterY))
-            currentCircle.setRadius(radius)
-          }
-        }
-
         if (toolBar.shapePen.shape == ShapeType.polygon) {
           if (!isFirstPoint) {
             if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
@@ -413,24 +317,16 @@ object whiteboardScroller {
             }
           }
         }
-
-        if (toolBar.shapePen.shape == ShapeType.line) {
-          if (!isFirstPoint) {
-            if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
-              currentLine.setEndX(firstPoint.getX)
-              currentLine.setEndY(firstPoint.getY)
-            } else {
-              currentLine.setEndX(event.getX)
-              currentLine.setEndY(event.getY)
-            }
-          }
-        }
-
       }
+
+
 
     })
 
-    page.setOnMouseReleased(_ => {
+    page.setOnMouseReleased(event => {
+
+      if (toolBar.selectedTool == ToolType.geometricShape && toolBar.shapePen.shape != ShapeType.polygon)
+        isFirstPoint=true
 
       if(toolBar.selectedTool == ToolType.move) {
 
@@ -557,6 +453,68 @@ object whiteboardScroller {
 
         }
 
+        if (toolBar.selectedTool == ToolType.geometricShape) {
+
+          if (toolBar.shapePen.shape == ShapeType.square) {
+            if (isFirstPoint) {
+              currentRectangle = new Rectangle()
+              currentRectangle.setX(event.getX)
+              currentRectangle.setY(event.getY)
+              currentRectangle.setWidth(0)
+              currentRectangle.setHeight(0)
+
+              currentRectangle.setStroke(toolBar.shapePen.color.get())
+              currentRectangle.setStrokeWidth(toolBar.shapePen.width.get)
+              currentRectangle.setFill(toolBar.shapePen.color.get())
+              currentRectangle.setOpacity(toolBar.shapePen.opacity.get)
+
+              page.getChildren.add(currentRectangle)
+              firstPoint = new Point2D(event.getX, event.getY)
+              isFirstPoint = false
+
+              camadas_node = currentRectangle :: camadas_node
+            } else {
+              isFirstPoint = true
+            }
+          }
+
+          if (toolBar.shapePen.shape == ShapeType.circle) {
+            if (isFirstPoint) {
+              currentCircle = new Circle()
+              currentCircle.setCenterX(event.getX)
+              currentCircle.setCenterY(event.getY)
+              currentCircle.setStroke(toolBar.shapePen.color.get())
+              currentCircle.setStrokeWidth(toolBar.shapePen.width.get)
+              currentCircle.setFill(toolBar.shapePen.color.get)
+              currentCircle.setOpacity(toolBar.shapePen.opacity.get)
+
+              page.getChildren.add(currentCircle)
+              firstPoint = new Point2D(event.getX, event.getY)
+              isFirstPoint = false
+
+              camadas_node = currentCircle::camadas_node
+            } else {
+              isFirstPoint = true
+            }
+          }
+
+          if (toolBar.shapePen.shape == ShapeType.line) {
+            if (isFirstPoint) {
+              currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
+              currentLine.setStroke(Color.BLACK)
+
+              page.getChildren.add(currentLine)
+              firstPoint = new Point2D(event.getX, event.getY)
+              isFirstPoint = false
+
+              camadas_node = currentLine::camadas_node
+            } else {
+              isFirstPoint = true
+            }
+          }
+
+        }
+
         if (toolBar.selectedTool == ToolType.pen || toolBar.selectedTool == ToolType.marker) {
 
           eraserCircle.setOpacity(0)
@@ -631,6 +589,7 @@ object whiteboardScroller {
       }
     })
 
+
     page.setOnMouseDragged(event => {
 
       if(toolBar.selectedTool == ToolType.move) {
@@ -644,7 +603,6 @@ object whiteboardScroller {
 
           if(teste.getBoundsInParent.getMinY + event.getY - dragY >= 0 && teste.getBoundsInParent.getMaxY + event.getY - dragY <= page.getHeight) {
             teste.setTranslateY(teste.getTranslateY + event.getY - dragY)
-
           }
 
 
@@ -665,6 +623,57 @@ object whiteboardScroller {
 
         dragX = event.getX
         dragY = event.getY
+      }
+
+      //TODO Change this to on mouse moved
+      if (toolBar.selectedTool == ToolType.geometricShape) {
+
+        if (toolBar.shapePen.shape == ShapeType.square) {
+          if (!isFirstPoint) {
+
+            val deltaX = event.getX - firstPoint.getX
+            val deltaY = event.getY - firstPoint.getY
+            if (deltaX < 0) {
+              currentRectangle.setX(event.getX)
+              currentRectangle.setWidth(-deltaX)
+            }
+            else {
+              currentRectangle.setX(firstPoint.getX)
+              currentRectangle.setWidth(event.getX - firstPoint.getX)
+            }
+            if (deltaY < 0) {
+              currentRectangle.setY(event.getY)
+              currentRectangle.setHeight(-deltaY)
+            }
+            else {
+              currentRectangle.setY(firstPoint.getY)
+              currentRectangle.setHeight(event.getY - firstPoint.getY)
+            }
+
+
+          }
+        }
+
+        if (toolBar.shapePen.shape == ShapeType.circle) {
+          if (!isFirstPoint) {
+            val currentPoint = new Point2D(event.getX, event.getY)
+            val radius = currentPoint.distance(new Point2D(currentCircle.getCenterX, currentCircle.getCenterY))
+            currentCircle.setRadius(radius)
+          }
+        }
+
+        if (toolBar.shapePen.shape == ShapeType.line) {
+          if (!isFirstPoint) {
+            if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
+              currentLine.setEndX(firstPoint.getX)
+              currentLine.setEndY(firstPoint.getY)
+            } else {
+              currentLine.setEndX(event.getX)
+              currentLine.setEndY(event.getY)
+            }
+          }
+        }
+
       }
 
       if (toolBar.selectedTool == ToolType.selector) {
@@ -713,6 +722,7 @@ object whiteboardScroller {
       }
 
     })
+
 
     def applyPageStyle(newPageStyle:PageStyle):Unit = newPageStyle match {
       case PageStyle.DOTTED => Auxiliary.dottedPage(width, height, page, 30)
