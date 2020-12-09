@@ -5,11 +5,13 @@ import javafx.beans.property.ObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control.{Button, TextField, ToggleButton, ToggleGroup}
+import javafx.scene.input.KeyCode
 import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
 import logicMC.Auxiliary.{getSpacer, getStyledHBox}
 import logicMC.PageSize.PageSize
+import logicMC.Whiteboard.checkTextFieldAndChange
 import logicMC.{Auxiliary, PageSize, Section}
 
 
@@ -62,6 +64,12 @@ class WhiteboardCreate() {
     pageVBox.getChildren.add(getStylePicker())
 
     whiteboardNameTextField.getStyleClass.add("customTextField")
+
+    whiteboardNameTextField.setOnKeyPressed(p => {
+      if(p.getCode == KeyCode.ENTER) {
+        onCreateClicked()
+      }
+    })
 
     createButton = setCreateButton()
     mainVBox.getChildren.add(createButton)
@@ -177,10 +185,14 @@ class WhiteboardCreate() {
   }
 
   def onCreateClicked(): Unit = {
-    FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
-    val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
-    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+    if(whiteboardNameTextField.getText() != "") {
+      FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
+      val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
+      stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+    }
   }
+
+
 
   def setCreateButton():Button = {
     val button = new Button()
