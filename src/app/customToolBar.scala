@@ -1,7 +1,7 @@
 package app
 
-import app.ToolType.ToolType
-import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
+import app.ToolType.{ToolType, selector}
+import javafx.beans.property.{ObjectProperty, SimpleBooleanProperty, SimpleDoubleProperty, SimpleIntegerProperty, SimpleObjectProperty}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
 import javafx.geometry.Pos
@@ -11,6 +11,7 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Polygon, Rectangle}
+import javafx.scene.text.FontWeight
 import javafx.stage.FileChooser.ExtensionFilter
 import javafx.stage.{FileChooser, Stage}
 import logicMC.Eraser
@@ -40,6 +41,9 @@ class customToolBar {
   var selectedTool:ToolType = null
 
   val optionsHBox:HBox = new HBox()
+
+  var textTool: CustomText = CustomText(new SimpleObjectProperty[Color](Color.BLACK), new SimpleObjectProperty[FontWeight](FontWeight.BOLD), new SimpleIntegerProperty(10), new SimpleDoubleProperty(1))
+  val textToolSelected: SimpleBooleanProperty = new SimpleBooleanProperty(false)
 
   var imagePath: String = ""
   var videoPath: String = ""
@@ -234,8 +238,7 @@ class customToolBar {
     buttonList = textButton :: buttonList
 
     textButton.setOnAction(_ => {
-      selectedTool = ToolType.text
-      optionsHBox.getChildren.clear()
+      selectTool(ToolType.text)
     })
 
     val icon = new ImageView(new Image("images/text.png"))
@@ -302,6 +305,7 @@ class customToolBar {
 
     moveButton.setOnAction(_ => {
       selectedTool = ToolType.move
+      textToolSelected.set(false)
       optionsHBox.getChildren.clear()
     })
 
@@ -360,9 +364,86 @@ class customToolBar {
     toolbar.getItems.add(0,penButton)
   }
 
-  def selectTool(toolName: ToolType): Unit = {
+  def getFontStylePicker():MenuButton = {
+    val menuButton = new MenuButton()
 
+    val bold = new Button("Bold")
+    val light = new Button("Light")
+    val regular = new Button("Regular")
+
+    val hBoxStyles = new HBox()
+    hBoxStyles.getChildren.addAll(light, regular, bold)
+    hBoxStyles.setAlignment(Pos.CENTER)
+    hBoxStyles.setSpacing(10)
+
+    val specifiedStyleMenuItem = new CustomMenuItem()
+    specifiedStyleMenuItem.setContent(hBoxStyles)
+    specifiedStyleMenuItem.setHideOnClick(false)
+
+    bold.setOnAction(p => textTool.changeTextWeight(FontWeight.BLACK))
+    light.setOnAction(p => textTool.changeTextWeight(FontWeight.LIGHT))
+    regular.setOnAction(p => textTool.changeTextWeight(FontWeight.NORMAL))
+
+    menuButton.getItems.add(specifiedStyleMenuItem)
+
+    val icon = new ImageView(new Image("images/textStyle.png"))
+    icon.setSmooth(true)
+    icon.setFitHeight(20)
+    icon.setFitWidth(20)
+
+    menuButton.setGraphic(icon)
+
+    menuButton
+  }
+
+  def selectTool(toolName: ToolType): Unit = {
     optionsHBox.getChildren.clear()
+
+    if(toolName == ToolType.text){
+      textToolSelected.set(true)
+
+      selectedTool = toolName
+
+      val slOpacity: Slider = getSliderMenu(textTool.opacity.get(), (0,1), 0.1)
+
+      slOpacity.valueProperty().addListener(new ChangeListener[Number] {
+        override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+          textTool.changeOpacity(t1.doubleValue())
+        }
+      })
+
+      val sliderSize: Slider = getSliderMenu(textTool.textSize.get, (12,20), 3)
+      sliderSize.valueProperty().addListener(new ChangeListener[Number] {
+        override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+          textTool.changeTextSize(t1.intValue())
+        }
+      })
+
+      val menuButton = new MenuButton()
+      menuButton.setGraphic(getCircle(textTool.textColor.get(), true))
+
+      val colorPicker = new ColorPicker()
+      colorPicker.setOnAction(a => {
+        textTool.changeTextColor(colorPicker.getValue)
+        menuButton.setGraphic(getCircle(colorPicker.getValue,true))
+      })
+
+      val colorPickerMenuItem = new CustomMenuItem()
+
+      colorPickerMenuItem.setContent(colorPicker)
+      colorPickerMenuItem.setHideOnClick(false)
+
+      menuButton.getItems.addAll(colorPickerMenuItem)
+
+      optionsHBox.getChildren.addAll(
+        menuButton,
+        toMenuItem(slOpacity, "images/opacity.png"),
+        toMenuItem(sliderSize, "images/width.png"),
+        getFontStylePicker())
+
+    }else{
+      textToolSelected.set(false)
+    }
 
     if(toolName == ToolType.pen || toolName == ToolType.marker){
       selectedTool = toolName
@@ -385,7 +466,6 @@ class customToolBar {
       setColors.setContent(hboxColors)
       setColors.setHideOnClick(false)
 
-      //TODO can't select custom colors!
       val colorPicker = new ColorPicker()
       colorPicker.setOnAction(a => {
         dropDown.setGraphic(getCircle(colorPicker.getValue,true))
@@ -513,8 +593,8 @@ class customToolBar {
     //TODO can't select custom colors!
     val colorPicker = new ColorPicker()
     colorPicker.setOnAction(a => {
+      shapePen = f(shapePen, colorPicker.getValue)
       menuButton.setGraphic(getCircle(colorPicker.getValue,fill))
-      shapePen = shapePen.changeColor(colorPicker.getValue)
     })
 
     colorPickerMenuItem.setContent(colorPicker)
@@ -527,7 +607,6 @@ class customToolBar {
     redColor.setOnAction(p => {
       menuButton.setGraphic(getCircle(Color.RED,fill))
       shapePen = f(shapePen, Color.RED)
-      //shapePen = shapePen.changeColor(Color.RED)
     })
 
     blueColor.setOnAction(p => {
@@ -541,10 +620,8 @@ class customToolBar {
     })
 
     menuButton.setGraphic(getCircle(f1(shapePen).get(), fill))
-    //menuButton.setGraphic(getCircle(shapePen.fillColor.get, true))
 
     menuButton.getItems.addAll(specifiedColorsMenuItem, colorPickerMenuItem)
-    //colorPicker.getStyleClass.add("button")
 
     menuButton
   }

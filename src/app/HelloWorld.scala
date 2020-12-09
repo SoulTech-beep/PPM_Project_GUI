@@ -46,6 +46,8 @@ object FxApp {
     Section("0.2", "Miguel", List(), List())
   ), List(new Whiteboard(0, Color.BLUE, (20,20), List(), "IA", PageStyle.LINED)))
 
+  var colorStyle:ColorStyle = new ColorStyle()
+
   var app_state = (originalSection, originalSection)
 
   def main(args: Array[String]): Unit = {

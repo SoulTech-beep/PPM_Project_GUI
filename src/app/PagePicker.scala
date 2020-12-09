@@ -10,7 +10,7 @@ import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
 import logicMC.Auxiliary.{getSpacer, getStyledHBox}
 import logicMC.PageSize.PageSize
-import logicMC.{Auxiliary, Colors, PageSize}
+import logicMC.{Auxiliary, PageSize}
 
 class PagePicker {
 

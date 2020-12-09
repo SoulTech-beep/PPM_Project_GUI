@@ -12,7 +12,7 @@ import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
-import javafx.scene.text.Text
+import javafx.scene.text.{Font, FontWeight, Text}
 import javafx.scene.{Node, Scene}
 import javafx.stage.{Modality, Stage}
 import javafx.util.Duration
@@ -21,7 +21,9 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
 import java.io.File
+import java.lang
 
+import javafx.beans.property.{SimpleDoubleProperty, SimpleIntegerProperty, SimpleObjectProperty}
 import javafx.event.ActionEvent
 
 import scala.reflect.io.Path.jfile2path
@@ -64,16 +66,66 @@ object whiteboardScroller {
     })
   }
 
-  def testeTexto():(TextArea, Text) = {
+  def testeTexto(customToolBar: customToolBar):(TextArea, Text) = {
 
-    val textArea = new TextArea()
+    val myTextTool:CustomText = CustomText(new SimpleObjectProperty[Color](Color.BLACK), new SimpleObjectProperty[FontWeight](FontWeight.BOLD), new SimpleIntegerProperty(10), new SimpleDoubleProperty(1))
+    customToolBar.textTool = myTextTool
+    //só agora aqui selecionarmos a ferramenta na tool bar, de forma a q cada caixa de texto tenha as suas próprias configs...
+
+    val textArea = new TextArea("Lorem Ipsum")
     textArea.setPrefSize(200, 40)
     textArea.setWrapText(true)
 
-    val textHolder = new Text()
+
+    val textHolder = new Text("Lorem Ipsum")
     var oldHeight = 0.0
 
+    textArea.setOnMouseClicked(_ => {
+      customToolBar.textTool = myTextTool
+    })
+
+    customToolBar.textToolSelected.addListener(new ChangeListener[lang.Boolean] {
+      override def changed(observableValue: ObservableValue[_ <: lang.Boolean], t: lang.Boolean, t1: lang.Boolean): Unit = {
+        if(t1){
+          textArea.setDisable(false)
+        }else{
+          textArea.setDisable(true)
+        }
+      }
+    })
+
+    textArea.setEditable(true)
+
+    myTextTool.textWeight.addListener(new ChangeListener[FontWeight] {
+      override def changed(observableValue: ObservableValue[_ <: FontWeight], t: FontWeight, t1: FontWeight): Unit = {
+        textArea.setFont(Auxiliary.getFontWeight(myTextTool.textSize.get, t1))
+        textHolder.setFont(Auxiliary.getFontWeight(myTextTool.textSize.get, t1))
+      }
+    })
+
+    myTextTool.opacity.addListener(new ChangeListener[Number] {
+      override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+        textArea.setOpacity(t1.doubleValue())
+      }
+    })
+
     textArea.setFont(Auxiliary.myFont)
+    textHolder.setFont(Auxiliary.myFont)
+
+    myTextTool.textSize.addListener(new ChangeListener[Number] {
+      override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
+        textArea.setFont(Auxiliary.getFont(t1.intValue()))
+        textHolder.setFont(Auxiliary.getFont(t1.intValue()))
+      }
+    })
+
+
+    myTextTool.textColor.addListener(new ChangeListener[Color] {
+      override def changed(observableValue: ObservableValue[_ <: Color], t: Color, t1: Color): Unit = {
+        //COOOOOR
+        textArea.setStyle("-fx-text-fill: " + Auxiliary.toHexString(t1) + ";")
+      }
+    })
 
     textHolder.setWrappingWidth(200-20)
 
@@ -86,7 +138,7 @@ object whiteboardScroller {
         if(oldHeight != newValue.getHeight ){
           println(newValue.getHeight)
           oldHeight = newValue.getHeight
-          textArea.setPrefHeight(textHolder.getLayoutBounds.getHeight*1.07 + 20)
+          textArea.setPrefHeight(textHolder.getLayoutBounds.getHeight*1.07*(0.08333*myTextTool.textSize.get +0.1667) + 20)
         }
       }
     })
@@ -191,9 +243,18 @@ object whiteboardScroller {
       }
 
       if(toolBar.selectedTool == ToolType.text){
-        val texto = testeTexto()
+        val texto = testeTexto(toolBar)
         texto._2.setOpacity(0)
+
+        texto._1.setLayoutX(20)
+        texto._1.setLayoutY(20)
+
+        camadas_node = texto._1 :: texto._2 :: camadas_node
+
         page.getChildren.addAll(texto._1, texto._2)
+
+
+
       }
 
       if(toolBar.selectedTool == ToolType.video) {
@@ -459,7 +520,7 @@ object whiteboardScroller {
           val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
             selectedShapes = c::selectedShapes
-            c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
+            c.setStyle(c.getStyle + "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
           } else {
             c.setStyle("")
           }
@@ -591,7 +652,7 @@ object whiteboardScroller {
               currentCircle.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
               currentCircle.setFill(toolBar.shapePen.fillColor.get)
               currentCircle.setOpacity(toolBar.shapePen.opacity.get)
-
+              
               page.getChildren.add(currentCircle)
               firstPoint = new Point2D(event.getX, event.getY)
               isFirstPoint = false

@@ -40,6 +40,9 @@ class WhiteboardCreate() {
   @FXML
   private var mainVBox :VBox = _
 
+  @FXML
+  private var whiteboardNameVBox:VBox = _
+
   var selectedSizeGroup: ToggleGroup = new ToggleGroup()
   var selectedSize:PageSize = PageSize.A4
 

@@ -1,5 +1,7 @@
 package logicMC
 
+import app.Colors
+import app.Colors.Colors
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
 import javafx.geometry.{Insets, Pos}
@@ -11,7 +13,6 @@ import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Line}
 import javafx.scene.text.{Font, FontWeight}
 import javafx.util.Duration
-import logicMC.Colors.Colors
 
 
 
@@ -25,15 +26,6 @@ object PageSize extends Enumeration {
 
    val A4: (Int, Int) = (210, 297)
    val A3: (Int, Int) = (297, 420)
-}
-
-
-object Colors extends Enumeration {
-   type Colors = Color
-   val c1: Colors = Color.WHITE
-   val c2: Colors = Color.web("#ffeaa7")
-   val c3: Colors = Color.web("#2d3436")
-
 }
 
 object Auxiliary {
@@ -101,6 +93,20 @@ object Auxiliary {
 
    def getFont(size:Int):Font = {
       Font.font("SF Pro Display", FontWeight.BLACK, size)
+   }
+
+   def getFontWeight(size:Int, fontWeight: FontWeight):Font = {
+      Font.font("SF Pro Display", fontWeight, size)
+   }
+
+   //FROM: https://stackoverflow.com/questions/60441144/how-to-convert-color-from-colorpicker-to-string-value-in-javafx
+   def toHexString(color:Color):String = {
+      val r = Math.round(color.getRed * 255).toInt << 24
+      val g = Math.round(color.getGreen * 255).toInt << 16
+      val b = Math.round(color.getBlue * 255).toInt << 8
+      val a = Math.round(color.getOpacity * 255).toInt
+
+       String.format("#%08X", r + g + b + a)
    }
 
    def getImageView(imageLocation: String):ImageView = {
