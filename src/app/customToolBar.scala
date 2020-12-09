@@ -43,7 +43,6 @@ class customToolBar {
   val optionsHBox:HBox = new HBox()
 
   var textTool: CustomText = CustomText(new SimpleObjectProperty[Color](Color.BLACK), new SimpleObjectProperty[FontWeight](FontWeight.BOLD), new SimpleIntegerProperty(10), new SimpleDoubleProperty(1))
-  val textToolSelected: SimpleBooleanProperty = new SimpleBooleanProperty(false)
 
   var imagePath: String = ""
   var videoPath: String = ""
@@ -305,7 +304,6 @@ class customToolBar {
 
     moveButton.setOnAction(_ => {
       selectedTool = ToolType.move
-      textToolSelected.set(false)
       optionsHBox.getChildren.clear()
     })
 
@@ -400,7 +398,6 @@ class customToolBar {
     optionsHBox.getChildren.clear()
 
     if(toolName == ToolType.text){
-      textToolSelected.set(true)
 
       selectedTool = toolName
 
@@ -441,8 +438,6 @@ class customToolBar {
         toMenuItem(sliderSize, "images/width.png"),
         getFontStylePicker())
 
-    }else{
-      textToolSelected.set(false)
     }
 
     if(toolName == ToolType.pen || toolName == ToolType.marker){

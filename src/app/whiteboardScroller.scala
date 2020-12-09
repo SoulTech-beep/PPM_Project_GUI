@@ -14,7 +14,7 @@ import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
 import javafx.scene.text.{Font, FontWeight, Text}
 import javafx.scene.{Node, Scene}
-import javafx.stage.{Modality, Stage}
+import javafx.stage.{Modality, Stage, WindowEvent}
 import javafx.util.Duration
 import logicMC.Auxiliary
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -41,6 +41,7 @@ object whiteboardScroller {
   var camadas: List[Polyline] = List()
   var camadas_node : List[Node] = List()
   var camadas_SPMediaView :List[StackPane] = List()
+  var pane:Node = _
 
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
 
@@ -66,84 +67,124 @@ object whiteboardScroller {
     })
   }
 
-  def testeTexto(customToolBar: customToolBar):(TextArea, Text) = {
+  def testeTexto(customToolBar: customToolBar, page:Pane):Text = {
 
-    val myTextTool:CustomText = CustomText(new SimpleObjectProperty[Color](Color.BLACK), new SimpleObjectProperty[FontWeight](FontWeight.BOLD), new SimpleIntegerProperty(10), new SimpleDoubleProperty(1))
-    customToolBar.textTool = myTextTool
     //só agora aqui selecionarmos a ferramenta na tool bar, de forma a q cada caixa de texto tenha as suas próprias configs...
-
-    val textArea = new TextArea("Lorem Ipsum")
-    textArea.setPrefSize(200, 40)
-    textArea.setWrapText(true)
-
-
     val textHolder = new Text("Lorem Ipsum")
-    var oldHeight = 0.0
 
-    textArea.setOnMouseClicked(_ => {
-      customToolBar.textTool = myTextTool
-    })
+    def resizeText(button:Button): (VBox, TextField) = {
+      val width = new TextField(textHolder.getLayoutBounds.getWidth.toString)
+      val vBox = new VBox(width)
 
-    customToolBar.textToolSelected.addListener(new ChangeListener[lang.Boolean] {
-      override def changed(observableValue: ObservableValue[_ <: lang.Boolean], t: lang.Boolean, t1: lang.Boolean): Unit = {
-        if(t1){
-          textArea.setDisable(false)
-        }else{
-          textArea.setDisable(true)
+      VBox.setMargin(width, new Insets(10))
+
+      vBox.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+      vBox.setPadding(new Insets(5, 5, 5, 5))
+      vBox.setAlignment(Pos.CENTER)
+      VBox.setMargin(vBox, new Insets(10,10,0,10))
+
+      setOnEnter(button, width)
+
+      (vBox, width)
+    }
+
+    def deleteText(stage:Stage): Button ={
+      val deleteButton = new Button("Delete")
+
+      VBox.setMargin(deleteButton, new Insets(0, 10, 20, 10))
+
+      deleteButton.setFont(Auxiliary.getFont(16))
+
+      val style = "-fx-background-radius:15px; -fx-text-fill: white;"
+
+      deleteButton.setStyle(style + "-fx-background-color:#ff7675;")
+
+      deleteButton.setOnMouseEntered(_ => {
+        deleteButton.setStyle(style + "-fx-background-color:#d63031;")
+      })
+
+      deleteButton.setOnMouseExited(_ => {
+        deleteButton.setStyle(style + "-fx-background-color:#ff7675;")
+      })
+
+      deleteButton.setMaxWidth(Double.MaxValue)
+      deleteButton.setPrefHeight(35)
+
+      deleteButton.setOnAction(_ => {
+        page.getChildren.remove(textHolder)
+        camadas_node = camadas_node.filter(p => p != textHolder)
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+      })
+
+      deleteButton
+    }
+
+
+    textHolder.setOnContextMenuRequested(_ => {
+      val stage = new Stage()
+
+      val textField = new TextArea(textHolder.getText)
+
+      textField.textProperty().addListener(new ChangeListener[PageStyle] {
+        override def changed(observableValue: ObservableValue[_ <: PageStyle], t: PageStyle, t1: PageStyle): Unit = {
+          textHolder.setText(t1)
         }
-      }
+      })
+
+      val vBox = new VBox()
+      vBox.setStyle("-fx-background-color: white;")
+
+      val vBoxTextField = new VBox()
+      vBoxTextField.getChildren.add(textField)
+      vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+      vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
+      VBox.setMargin(vBoxTextField, new Insets(5,10,0,10))
+
+      val changeButton = PagePicker.getButton("Confirm")
+      val resizeTextValues = resizeText(changeButton)
+
+      vBox.getChildren.addAll(resizeTextValues._1,vBoxTextField, changeButton, deleteText(stage))
+
+      changeButton.setOnAction(_ =>{
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+
+        if(textHolder.getBoundsInParent.getMinX + resizeTextValues._2.getText.toDouble < page.getMaxWidth ) {
+          textHolder.setWrappingWidth(resizeTextValues._2.getText().toDouble )
+        }
+      })
+
+      stage.setOnCloseRequest(_ => {
+        Auxiliary.blurBackground(30, 0, 500, pane)
+      })
+
+      VBox.setMargin(changeButton, new Insets(0, 10, 0, 10))
+      VBox.setMargin(textField, new Insets(10, 10, 10, 10))
+
+      vBox.setAlignment(Pos.CENTER)
+      vBox.setSpacing(20)
+
+      val scene= new Scene(vBox)
+      scene.getStylesheets.add("testStyle.css")
+      Auxiliary.blurBackground(0, 30, 1000, pane)
+
+      stage.setScene(scene)
+      stage.initModality(Modality.APPLICATION_MODAL)
+      stage.setTitle("Change text")
+      stage.getIcons.add(new Image("images/textIcon.png"))
+      stage.setResizable(false)
+      stage.setWidth(400)
+
+      stage.show()
+
     })
 
-    textArea.setEditable(true)
-
-    myTextTool.textWeight.addListener(new ChangeListener[FontWeight] {
-      override def changed(observableValue: ObservableValue[_ <: FontWeight], t: FontWeight, t1: FontWeight): Unit = {
-        textArea.setFont(Auxiliary.getFontWeight(myTextTool.textSize.get, t1))
-        textHolder.setFont(Auxiliary.getFontWeight(myTextTool.textSize.get, t1))
-      }
-    })
-
-    myTextTool.opacity.addListener(new ChangeListener[Number] {
-      override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
-        textArea.setOpacity(t1.doubleValue())
-      }
-    })
-
-    textArea.setFont(Auxiliary.myFont)
-    textHolder.setFont(Auxiliary.myFont)
-
-    myTextTool.textSize.addListener(new ChangeListener[Number] {
-      override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
-        textArea.setFont(Auxiliary.getFont(t1.intValue()))
-        textHolder.setFont(Auxiliary.getFont(t1.intValue()))
-      }
-    })
-
-
-    myTextTool.textColor.addListener(new ChangeListener[Color] {
-      override def changed(observableValue: ObservableValue[_ <: Color], t: Color, t1: Color): Unit = {
-        //COOOOOR
-        textArea.setStyle("-fx-text-fill: " + Auxiliary.toHexString(t1) + ";")
-      }
-    })
+    textHolder.setFont(Auxiliary.getFontWeight(customToolBar.textTool.textSize.get, customToolBar.textTool.textWeight.get))
+    textHolder.setOpacity(customToolBar.textTool.opacity.get)
+    textHolder.setFill(customToolBar.textTool.textColor.get)
 
     textHolder.setWrappingWidth(200-20)
 
-    textHolder.textProperty().bind({
-      textArea.textProperty()
-    })
-
-    textHolder.layoutBoundsProperty().addListener(new ChangeListener[Bounds] {
-      override def changed(observableValue: ObservableValue[_ <: Bounds], oldValue: Bounds, newValue: Bounds): Unit = {
-        if(oldHeight != newValue.getHeight ){
-          println(newValue.getHeight)
-          oldHeight = newValue.getHeight
-          textArea.setPrefHeight(textHolder.getLayoutBounds.getHeight*1.07*(0.08333*myTextTool.textSize.get +0.1667) + 20)
-        }
-      }
-    })
-
-    (textArea, textHolder)
+    textHolder
   }
 
   def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle): Pane = {
@@ -243,17 +284,14 @@ object whiteboardScroller {
       }
 
       if(toolBar.selectedTool == ToolType.text){
-        val texto = testeTexto(toolBar)
-        texto._2.setOpacity(0)
+        val texto = testeTexto(toolBar, page)
 
-        texto._1.setLayoutX(20)
-        texto._1.setLayoutY(20)
+        texto.setLayoutX(20)
+        texto.setLayoutY(20)
 
-        camadas_node = texto._1 :: texto._2 :: camadas_node
+        camadas_node = texto :: camadas_node
 
-        page.getChildren.addAll(texto._1, texto._2)
-
-
+        page.getChildren.add(texto)
 
       }
 
@@ -974,7 +1012,7 @@ object whiteboardScroller {
   }
 
   def getCanvas(toolBar: customToolBar, pane: Node): ZoomableScrollPane = {
-
+    this.pane = pane
     /////
     val canvas = new ZoomableScrollPane()
     val pages = new VBox()
@@ -1101,9 +1139,6 @@ object whiteboardScroller {
       List[File]()
     }
   }
-
-
-
 
   def contextMenuNode(cm: ContextMenu, click: ContextMenuEvent, node : Node)(fResize: CustomMenuItem  => Unit) (fDelete: MenuItem => Unit) :Unit = {
     cm.getItems.clear()

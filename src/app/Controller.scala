@@ -104,6 +104,7 @@ class Controller {
   }
 
   def updateVisualState(newCurrentSection: Section): Unit = {
+
     FxApp.app_state = (FxApp.app_state._1, newCurrentSection)
 
     if (newCurrentSection.id.length > 1)
@@ -143,6 +144,11 @@ class Controller {
     vBox
   }
 
+  def updateSectionName(section:Section):Unit = {
+    FxApp.app_state = Section.updateAll(FxApp.app_state._1, section)
+
+  }
+
   def updateWhiteboardName(whiteboard: Whiteboard): Unit = {
     val index = currentSection.whiteboards.indexWhere(p => p.id == whiteboard.id)
     val newCurrentSectionWhiteboards = currentSection.whiteboards.updated(index, whiteboard)
@@ -153,26 +159,9 @@ class Controller {
   }
 
   def getSectionPane(section: Section): VBox = {
-    Section.getSectionPane(section, FxApp.app_state._1, FxApp.app_state._2, updateVisualState)
+    Section.getSectionPane(section, FxApp.app_state._1, FxApp.app_state._2, updateVisualState, updateSectionName)
   }
 
-  /*def blurBackground():Unit = {
-    var gaussianBlur = new GaussianBlur(0)
-    val value = new SimpleDoubleProperty(0)
-
-    mySplitPane.setEffect(gaussianBlur)
-
-    value.addListener((_, _, newV)=> {
-      gaussianBlur.setRadius(newV.doubleValue())
-    })
-
-    val timeline = new Timeline()
-    val kv:KeyValue = new KeyValue(value, double2Double(30))
-    val kf = new KeyFrame(Duration.millis(1000), kv)
-
-    timeline.getKeyFrames.add(kf)
-    timeline.play()
-  }*/
 
   def blurBackground(startValue: Double, endValue: Double, duration: Double): Unit = {
     Auxiliary.blurBackground(startValue, endValue, duration, mySplitPane)

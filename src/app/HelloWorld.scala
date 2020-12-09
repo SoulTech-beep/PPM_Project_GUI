@@ -48,7 +48,7 @@ object FxApp {
 
   var colorStyle:ColorStyle = new ColorStyle()
 
-  var app_state = (originalSection, originalSection)
+  var app_state: (Section, Section) = (originalSection, originalSection)
 
   def main(args: Array[String]): Unit = {
     Application.launch(classOf[HelloWorld], args: _*)

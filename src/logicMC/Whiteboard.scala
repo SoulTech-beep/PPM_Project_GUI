@@ -4,6 +4,7 @@ import app.PageStyle.PageStyle
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Scene
 import javafx.scene.control._
+import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
@@ -98,17 +99,32 @@ object Whiteboard{
       popupStage.setTitle("Rename Whiteboard")
       popupStage.initModality(Modality.APPLICATION_MODAL)
 
-      val nameTextField = new TextField()
+      val nameTextField = new TextField(whiteboard.name)
+      nameTextField.setFont(Auxiliary.myFont)
       nameTextField.setPromptText("New name")
+      VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
 
-      val okButton = new Button("Change name")
+      val vBoxTextField = new VBox()
+      vBoxTextField.getChildren.add(nameTextField)
+      vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+      vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
+      VBox.setMargin(vBoxTextField, new Insets(10,10,0,10))
 
-      val innervBox = new VBox(nameTextField, okButton)
+      val okButton = Auxiliary.getButtonWithColor("fdcb6e","fcba03","Change Name")
+
+      val innervBox = new VBox(vBoxTextField, okButton)
+      innervBox.setStyle("-fx-background-color: white;")
+
       innervBox.setSpacing(20)
       innervBox.setAlignment(Pos.CENTER)
       innervBox.setPadding(new Insets(10,10,10,10))
 
       val scene = new Scene(innervBox)
+      scene.getStylesheets.add("testStyle.css")
+      popupStage.setTitle("Change name")
+      popupStage.getIcons.add(new Image("images/renameIcon.png"))
+      popupStage.setWidth(400)
+      popupStage.setResizable(false)
 
       popupStage.setScene(scene)
       popupStage.show()

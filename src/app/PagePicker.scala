@@ -219,9 +219,35 @@ class PagePicker {
     button
   }
 
+
+
 }
 
 object PagePicker {
 
+  def getButton(string: String):Button ={
+    val button = new Button()
 
+    VBox.setMargin(button, new Insets(0, 10, 10, 10))
+
+    button.setText(string)
+    button.setFont(Auxiliary.getFont(16))
+
+    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
+
+    button.setStyle(style + "-fx-background-color:#55efc4;")
+
+    button.setOnMouseEntered(_ => {
+      button.setStyle(style + "-fx-background-color:#00b894;")
+    })
+
+    button.setOnMouseExited(_ => {
+      button.setStyle(style + "-fx-background-color:#55efc4;")
+    })
+
+    button.setMaxWidth(Double.MaxValue)
+    button.setPrefHeight(35)
+
+    button
+  }
 }

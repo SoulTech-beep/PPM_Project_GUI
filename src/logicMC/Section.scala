@@ -1,16 +1,25 @@
 package logicMC
 
 import app.PageStyle.PageStyle
-import javafx.geometry.Pos
-import javafx.scene.control.Label
+import javafx.geometry.{Insets, Pos}
+import javafx.scene.Scene
+import javafx.scene.control.{ContextMenu, Label, MenuItem, TextField}
+import javafx.scene.image.Image
+import javafx.scene.input.{KeyCode, MouseButton}
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
-import logicMC.Auxiliary.getImageView
+import javafx.stage.{Modality, Stage}
+import logicMC.Auxiliary.{getImageView, setOnClickColor}
 import logicMC.Section.{ID, Name}
+import logicMC.Whiteboard.checkTextFieldAndChange
 
 import scala.annotation.tailrec
 
 case class Section(id: ID, name: Name, sections: List[Section], whiteboards: List[Whiteboard]){
+
+  def changeName(name:String):Section = {
+    Section.changeName(this, name)
+  }
 
 }
 
@@ -19,6 +28,10 @@ object Section{
   type Size = (Double, Double)
   type ID = String
   type Name = String
+
+  def changeName(s:Section, name:String):Section = {
+    Section(s.id, name, s.sections, s.whiteboards)
+  }
 
   def describe(mainSection: Section, section: Section):(Section, Section) = {
     println("---[ Sections Description ]---")
@@ -80,7 +93,6 @@ object Section{
     val newMainSections: List[Section] = updateAllAuxiliary(mainSection.sections, s)
     val newMainSection = Section(mainSection.id, mainSection.name, newMainSections, mainSection.whiteboards)
 
-
     (newMainSection, s)
   }
 
@@ -119,6 +131,7 @@ object Section{
     }
 
   }
+
 
   def exitSection(mainSection: Section, section: Section):(Section, Section) = {
 
@@ -193,7 +206,7 @@ object Section{
       }
   }
 
-  def getSectionPane(section: Section, godSection:Section, currentSection: Section,updateVisualState: Section => Unit):VBox = {
+  def getSectionPane(section: Section, godSection:Section, currentSection: Section,updateVisualState: Section => Unit, updateSectionName:Section => Unit):VBox = {
     val imageView = getImageView("images/folder.png")
 
     val label = new Label(section.name)
@@ -203,14 +216,88 @@ object Section{
     vBox.setSpacing(10)
     vBox.setAlignment(Pos.CENTER)
 
-    imageView.setOnMouseClicked(_ => {
-      val sectionToEnter = section.id.substring(section.id.lastIndexOf('.')+1, section.id.length).toInt
-      val newSection = Section.enterSectionID(godSection, currentSection, sectionToEnter)._2
+    imageView.setOnMouseClicked(key => {
+      if(key.getButton == MouseButton.PRIMARY){
+        
+        val sectionToEnter = section.id.substring(section.id.lastIndexOf('.')+1, section.id.length).toInt
 
-      updateVisualState(newSection)
+        var newSection = Section.enterSectionID(godSection, currentSection, sectionToEnter)._2
+
+        //se a que entrámos foi a que mudámos agora,
+        if(newSection.id == section.id){
+          newSection = Section(newSection.id, label.getText, newSection.sections, newSection.whiteboards)
+        }
+
+        updateVisualState(newSection)
+
+      }
+
     })
 
+    getRename(section, vBox, label, updateSectionName)
+
     vBox
+  }
+
+
+
+  def getRename(section:Section, vBox:VBox, label:Label,  updateSectionName: Section =>Unit):Unit = {
+
+    val renameMenuItem = new MenuItem("Rename")
+    val contextMenu = new ContextMenu(renameMenuItem)
+
+    renameMenuItem.setOnAction(_ => {
+
+      val popupStage = new Stage()
+      popupStage.setTitle("Rename Whiteboard")
+      popupStage.initModality(Modality.APPLICATION_MODAL)
+
+      val nameTextField = new TextField(section.name)
+      nameTextField.setFont(Auxiliary.myFont)
+      nameTextField.setPromptText("New name")
+      VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
+
+      val vBoxTextField = new VBox()
+      vBoxTextField.getChildren.add(nameTextField)
+      vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+      vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
+      VBox.setMargin(vBoxTextField, new Insets(10,10,0,10))
+
+      val okButton = Auxiliary.getButtonWithColor("00b894","088c72","Change Name")
+
+      val innervBox = new VBox(vBoxTextField, okButton)
+      innervBox.setStyle("-fx-background-color: white;")
+
+      innervBox.setSpacing(20)
+      innervBox.setAlignment(Pos.CENTER)
+      innervBox.setPadding(new Insets(10,10,10,10))
+
+      val scene = new Scene(innervBox)
+      scene.getStylesheets.add("testStyle.css")
+      popupStage.setTitle("Change name")
+      popupStage.getIcons.add(new Image("images/renameIcon.png"))
+      popupStage.setWidth(400)
+      popupStage.setResizable(false)
+
+      popupStage.setScene(scene)
+      popupStage.show()
+
+      nameTextField.setOnKeyPressed(p => {
+        if(p.getCode == KeyCode.ENTER) {
+          checkTextFieldAndChange(nameTextField, label, popupStage)
+          updateSectionName(section.changeName(nameTextField.getText))
+        }
+      })
+
+      okButton.setOnMouseClicked(_ => {
+        checkTextFieldAndChange(nameTextField, label, popupStage)
+        updateSectionName(section.changeName(nameTextField.getText))
+      })
+
+    })
+
+    vBox.setOnContextMenuRequested( p => contextMenu.show(vBox,p.getScreenX, p.getScreenY ))
+
   }
 
 

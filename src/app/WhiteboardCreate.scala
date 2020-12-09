@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control.{Button, TextField, ToggleButton, ToggleGroup}
+import javafx.scene.input.KeyCode
 import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
@@ -65,6 +66,11 @@ class WhiteboardCreate() {
     pageVBox.getChildren.add(getStylePicker())
 
     whiteboardNameTextField.getStyleClass.add("customTextField")
+    whiteboardNameTextField.setOnKeyPressed(p => {
+      if(p.getCode == KeyCode.ENTER){
+        onCreateClicked()
+      }
+    })
 
     createButton = setCreateButton()
     mainVBox.getChildren.add(createButton)
@@ -115,7 +121,6 @@ class WhiteboardCreate() {
 
     def resetBorder(paneToReset:Pane):Unit = {
       paneToReset.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), BorderWidths.DEFAULT)))
-
     }
 
     if(setDefault){
@@ -158,6 +163,7 @@ class WhiteboardCreate() {
       selectedSize = pageSize
     })
 
+
     toggleButton.getStyleClass.add("start-stop")
     toggleButton.setStyle("-fx-background-radius: 25px;")
 
@@ -173,16 +179,17 @@ class WhiteboardCreate() {
     hBox
   }
 
-
-
   def setState(appStateController: (Section, Section)): Unit = {
     appState = appStateController
   }
 
   def onCreateClicked(): Unit = {
-    FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
+    if(!whiteboardNameTextField.getText.isBlank){
+      FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
+    }
     val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
     stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+
   }
 
   def setCreateButton():Button = {

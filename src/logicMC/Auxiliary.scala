@@ -6,9 +6,10 @@ import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleObjectProperty}
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.Node
+import javafx.scene.control.Button
 import javafx.scene.effect.GaussianBlur
 import javafx.scene.image.{Image, ImageView}
-import javafx.scene.layout.{HBox, Pane, Priority}
+import javafx.scene.layout.{HBox, Pane, Priority, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Line}
 import javafx.scene.text.{Font, FontWeight}
@@ -99,14 +100,29 @@ object Auxiliary {
       Font.font("SF Pro Display", fontWeight, size)
    }
 
-   //FROM: https://stackoverflow.com/questions/60441144/how-to-convert-color-from-colorpicker-to-string-value-in-javafx
-   def toHexString(color:Color):String = {
-      val r = Math.round(color.getRed * 255).toInt << 24
-      val g = Math.round(color.getGreen * 255).toInt << 16
-      val b = Math.round(color.getBlue * 255).toInt << 8
-      val a = Math.round(color.getOpacity * 255).toInt
+   def getButtonWithColor(color1: String, color2: String, name:String):Button = {
+      val deleteButton = new Button(name)
 
-       String.format("#%08X", r + g + b + a)
+      VBox.setMargin(deleteButton, new Insets(0, 10, 20, 10))
+
+      deleteButton.setFont(Auxiliary.getFont(16))
+
+      val style = "-fx-background-radius:15px; -fx-text-fill: white;"
+
+      deleteButton.setStyle(style + "-fx-background-color:#" + color1 + ";")
+
+      deleteButton.setOnMouseEntered(_ => {
+         deleteButton.setStyle(style + "-fx-background-color:#" + color2 +";")
+      })
+
+      deleteButton.setOnMouseExited(_ => {
+         deleteButton.setStyle(style + "-fx-background-color:#" + color1 + ";")
+      })
+
+      deleteButton.setMaxWidth(Double.MaxValue)
+      deleteButton.setPrefHeight(35)
+
+      deleteButton
    }
 
    def getImageView(imageLocation: String):ImageView = {
