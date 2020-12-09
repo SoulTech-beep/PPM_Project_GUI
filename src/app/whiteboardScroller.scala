@@ -1,10 +1,13 @@
 package app
 
 
+import java.io.File
+
 import app.PageStyle.PageStyle
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.beans.value.{ChangeListener, ObservableValue}
-import javafx.geometry.{Bounds, Insets, Point2D, Pos}
+import javafx.event.ActionEvent
+import javafx.geometry.{Insets, Point2D, Pos}
 import javafx.scene.control._
 import javafx.scene.image.Image
 import javafx.scene.input.{ContextMenuEvent, KeyCode}
@@ -12,7 +15,7 @@ import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
 import javafx.scene.shape._
-import javafx.scene.text.{Font, FontWeight, Text}
+import javafx.scene.text.Text
 import javafx.scene.{Node, Scene}
 import javafx.stage.{Modality, Stage, WindowEvent}
 import javafx.util.Duration
@@ -20,28 +23,27 @@ import logicMC.Auxiliary
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
-import java.io.File
-import java.lang
-
-import javafx.beans.property.{SimpleDoubleProperty, SimpleIntegerProperty, SimpleObjectProperty}
-import javafx.event.ActionEvent
 
 import scala.reflect.io.Path.jfile2path
 import scala.util.control.Breaks
 
 class whiteboardScroller {
 
+  var camadas: List[Polyline] = List()
+  var camadas_node : List[Node] = List()
+
   val pages: List[Pane] = List()
   val toolbar: customToolBar = new customToolBar()
+
+  var canvasFinal : ZoomableScrollPane = null
+
+  def getCanvas(toolBar: customToolBar, pane: Node): ZoomableScrollPane = whiteboardScroller.getCanvas(this,toolBar,pane)
+
+  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar,pane:Node, pageStyle: PageStyle): Pane = whiteboardScroller.createPage(backgroundColor, width, height, toolBar, pageStyle,pane, this)
 
 }
 
 object whiteboardScroller {
-
-  var camadas: List[Polyline] = List()
-  var camadas_node : List[Node] = List()
-  var camadas_SPMediaView :List[StackPane] = List()
-  var pane:Node = _
 
   //TODO WHEN SELECTED SHOULD WE BE ABLE TO ERASE EVERYTHING SELECTED?
 
@@ -67,7 +69,7 @@ object whiteboardScroller {
     })
   }
 
-  def testeTexto(customToolBar: customToolBar, page:Pane):Text = {
+  def testeTexto(customToolBar: customToolBar, page:Pane, wb:whiteboardScroller):Text = {
 
     //só agora aqui selecionarmos a ferramenta na tool bar, de forma a q cada caixa de texto tenha as suas próprias configs...
     val textHolder = new Text("Lorem Ipsum")
@@ -112,7 +114,7 @@ object whiteboardScroller {
 
       deleteButton.setOnAction(_ => {
         page.getChildren.remove(textHolder)
-        camadas_node = camadas_node.filter(p => p != textHolder)
+        wb.camadas_node = wb.camadas_node.filter(p => p != textHolder)
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
       })
 
@@ -154,7 +156,7 @@ object whiteboardScroller {
       })
 
       stage.setOnCloseRequest(_ => {
-        Auxiliary.blurBackground(30, 0, 500, pane)
+        Auxiliary.blurBackground(30, 0, 500, page)
       })
 
       VBox.setMargin(changeButton, new Insets(0, 10, 0, 10))
@@ -165,7 +167,7 @@ object whiteboardScroller {
 
       val scene= new Scene(vBox)
       scene.getStylesheets.add("testStyle.css")
-      Auxiliary.blurBackground(0, 30, 1000, pane)
+      Auxiliary.blurBackground(0, 30, 1000, page)
 
       stage.setScene(scene)
       stage.initModality(Modality.APPLICATION_MODAL)
@@ -187,7 +189,7 @@ object whiteboardScroller {
     textHolder
   }
 
-  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle): Pane = {
+  def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar, pageStyle: PageStyle, pane: Node, wb:whiteboardScroller): Pane = {
     val page = new Pane()
     page.setPrefSize(width, height)
     page.setMaxSize(width, height)
@@ -231,7 +233,7 @@ object whiteboardScroller {
         val num = pdfNum
         generateImageFromPDF(s, "png", num)
         val listFiles: List[File] = getListOfFiles("src/output/" + s.split('/').last.replace(".pdf",num.toString))
-        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200, new Point2D(20,20))
+        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200, new Point2D(20,20), wb)
         pdfNum = pdfNum + 1
         toolBar.selectedTool = ToolType.move
       }
@@ -244,7 +246,7 @@ object whiteboardScroller {
           val square = new Rectangle(image.getWidth, image.getHeight, iP)
           page.getChildren.add(square)
 
-          camadas_node = square :: camadas_node
+          wb.camadas_node = square :: wb.camadas_node
 
           toolBar.imagePath = ""
           toolBar.selectedTool = ToolType.move
@@ -252,7 +254,7 @@ object whiteboardScroller {
           def deleteImage(delete: MenuItem): Unit = {
             //TODO SERA QUE REALMENTE AS REMOVE OU É COMO O VIDEO??
             delete.setOnAction(_ => {
-              camadas_node = camadas_node.filter(p => p != square)
+              wb.camadas_node = wb.camadas_node.filter(p => p != square)
               page.getChildren.remove(square)
             })
           }
@@ -284,12 +286,12 @@ object whiteboardScroller {
       }
 
       if(toolBar.selectedTool == ToolType.text){
-        val texto = testeTexto(toolBar, page)
+        val texto = testeTexto(toolBar, page, wb)
 
         texto.setLayoutX(20)
         texto.setLayoutY(20)
 
-        camadas_node = texto :: camadas_node
+        wb.camadas_node = texto :: wb.camadas_node
 
         page.getChildren.add(texto)
 
@@ -360,7 +362,7 @@ object whiteboardScroller {
           HBox.setMargin(videoToolBar, new Insets(0,0,20,0))
           videoToolBar.setPadding(new Insets(0,0,20,0))
 
-          camadas_node = sp :: camadas_node
+          wb.camadas_node = sp :: wb.camadas_node
           toolBar.videoPath = ""
           toolBar.selectedTool = ToolType.move
 
@@ -368,7 +370,7 @@ object whiteboardScroller {
             delete.setOnAction(_ => {
               player.dispose()
               page.getChildren.remove(sp)
-              camadas_node = camadas_node.filter(p => p != sp)
+              wb.camadas_node = wb.camadas_node.filter(p => p != sp)
             })
           }
 
@@ -417,7 +419,7 @@ object whiteboardScroller {
             firstPoint = new Point2D(event.getX, event.getY)
             isFirstPoint = false
 
-            camadas = polygon :: camadas
+            wb.camadas = polygon :: wb.camadas
           } else {
             if (firstPoint.distance(event.getX, event.getY) > 20) {
               currentLine.setEndX(event.getX)
@@ -443,7 +445,7 @@ object whiteboardScroller {
               def deletePolygon(delete:MenuItem):Unit = {
                 delete.setOnAction(_ => {
                   page.getChildren.remove(polygon)
-                  camadas = camadas.filter(p=> p!= polygon)
+                  wb.camadas = wb.camadas.filter(p=> p!= polygon)
                 })
               }
 
@@ -499,7 +501,7 @@ object whiteboardScroller {
           teste.setTranslateX(0)
           teste.setTranslateY(0)
 
-          camadas_node = camadas_node.updated(camadas_node.indexOf(teste), teste)
+          wb.camadas_node = wb.camadas_node.updated(wb.camadas_node.indexOf(teste), teste)
         })
 
         selectedPolyline.foreach(teste => {
@@ -543,7 +545,7 @@ object whiteboardScroller {
         selectedShapes = List()
         selectedPolyline = List()
 
-        camadas.foreach(c => {
+        wb.camadas.foreach(c => {
           val shape = Shape.intersect(selectionPolyline, c)
           //val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape.getLayoutBounds.getWidth != -1) {
@@ -554,7 +556,7 @@ object whiteboardScroller {
           }
         })
 
-        camadas_node.foreach(c => {
+        wb.camadas_node.foreach(c => {
           val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
             selectedShapes = c::selectedShapes
@@ -581,7 +583,7 @@ object whiteboardScroller {
         //TODO rectangle as global variable
         page.getChildren.add(rectangle)
 
-        val newsel :Polyline = camadas.find(c => {
+        val newsel :Polyline = wb.camadas.find(c => {
 
           val shape = Shape.intersect(rectangle, c)
           if(shape.getLayoutBounds.getWidth != -1){
@@ -593,8 +595,8 @@ object whiteboardScroller {
 
         page.getChildren.remove(rectangle)
 
-        //val newsel: Polyline = camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
-        val newselNodes: Node = camadas_node.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
+        //val newsel: Polyline = wb.camadas.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
+        val newselNodes: Node = wb.camadas_node.find(c => c.intersects(dragX-c.getLayoutX,dragY-c.getLayoutY,1,1) ).getOrElse(null)
 
         if(newsel == null) {
 
@@ -674,7 +676,7 @@ object whiteboardScroller {
               firstPoint = new Point2D(event.getX, event.getY)
               isFirstPoint = false
 
-              camadas_node = currentRectangle :: camadas_node
+              wb.camadas_node = currentRectangle :: wb.camadas_node
             } else {
               isFirstPoint = true
             }
@@ -695,7 +697,7 @@ object whiteboardScroller {
               firstPoint = new Point2D(event.getX, event.getY)
               isFirstPoint = false
 
-              camadas_node = currentCircle::camadas_node
+              wb.camadas_node = currentCircle::wb.camadas_node
             } else {
               isFirstPoint = true
             }
@@ -714,7 +716,7 @@ object whiteboardScroller {
               firstPoint = new Point2D(event.getX, event.getY)
               isFirstPoint = false
 
-              camadas_node = currentLine::camadas_node
+              wb.camadas_node = currentLine::wb.camadas_node
             } else {
               isFirstPoint = true
             }
@@ -723,7 +725,7 @@ object whiteboardScroller {
           def deleteShape(delete:MenuItem):Unit = {
             delete.setOnAction( _ => {
               page.getChildren.remove(node)
-              camadas_node = camadas_node.filter(p => p!= node)
+              wb.camadas_node = wb.camadas_node.filter(p => p!= node)
             })
           }
 
@@ -741,7 +743,7 @@ object whiteboardScroller {
           currentLayer.setStrokeMiterLimit(1)
 
           val tempCurrentLayer = currentLayer
-          camadas = tempCurrentLayer :: camadas
+          wb.camadas = tempCurrentLayer :: wb.camadas
 
           currentLayer.setOnContextMenuRequested(click => {
 
@@ -749,7 +751,7 @@ object whiteboardScroller {
             val contextMenu = new ContextMenu(delete)
 
             delete.setOnAction(_ => {
-              camadas = camadas.filter(p => p != currentLayer)
+              wb.camadas = wb.camadas.filter(p => p != currentLayer)
               page.getChildren.remove(tempCurrentLayer)
             })
 
@@ -770,7 +772,7 @@ object whiteboardScroller {
 
           var porApagar: List[Polyline] = List()
 
-          camadas.foreach(c => {
+          wb.camadas.foreach(c => {
 
             val range = (0 until c.getPoints.size).toList //it's going to c.getPoints.size-1
 
@@ -792,7 +794,7 @@ object whiteboardScroller {
             }
 
           })
-          camadas = camadas.filter(e => !porApagar.contains(e))
+          wb.camadas = wb.camadas.filter(e => !porApagar.contains(e))
         }
       }})
 
@@ -920,7 +922,7 @@ object whiteboardScroller {
 
         var porApagar: List[Polyline] = List()
 
-        camadas.foreach(c => {
+        wb.camadas.foreach(c => {
           var i = 0
 
           val eraserRadius = toolBar.eraserFinal.radius.get()
@@ -938,7 +940,7 @@ object whiteboardScroller {
           }
         })
 
-        camadas = camadas.filter(e => !porApagar.contains(e))
+        wb.camadas = wb.camadas.filter(e => !porApagar.contains(e))
 
       }
 
@@ -969,7 +971,7 @@ object whiteboardScroller {
     Auxiliary.verticalLines(width, height, pane, 30)
   }
 
-  def addPageButton(pages: VBox, toolBar:customToolBar, pane:Node):Button = {
+  def addPageButton(pages: VBox, toolBar:customToolBar, pane:Node, wb:whiteboardScroller):Button = {
 
     val addPageButton = new Button("Add new page")
     addPageButton.setFont(Auxiliary.getFont(14))
@@ -993,7 +995,6 @@ object whiteboardScroller {
       stage.getIcons.add(new Image("images/addIcon.png"))
       stage.setResizable(false)
 
-
       stage.setOnCloseRequest(_ => {
         Auxiliary.blurBackground(30, 0, 500, pane)
 
@@ -1001,7 +1002,7 @@ object whiteboardScroller {
         if(pagePicker.wasClicked){
           val values = pagePicker.getPage()
 
-          pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3))
+          pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3, pane, wb))
         }
 
       })
@@ -1011,24 +1012,28 @@ object whiteboardScroller {
     addPageButton
   }
 
-  def getCanvas(toolBar: customToolBar, pane: Node): ZoomableScrollPane = {
-    this.pane = pane
+  def getCanvas(wb: whiteboardScroller,toolBar: customToolBar, pane: Node): ZoomableScrollPane = {
+
     /////
-    val canvas = new ZoomableScrollPane()
-    val pages = new VBox()
+    if(wb.canvasFinal == null) {
+      val canvas = new ZoomableScrollPane()
+      val pages = new VBox()
 
-    val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar, PageStyle.DOTTED)
+      val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar, PageStyle.DOTTED, pane, wb)
 
-    //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
+      //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 
-    pages.getChildren.addAll(page3, addPageButton(pages, toolBar, pane))
+      pages.getChildren.addAll(page3, addPageButton(pages, toolBar, pane, wb))
 
-    pages.setSpacing(50)
-    pages.setAlignment(Pos.CENTER)
+      pages.setSpacing(50)
+      pages.setAlignment(Pos.CENTER)
 
-    canvas.init(pages)
+      canvas.init(pages)
 
-    canvas
+      wb.canvasFinal = canvas
+
+    }
+    wb.canvasFinal
   }
 
   //TODO tirar for
@@ -1046,7 +1051,7 @@ object whiteboardScroller {
     document.close()
   }
 
-  def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double, point: Point2D):Unit = {
+  def getPdfView(page: Pane,filename: String,fl: List[File], num:Int,h:Double, point: Point2D, wb:whiteboardScroller):Unit = {
     val sp:StackPane = new StackPane()
     val path:String = fl(num).toURI.toString.replaceAll("%20"," ")
     val image: Image = new Image(path)
@@ -1063,7 +1068,7 @@ object whiteboardScroller {
         val dir : File = new File("src/output/" + filename)
         dir.deleteRecursively()
         page.getChildren.remove(sp)
-        camadas_node = camadas_node.filter(p => p != sp)
+        wb.camadas_node = wb.camadas_node.filter(p => p != sp)
       })
     }
     def resizePdf(resize: CustomMenuItem): Unit = {
@@ -1109,7 +1114,7 @@ object whiteboardScroller {
       val prevButton: Button = new Button("<")
       prevButton.setOnAction(e => {
         page.getChildren.remove(sp)
-        getPdfView(page,filename, fl, num - 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY))
+        getPdfView(page,filename, fl, num - 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY), wb)
       })
       moveBar.getChildren.add(prevButton)
     }
@@ -1118,7 +1123,7 @@ object whiteboardScroller {
       val nextButton: Button = new Button(">")
       nextButton.setOnAction(e => {
         page.getChildren.remove(sp)
-        getPdfView(page,filename, fl, num + 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY))
+        getPdfView(page,filename, fl, num + 1,square.getHeight, new Point2D(sp.getLayoutX, sp.getLayoutY), wb)
       })
       moveBar.getChildren.add(nextButton)
     }
@@ -1128,7 +1133,7 @@ object whiteboardScroller {
     sp.setLayoutX(point.getX)
     sp.setLayoutY(point.getY)
 
-    camadas_node = sp :: camadas_node
+    wb.camadas_node = sp :: wb.camadas_node
   }
 
   def getListOfFiles(dir: String):List[File] = {

@@ -1,18 +1,13 @@
 package app
 
-import javafx.animation.{KeyFrame, KeyValue, Timeline}
-import javafx.beans.property.SimpleDoubleProperty
 import javafx.fxml.{FXML, FXMLLoader}
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control._
-import javafx.scene.effect.GaussianBlur
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.layout._
-import javafx.scene.paint.Color
 import javafx.scene.{Parent, Scene}
 import javafx.stage.{Modality, Stage}
-import javafx.util.Duration
 import logicMC.{Auxiliary, Section, Whiteboard}
 
 class Controller {
@@ -57,6 +52,10 @@ class Controller {
 
   private var canvasScroller: ScrollPane = new ScrollPane()
 
+  var listWhiteboards: Map[String, whiteboardScroller] = Map()
+  val toolBar: customToolBar = new customToolBar
+  var whiteboardOnPage: whiteboardScroller = new whiteboardScroller
+
   @Override
   def initialize(): Unit = {
     /*app.customToolBar.setToolbar(toolbar)
@@ -64,6 +63,9 @@ class Controller {
 
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
+
+    toolBar.setToolbar(toolbar)
+    toolBar.initializeCustomToolBar()
 
     layoutShenanigans()
 
@@ -123,20 +125,23 @@ class Controller {
   }
 
   def getWhiteboardPane(whiteboard: Whiteboard): VBox = {
-    setOnClickWhiteboardPane(Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName))
+    setOnClickWhiteboardPane(Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName), currentSection.id + "w" + whiteboard.id)
   }
 
-  def setOnClickWhiteboardPane(vBox: VBox): VBox = {
+  def setOnClickWhiteboardPane(vBox: VBox, id:String): VBox = {
     vBox.setOnMouseClicked(_ => {
       rightStackPane.getChildren.remove(canvasScroller)
-
-      val toolBar: customToolBar = new customToolBar
-      toolBar.setToolbar(toolbar)
-      toolBar.initializeCustomToolBar()
-
-      canvasScroller = whiteboardScroller.getCanvas(toolBar, mySplitPane)
-      rightStackPane.getChildren.add(0, canvasScroller)
-
+      if(!listWhiteboards.contains(id)) {
+        whiteboardOnPage = new whiteboardScroller()
+        canvasScroller = whiteboardOnPage.getCanvas(toolBar, mySplitPane)
+        rightStackPane.getChildren.add(0, canvasScroller)
+        listWhiteboards = listWhiteboards + (id -> whiteboardOnPage)
+      } else {
+        rightStackPane.getChildren.remove(canvasScroller)
+        whiteboardOnPage = listWhiteboards.get(id).get
+        canvasScroller = whiteboardOnPage.getCanvas(toolBar, mySplitPane)
+        rightStackPane.getChildren.add(0, canvasScroller)
+      }
       //TODO if the one we click is the one being displayed, let's not remove and update everything...
 
     })
