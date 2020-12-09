@@ -15,19 +15,23 @@ object ShapeType extends Enumeration {
 
 }
 
-case class GeometricShape(id: Int, color: ObjectProperty[Color], width: SimpleDoubleProperty, opacity: SimpleDoubleProperty, shape: ShapeType) extends PenTrait {
+case class GeometricShape(id: Int, strokeColor: ObjectProperty[Color], strokeWidth: SimpleDoubleProperty, opacity: SimpleDoubleProperty, shape: ShapeType, fillColor: ObjectProperty[Color]) extends PenTrait {
 
   def changeShape(st: ShapeType):GeometricShape = GeometricShape.changeShape(this, st)
 
   @Override
-  def changeColor(color: Color) : GeometricShape= GeometricShape.changeColor(this, color)
+  def changeColor(color: Color) : GeometricShape= GeometricShape.changeStrokeColor(this, color)
 
   @Override
-  def changeWidth(new_width:Double):GeometricShape= GeometricShape.changeWidth(this, new_width)
+  def changeWidth(new_width:Double):GeometricShape= GeometricShape.changeStrokeWidth(this, new_width)
 
   @Override
   def changeOpacity(new_opacity:Double):GeometricShape= {
     GeometricShape.changeOpacity(this, new_opacity)
+  }
+
+  def changeFillColor(new_fillColor: Color):GeometricShape = {
+    GeometricShape.changeFillColor(this, new_fillColor)
   }
 
 }
@@ -35,27 +39,29 @@ case class GeometricShape(id: Int, color: ObjectProperty[Color], width: SimpleDo
 
 object GeometricShape {
 
-  def changeColor(pen:GeometricShape, color:Color):GeometricShape= {
-    pen.color.set(color)
-    GeometricShape(id= pen.id, color = pen.color, width = pen.width, opacity = pen.opacity, pen.shape)
+  def changeStrokeColor(pen:GeometricShape, strokeColor:Color):GeometricShape= {
+    pen.strokeColor.set(strokeColor)
+    GeometricShape(id= pen.id, strokeColor = pen.strokeColor, strokeWidth = pen.strokeWidth, opacity = pen.opacity, shape = pen.shape, fillColor = pen.fillColor)
   }
 
-  def changeWidth(pen: GeometricShape, width:Double):GeometricShape= {
-    pen.width.set(width)
-    GeometricShape(id= pen.id,color= pen.color, pen.width, opacity = pen.opacity, pen.shape)
+  def changeStrokeWidth(pen: GeometricShape, strokeWidth:Double):GeometricShape= {
+    pen.strokeWidth.set(strokeWidth)
+    GeometricShape(id= pen.id,strokeColor= pen.strokeColor, pen.strokeWidth, opacity = pen.opacity, pen.shape, fillColor = pen.fillColor)
   }
 
   def changeOpacity(pen: GeometricShape, opacity:Double):GeometricShape= {
     pen.opacity.set(opacity)
-    GeometricShape(id= pen.id,color = pen.color, width = pen.width, opacity = pen.opacity, pen.shape)
+    GeometricShape(id= pen.id,strokeColor = pen.strokeColor, strokeWidth = pen.strokeWidth, opacity = pen.opacity, pen.shape, fillColor = pen.fillColor)
   }
 
 
-  def changeShape(pen: GeometricShape, st: ShapeType):GeometricShape = {
-    GeometricShape(id= pen.id, color = pen.color, width = pen.width, opacity = pen.opacity, shape = st)
+  def changeShape(pen: GeometricShape, shapeType: ShapeType):GeometricShape = {
+    GeometricShape(id= pen.id, strokeColor = pen.strokeColor, strokeWidth = pen.strokeWidth, opacity = pen.opacity, shape = shapeType, fillColor = pen.fillColor)
   }
 
-
-
+  def changeFillColor(pen:GeometricShape, fillColor: Color) = {
+    pen.fillColor.set(fillColor)
+    GeometricShape(id = pen.id, strokeColor = pen.strokeColor, strokeWidth = pen.strokeWidth, opacity = pen.opacity,shape = pen.shape, fillColor = pen.fillColor)
+  }
 
 }

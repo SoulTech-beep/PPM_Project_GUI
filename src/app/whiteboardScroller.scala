@@ -306,8 +306,8 @@ object whiteboardScroller {
           if (isFirstPoint) {
             polygon = new Polyline()
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
-            currentLine.setStroke(toolBar.shapePen.color.get)
-            currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+            currentLine.setStroke(toolBar.shapePen.strokeColor.get)
+            currentLine.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
             currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
             polygon.getPoints.addAll(event.getX, event.getY)
@@ -330,8 +330,8 @@ object whiteboardScroller {
 
               page.getChildren.add(currentLine)
 
-              currentLine.setStroke(toolBar.shapePen.color.get)
-              currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+              currentLine.setStroke(toolBar.shapePen.strokeColor.get)
+              currentLine.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
               currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
               polygon.getPoints.addAll(event.getX, event.getY)
@@ -566,9 +566,9 @@ object whiteboardScroller {
               currentRectangle.setWidth(0)
               currentRectangle.setHeight(0)
 
-              currentRectangle.setStroke(toolBar.shapePen.color.get())
-              currentRectangle.setStrokeWidth(toolBar.shapePen.width.get)
-              currentRectangle.setFill(toolBar.shapePen.color.get())
+              currentRectangle.setStroke(toolBar.shapePen.strokeColor.get())
+              currentRectangle.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
+              currentRectangle.setFill(toolBar.shapePen.fillColor.get())
               currentRectangle.setOpacity(toolBar.shapePen.opacity.get)
 
               page.getChildren.add(currentRectangle)
@@ -587,9 +587,9 @@ object whiteboardScroller {
               node = currentCircle
               currentCircle.setCenterX(event.getX)
               currentCircle.setCenterY(event.getY)
-              currentCircle.setStroke(toolBar.shapePen.color.get())
-              currentCircle.setStrokeWidth(toolBar.shapePen.width.get)
-              currentCircle.setFill(toolBar.shapePen.color.get)
+              currentCircle.setStroke(toolBar.shapePen.strokeColor.get())
+              currentCircle.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
+              currentCircle.setFill(toolBar.shapePen.fillColor.get)
               currentCircle.setOpacity(toolBar.shapePen.opacity.get)
 
               page.getChildren.add(currentCircle)
@@ -607,8 +607,8 @@ object whiteboardScroller {
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
               node = currentLine
 
-              currentLine.setStroke(toolBar.shapePen.color.get())
-              currentLine.setStrokeWidth(toolBar.shapePen.width.get)
+              currentLine.setStroke(toolBar.shapePen.strokeColor.get())
+              currentLine.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
               currentLine.setOpacity(toolBar.shapePen.opacity.get)
 
               page.getChildren.add(currentLine)
