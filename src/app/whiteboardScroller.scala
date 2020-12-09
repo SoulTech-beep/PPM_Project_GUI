@@ -10,7 +10,7 @@ import javafx.event.ActionEvent
 import javafx.geometry.{Insets, Point2D, Pos}
 import javafx.scene.control._
 import javafx.scene.image.Image
-import javafx.scene.input.{ContextMenuEvent, KeyCode}
+import javafx.scene.input.{ContextMenuEvent, KeyCode, MouseButton}
 import javafx.scene.layout._
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.scene.paint.{Color, ImagePattern}
@@ -49,8 +49,8 @@ object whiteboardScroller {
 
   def setOnEnter(button:Button, textFields: TextField*):Unit = {
     textFields.foreach(textField => textField.setOnKeyPressed(key => if(key.getCode == KeyCode.ENTER){
-     button.fireEvent(new ActionEvent())
-   }))
+      button.fireEvent(new ActionEvent())
+    }))
   }
 
   def makeDraggable(node: Node): Unit = {
@@ -402,14 +402,21 @@ object whiteboardScroller {
         }
       }
 
-      if (toolBar.selectedTool == ToolType.geometricShape) {
+      if (toolBar.selectedTool == ToolType.geometricShape && event.getButton == MouseButton.PRIMARY) {
         if (toolBar.shapePen.shape == ShapeType.polygon) {
           if (isFirstPoint) {
             polygon = new Polyline()
+
+            polygon.setStroke(toolBar.shapePen.strokeColor.get)
+            polygon.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
+            polygon.setOpacity(toolBar.shapePen.opacity.get)
+            polygon.setFill(toolBar.shapePen.fillColor.get())
+
             currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
             currentLine.setStroke(toolBar.shapePen.strokeColor.get)
             currentLine.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
             currentLine.setOpacity(toolBar.shapePen.opacity.get)
+            currentLine.setFill(toolBar.shapePen.fillColor.get)
 
             polygon.getPoints.addAll(event.getX, event.getY)
 
@@ -475,8 +482,12 @@ object whiteboardScroller {
               currentLine.setEndY(firstPoint.getY)
 
             } else {
-              currentLine.setEndX(event.getX)
-              currentLine.setEndY(event.getY)
+              val deltaX = event.getX - firstPoint.getX
+              val deltaY = event.getY - firstPoint.getY
+              if(firstPoint.getX + deltaX < page.getWidth && firstPoint.getX - deltaX > 0 && firstPoint.getY + deltaY < page.getHeight && firstPoint.getY - deltaY > 0) {
+                currentLine.setEndX(event.getX)
+                currentLine.setEndY(event.getY)
+              }
             }
           }
         }
@@ -654,18 +665,18 @@ object whiteboardScroller {
 
         }
 
-        if (toolBar.selectedTool == ToolType.geometricShape) {
 
+        if (toolBar.selectedTool == ToolType.geometricShape && event.getButton == MouseButton.PRIMARY) {
           var node:Node = new Node{}
 
           if (toolBar.shapePen.shape == ShapeType.square) {
-            if (isFirstPoint) {
+            if (isFirstPoint && event.getX + 10 < page.getWidth && event.getY + 10 < page.getHeight) {
               currentRectangle = new Rectangle()
               node = currentRectangle
               currentRectangle.setX(event.getX)
               currentRectangle.setY(event.getY)
-              currentRectangle.setWidth(0)
-              currentRectangle.setHeight(0)
+              currentRectangle.setWidth(10)
+              currentRectangle.setHeight(10)
 
               currentRectangle.setStroke(toolBar.shapePen.strokeColor.get())
               currentRectangle.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
@@ -679,11 +690,12 @@ object whiteboardScroller {
               wb.camadas_node = currentRectangle :: wb.camadas_node
             } else {
               isFirstPoint = true
+
             }
           }
 
           if (toolBar.shapePen.shape == ShapeType.circle) {
-            if (isFirstPoint) {
+            if (isFirstPoint && event.getX + 5 < page.getWidth && event.getY + 5 < page.getHeight && event.getY - 5 > 0 && event.getX - 5 > 0) {
               currentCircle = new Circle()
               node = currentCircle
               currentCircle.setCenterX(event.getX)
@@ -692,8 +704,10 @@ object whiteboardScroller {
               currentCircle.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
               currentCircle.setFill(toolBar.shapePen.fillColor.get)
               currentCircle.setOpacity(toolBar.shapePen.opacity.get)
-              
+              currentCircle.setRadius(5)
+
               page.getChildren.add(currentCircle)
+
               firstPoint = new Point2D(event.getX, event.getY)
               isFirstPoint = false
 
@@ -707,7 +721,7 @@ object whiteboardScroller {
             if (isFirstPoint) {
               currentLine = new Line(event.getX, event.getY, event.getX, event.getY)
               node = currentLine
-
+              currentLine.setEndX(event.getX)
               currentLine.setStroke(toolBar.shapePen.strokeColor.get())
               currentLine.setStrokeWidth(toolBar.shapePen.strokeWidth.get)
               currentLine.setOpacity(toolBar.shapePen.opacity.get)
@@ -856,23 +870,30 @@ object whiteboardScroller {
 
             val deltaX = event.getX - firstPoint.getX
             val deltaY = event.getY - firstPoint.getY
-            if (deltaX < 0) {
-              currentRectangle.setX(event.getX)
-              currentRectangle.setWidth(-deltaX)
+            if (deltaX < -10 ) {
+              if(firstPoint.getX + deltaX > 0) {
+                currentRectangle.setX(event.getX)
+                currentRectangle.setWidth(-deltaX)
+              }
             }
             else {
-              currentRectangle.setX(firstPoint.getX)
-              currentRectangle.setWidth(event.getX - firstPoint.getX)
+              if (deltaX > 10 && firstPoint.getX + deltaX < page.getWidth ) {
+                currentRectangle.setX(firstPoint.getX)
+                currentRectangle.setWidth(event.getX - firstPoint.getX)
+              }
             }
-            if (deltaY < 0) {
-              currentRectangle.setY(event.getY)
-              currentRectangle.setHeight(-deltaY)
+            if (deltaY < -10) {
+              if(firstPoint.getY + deltaY > 0) {
+                currentRectangle.setY(event.getY)
+                currentRectangle.setHeight(-deltaY)
+              }
             }
             else {
-              currentRectangle.setY(firstPoint.getY)
-              currentRectangle.setHeight(event.getY - firstPoint.getY)
+              if( deltaY > 10 && firstPoint.getY + deltaY < page.getHeight) {
+                currentRectangle.setY(firstPoint.getY)
+                currentRectangle.setHeight(event.getY - firstPoint.getY)
+              }
             }
-
 
           }
         }
@@ -881,16 +902,16 @@ object whiteboardScroller {
           if (!isFirstPoint) {
             val currentPoint = new Point2D(event.getX, event.getY)
             val radius = currentPoint.distance(new Point2D(currentCircle.getCenterX, currentCircle.getCenterY))
-            currentCircle.setRadius(radius)
+            if(radius > 5 && firstPoint.getX + radius < page.getWidth && firstPoint.getX - radius > 0 && firstPoint.getY + radius < page.getHeight && firstPoint.getY - radius > 0)
+              currentCircle.setRadius(radius)
           }
         }
 
         if (toolBar.shapePen.shape == ShapeType.line) {
           if (!isFirstPoint) {
-            if (firstPoint.distance(new Point2D(event.getX, event.getY)) < 20) {
-              currentLine.setEndX(firstPoint.getX)
-              currentLine.setEndY(firstPoint.getY)
-            } else {
+            val deltaX = event.getX - firstPoint.getX
+            val deltaY = event.getY - firstPoint.getY
+            if(firstPoint.getX + deltaX < page.getWidth && firstPoint.getX + deltaX > 0 && firstPoint.getY + deltaY < page.getHeight && firstPoint.getY + deltaY > 0) {
               currentLine.setEndX(event.getX)
               currentLine.setEndY(event.getY)
             }
@@ -1027,6 +1048,8 @@ object whiteboardScroller {
 
       pages.setSpacing(50)
       pages.setAlignment(Pos.CENTER)
+
+      pages.setPadding(new Insets(100,0,0,0))
 
       canvas.init(pages)
 

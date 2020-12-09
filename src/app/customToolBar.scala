@@ -59,8 +59,8 @@ class customToolBar {
 
     toolbar.getItems.clear()
 
-    val penTool: Pen = Pen(0,new SimpleObjectProperty[Color](Color.BLACK), new SimpleDoubleProperty(1), new SimpleDoubleProperty(1))
-    val markerTool:Pen = Pen(1, new SimpleObjectProperty[Color](Color.RED), new SimpleDoubleProperty(15),new SimpleDoubleProperty(1))
+    val penTool: Pen = Pen(0,new SimpleObjectProperty[Color](Color.BLACK), new SimpleDoubleProperty(5), new SimpleDoubleProperty(1))
+    val markerTool:Pen = Pen(1, new SimpleObjectProperty[Color](Color.YELLOW), new SimpleDoubleProperty(15),new SimpleDoubleProperty(0.5))
 
     penList = (penTool, ToolType.pen) :: penList
     penList = (markerTool, ToolType.marker) :: penList
@@ -128,8 +128,8 @@ class customToolBar {
     })
 
     polygon.setOnAction(event => {
-      selectTool(ToolType.geometricShape)
       shapePen = shapePen.changeShape(ShapeType.polygon)
+      selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getHexagon(Color.BLACK,fill = false))
     })
 
@@ -539,8 +539,10 @@ class customToolBar {
       return optionsHBox.getChildren.add(toMenuItem(eraserRadius,"images/width.png"))
 
     } else if(toolName == ToolType.geometricShape) {
-      selectedTool = toolName
 
+      println("tetete")
+
+      selectedTool = toolName
 
       val slOpacity: Slider = getSliderMenu(shapePen.opacity.get(), (0,1), 0.1)
       val slWidth: Slider = getSliderMenu(shapePen.strokeWidth.get(), (1,15))
@@ -557,28 +559,43 @@ class customToolBar {
         }
       })
 
-      return optionsHBox.getChildren.addAll(
-        setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true)
-        ,toMenuItem(slWidth,"images/width.png")
-        , toMenuItem(slOpacity, "images/opacity.png"),
-        setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
+      if(shapePen.shape == ShapeType.polygon){
+        return optionsHBox.getChildren.addAll(
+          setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true, true)
+          ,toMenuItem(slWidth,"images/width.png")
+          , toMenuItem(slOpacity, "images/opacity.png"),
+          setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
+      }else{
+        return optionsHBox.getChildren.addAll(
+          setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true)
+          ,toMenuItem(slWidth,"images/width.png")
+          , toMenuItem(slOpacity, "images/opacity.png"),
+          setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
+      }
 
     }
 
   }
 
-  def setColorPicker(f:(GeometricShape, Color) => (GeometricShape), f1:(GeometricShape) => (ObjectProperty[Color]), fill:Boolean = true):MenuButton = {
+  def setColorPicker(f:(GeometricShape, Color) => (GeometricShape), f1:(GeometricShape) => (ObjectProperty[Color]), fill:Boolean = true, transparent:Boolean = false):MenuButton = {
     val menuButton = new MenuButton()
 
     val redColor = new Button()
     val blackColor = new Button()
     val blueColor = new Button()
+    val transparentColor = new Button()
 
     val specifiedColorsMenuItem = new CustomMenuItem()
     val colorPickerMenuItem = new CustomMenuItem()
 
     val hboxColors = new HBox()
-    hboxColors.getChildren.addAll(redColor, blackColor, blueColor)
+    if(transparent){
+      hboxColors.getChildren.addAll(redColor, blackColor, blueColor, transparentColor)
+
+    }else{
+      hboxColors.getChildren.addAll(redColor, blackColor, blueColor)
+    }
+
     hboxColors.setAlignment(Pos.CENTER)
     hboxColors.setSpacing(10)
 
@@ -599,6 +616,13 @@ class customToolBar {
     blackColor.setGraphic(getCircle(Color.BLACK,fill))
     blueColor.setGraphic(getCircle(Color.BLUE,fill))
 
+    val icon = new ImageView(new Image("images/transparent.png"))
+    icon.setSmooth(true)
+    icon.setFitHeight(20)
+    icon.setFitWidth(20)
+
+    transparentColor.setGraphic(icon)
+
     redColor.setOnAction(p => {
       menuButton.setGraphic(getCircle(Color.RED,fill))
       shapePen = f(shapePen, Color.RED)
@@ -612,6 +636,13 @@ class customToolBar {
     blackColor.setOnAction(p => {
       menuButton.setGraphic(getCircle(Color.BLACK,fill))
       shapePen = f(shapePen, Color.BLACK)
+    })
+
+    transparentColor.setOnAction(p => {
+
+
+      menuButton.setGraphic(icon)
+      shapePen = f(shapePen, Color.TRANSPARENT)
     })
 
     menuButton.setGraphic(getCircle(f1(shapePen).get(), fill))
