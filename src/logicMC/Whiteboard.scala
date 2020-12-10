@@ -79,15 +79,15 @@ object Whiteboard{
   def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit):VBox = {
     val imageView = getImageView("images/book.png")
 
-    val label = new Label(whiteboard.name)
-    label.setFont(Auxiliary.myFont)
-    label.setAlignment(Pos.BASELINE_CENTER)
+    val nameLabel = new Label(whiteboard.name)
+    nameLabel.setFont(Auxiliary.myFont)
+    nameLabel.setAlignment(Pos.BASELINE_CENTER)
     //TODO FIX THE ICON OFFSET THINGY THAT IS FUCKING THIS SHIT UP, FACK.
-    label.setMaxWidth(60)
-    label.setMaxHeight(40)
-    label.setWrapText(true)
+    nameLabel.setMaxWidth(60)
+    nameLabel.setMaxHeight(40)
+    nameLabel.setWrapText(true)
 
-    val vBox = new VBox(imageView, label)
+    val vBox = new VBox(imageView, nameLabel)
     vBox.setSpacing(10)
     vBox.setAlignment(Pos.CENTER)
 
@@ -138,13 +138,13 @@ object Whiteboard{
 
       nameTextField.setOnKeyPressed(p => {
         if(p.getCode == KeyCode.ENTER) {
-          checkTextFieldAndChange(nameTextField, label, popupStage)
+          checkTextFieldAndChange(nameTextField, nameLabel, popupStage)
           updateWhiteboardName(whiteboard.changeName(nameTextField.getText))
         }
       })
 
       okButton.setOnMouseClicked(_ => {
-        checkTextFieldAndChange(nameTextField, label, popupStage)
+        checkTextFieldAndChange(nameTextField, nameLabel, popupStage)
         updateWhiteboardName(whiteboard.changeName(nameTextField.getText))
       })
 
