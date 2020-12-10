@@ -1022,10 +1022,15 @@ object whiteboardScroller {
     })
 
 
+    var opacity:Double = 1
+    if(backgroundColor == Colors.c3){
+      opacity = 0.3
+    }
+
     def applyPageStyle(newPageStyle:PageStyle):Unit = newPageStyle match {
-      case PageStyle.DOTTED => Auxiliary.dottedPage(width, height, page, 30)
-      case PageStyle.LINED => Auxiliary.horizontalLine(width, height, page, 30)
-      case PageStyle.SQUARED => Auxiliary.squaredPage(width, height, page, 30)
+      case PageStyle.DOTTED => Auxiliary.dottedPage(width, height, page, 30, opacity)
+      case PageStyle.LINED => Auxiliary.horizontalLine(width, height, page, 30, opacity)
+      case PageStyle.SQUARED => Auxiliary.squaredPage(width, height, page, 30, opacity)
       case _ =>
     }
 

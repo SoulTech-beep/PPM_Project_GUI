@@ -31,12 +31,12 @@ object PageSize extends Enumeration {
 
 object Auxiliary {
 
-   def squaredPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
-      verticalLines(width, height, pane, step)
-      horizontalLine(width, height, pane, step)
+   def squaredPage(width: Double, height: Double, pane: Pane, step:Int, opacity:Double = 1): Unit = {
+      verticalLines(width, height, pane, step, opacity)
+      horizontalLine(width, height, pane, step, opacity)
    }
 
-   def dottedPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
+   def dottedPage(width: Double, height: Double, pane: Pane, step:Int, opacity:Double = 1): Unit = {
       val j = (step to height.toInt - step) by step
       val i = (step to width.toInt - step) by step
 
@@ -46,6 +46,8 @@ object Auxiliary {
 
             circle.setCenterX(w)
             circle.setCenterY(h)
+
+            circle.setOpacity(opacity)
 
             circle.setRadius(1.5)
             circle.setFill(Color.LIGHTGRAY)
@@ -57,15 +59,15 @@ object Auxiliary {
 
    }
 
-   def verticalLines(width: Double, height: Double, pane: Pane, step:Int): Unit = {
+   def verticalLines(width: Double, height: Double, pane: Pane, step:Int, opacity:Double = 1): Unit = {
       val i = (step to width.toInt - step) by step
 
       i.foreach(w => {
-         pane.getChildren.add(drawLine(w,w,5, height-5))
+         pane.getChildren.add(drawLine(w,w,5, height-5, opacity))
       })
    }
 
-   def drawLine(startX:Double, endX:Double, startY:Double, endY: Double):Line = {
+   def drawLine(startX:Double, endX:Double, startY:Double, endY: Double, opacity:Double = 1):Line = {
       val line = new Line()
 
       line.setStartX(startX)
@@ -74,6 +76,8 @@ object Auxiliary {
       line.setStartY(startY)
       line.setEndY(endY)
 
+      line.setOpacity(opacity)
+
       line.setStrokeWidth(2)
       line.setFill(Color.LIGHTGRAY)
       line.setStroke(Color.LIGHTGRAY)
@@ -81,11 +85,11 @@ object Auxiliary {
       line
    }
 
-   def horizontalLine(width: Double, height: Double, pane: Pane, step:Int): Unit = {
+   def horizontalLine(width: Double, height: Double, pane: Pane, step:Int, opacity:Double = 1): Unit = {
       val j = (step to height.toInt - step) by step
 
       j.foreach(h => {
-         pane.getChildren.add(0, drawLine(5, width-5, h, h))
+         pane.getChildren.add(0, drawLine(5, width-5, h, h, opacity))
       })
    }
 
