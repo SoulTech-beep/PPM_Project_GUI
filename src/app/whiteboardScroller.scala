@@ -306,8 +306,8 @@ object whiteboardScroller {
       if(toolBar.selectedTool == ToolType.text){
         val texto = testeTexto(toolBar, page, wb)
 
-        texto.setLayoutX(20)
-        texto.setLayoutY(20)
+        texto.setLayoutX(100)
+        texto.setLayoutY(100)
 
         wb.camadas_node = texto :: wb.camadas_node
 
