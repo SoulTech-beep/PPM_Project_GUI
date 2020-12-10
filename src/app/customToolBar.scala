@@ -469,7 +469,7 @@ class customToolBar {
         }
       })
 
-      val sliderSize: Slider = getSliderMenu(textTool.textSize.get, (12,20), 3)
+      val sliderSize: Slider = getSliderMenu(textTool.textSize.get, (12,60), 6)
       sliderSize.valueProperty().addListener(new ChangeListener[Number] {
         override def changed(observableValue: ObservableValue[_ <: Number], t: Number, t1: Number): Unit = {
           textTool.changeTextSize(t1.intValue())

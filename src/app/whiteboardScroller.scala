@@ -1077,7 +1077,7 @@ object whiteboardScroller {
         if(pagePicker.wasClicked){
           val values = pagePicker.getPage()
 
-          pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1*5, values._2._2*5, toolBar, values._3, pane, wb))
+          pages.getChildren.add(pages.getChildren.size()-1, whiteboardScroller.createPage(values._1, values._2._1, values._2._2, toolBar, values._3, pane, wb))
         }
 
       })
