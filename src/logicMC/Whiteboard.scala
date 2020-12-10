@@ -8,6 +8,7 @@ import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
+import javafx.scene.text.FontWeight
 import javafx.stage.{Modality, Stage}
 import logicMC.Auxiliary.getImageView
 import logicMC.Whiteboard.Size
@@ -99,12 +100,18 @@ object Whiteboard{
       popupStage.setTitle("Rename Whiteboard")
       popupStage.initModality(Modality.APPLICATION_MODAL)
 
+      val label = new Label("Name")
+      label.setFont(Auxiliary.getFont(14))
+      label.setPadding(new Insets(5,0,0,5))
+
       val nameTextField = new TextField(whiteboard.name)
-      nameTextField.setFont(Auxiliary.myFont)
+      nameTextField.setFont(Auxiliary.getFontWeight(14, FontWeight.LIGHT))
       nameTextField.setPromptText("New name")
+      nameTextField.selectAll()
+
       VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
 
-      val vBoxTextField = new VBox()
+      val vBoxTextField = new VBox(label)
       vBoxTextField.getChildren.add(nameTextField)
       vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
       vBoxTextField.setPadding(new Insets(5, 5, 5, 5))

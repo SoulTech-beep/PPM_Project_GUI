@@ -77,13 +77,18 @@ object whiteboardScroller {
 
     def resizeText(button:Button): (VBox, TextField) = {
       val width = new TextField(textHolder.getLayoutBounds.getWidth.toString)
-      val vBox = new VBox(width)
+
+      val label = new Label("Text width")
+      label.setFont(Auxiliary.getFont(14))
+      label.setPadding(new Insets(5,0,0,5))
+
+      val vBox = new VBox(label,width)
 
       VBox.setMargin(width, new Insets(10))
 
       vBox.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
       vBox.setPadding(new Insets(5, 5, 5, 5))
-      vBox.setAlignment(Pos.CENTER)
+      vBox.setAlignment(Pos.TOP_LEFT)
       VBox.setMargin(vBox, new Insets(10,10,0,10))
 
       setOnEnter(button, width)
@@ -94,7 +99,7 @@ object whiteboardScroller {
     def deleteText(stage:Stage): Button ={
       val deleteButton = new Button("Delete")
 
-      VBox.setMargin(deleteButton, new Insets(0, 10, 20, 10))
+      VBox.setMargin(deleteButton, new Insets(5, 10, 10, 10))
 
       deleteButton.setFont(Auxiliary.getFont(16))
 
@@ -137,7 +142,11 @@ object whiteboardScroller {
       val vBox = new VBox()
       vBox.setStyle("-fx-background-color: white;")
 
-      val vBoxTextField = new VBox()
+      val label = new Label("Text")
+      label.setFont(Auxiliary.getFont(14))
+      label.setPadding(new Insets(5,0,0,5))
+
+      val vBoxTextField = new VBox(label)
       vBoxTextField.getChildren.add(textField)
       vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
       vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
@@ -147,6 +156,7 @@ object whiteboardScroller {
       val resizeTextValues = resizeText(changeButton)
 
       vBox.getChildren.addAll(resizeTextValues._1,vBoxTextField, changeButton, deleteText(stage))
+      vBox.setPadding(new Insets(10,10,5,10))
 
       changeButton.setOnAction(_ =>{
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
@@ -160,7 +170,7 @@ object whiteboardScroller {
         Auxiliary.blurBackground(30, 0, 500, page)
       })
 
-      VBox.setMargin(changeButton, new Insets(0, 10, 0, 10))
+      VBox.setMargin(changeButton, new Insets(10, 10, 0, 10))
       VBox.setMargin(textField, new Insets(10, 10, 10, 10))
 
       vBox.setAlignment(Pos.CENTER)
@@ -449,15 +459,17 @@ object whiteboardScroller {
 
               isFirstPoint = true
 
+              val tempPolygon = polygon
+
               def deletePolygon(delete:MenuItem):Unit = {
                 delete.setOnAction(_ => {
-                  page.getChildren.remove(polygon)
+                  page.getChildren.remove(tempPolygon)
                   wb.camadas = wb.camadas.filter(p=> p!= polygon)
                 })
               }
 
               val contextMenu = new ContextMenu()
-              polygon.setOnContextMenuRequested(click => contextMenuNode(contextMenu, click,polygon)(_ => ()) (deletePolygon))
+              tempPolygon.setOnContextMenuRequested(click => contextMenuNode(contextMenu, click,tempPolygon)(_ => ()) (deletePolygon))
 
             }
           }
@@ -562,6 +574,8 @@ object whiteboardScroller {
           if (shape.getLayoutBounds.getWidth != -1) {
             selectedPolyline = c :: selectedPolyline
             c.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
+
+            c.toFront()
           } else {
             c.setStyle("")
           }
@@ -572,6 +586,9 @@ object whiteboardScroller {
           if (shape) {
             selectedShapes = c::selectedShapes
             c.setStyle(c.getStyle + "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
+
+            c.toFront()
+
           } else {
             c.setStyle("")
           }
@@ -621,13 +638,20 @@ object whiteboardScroller {
             selectedShapes = List()
 
           }  else if (!selectedShapes.contains(newselNodes)) {
+            val selectedNumber = selectedShapes.size + selectedPolyline.size
+
             page.getChildren.remove(selectionPolyline)
 
             selectedPolyline = List()
             selectedShapes = List(newselNodes)
+
+            newselNodes.toFront()
             newselNodes.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
           }
         } else if(!selectedPolyline.contains(newsel)) {
+          val selectedNumber = selectedPolyline.size + selectedShapes.size
+
+
           selectedShapes.foreach(c => c.setStyle(""))
           selectedPolyline.foreach(c => c.setStyle(""))
 
@@ -636,7 +660,7 @@ object whiteboardScroller {
           selectedPolyline = List(newsel)
           selectedShapes = List()
 
-
+          newsel.toFront()
           newsel.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
         }
 
@@ -1048,7 +1072,7 @@ object whiteboardScroller {
       pages.setSpacing(50)
       pages.setAlignment(Pos.CENTER)
 
-      pages.setPadding(new Insets(100,0,0,0))
+      pages.setPadding(new Insets(100,100,50,100))
 
       canvas.init(pages)
 
