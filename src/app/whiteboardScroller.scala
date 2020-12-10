@@ -19,7 +19,7 @@ import javafx.scene.text.Text
 import javafx.scene.{Node, Scene}
 import javafx.stage.{Modality, Stage, WindowEvent}
 import javafx.util.Duration
-import logicMC.Auxiliary
+import logicMC.{Auxiliary, Whiteboard}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
@@ -37,7 +37,7 @@ class whiteboardScroller {
 
   var canvasFinal : ZoomableScrollPane = null
 
-  def getCanvas(toolBar: customToolBar, pane: Node): ZoomableScrollPane = whiteboardScroller.getCanvas(this,toolBar,pane)
+  def getCanvas(whiteboard:Whiteboard, toolBar: customToolBar, pane: Node): ZoomableScrollPane = whiteboardScroller.getCanvas(this,toolBar,pane, whiteboard)
 
   def createPage(backgroundColor: Color, width: Double, height: Double, toolBar: customToolBar,pane:Node, pageStyle: PageStyle): Pane = whiteboardScroller.createPage(backgroundColor, width, height, toolBar, pageStyle,pane, this)
 
@@ -70,6 +70,7 @@ object whiteboardScroller {
   }
 
   def testeTexto(customToolBar: customToolBar, page:Pane, wb:whiteboardScroller):Text = {
+    customToolBar.selectedTool = ToolType.move
 
     //só agora aqui selecionarmos a ferramenta na tool bar, de forma a q cada caixa de texto tenha as suas próprias configs...
     val textHolder = new Text("Lorem Ipsum")
@@ -305,7 +306,6 @@ object whiteboardScroller {
 
           mediaView.setFitHeight(video.getHeight)
           mediaView.setFitWidth(video.getWidth)
-
 
           val play: Button = new Button()
           play.setText("play")
@@ -1033,14 +1033,13 @@ object whiteboardScroller {
     addPageButton
   }
 
-  def getCanvas(wb: whiteboardScroller,toolBar: customToolBar, pane: Node): ZoomableScrollPane = {
+  def getCanvas(wb: whiteboardScroller,toolBar: customToolBar, pane: Node, whiteboard: Whiteboard): ZoomableScrollPane = {
 
-    /////
     if(wb.canvasFinal == null) {
       val canvas = new ZoomableScrollPane()
       val pages = new VBox()
 
-      val page3 = whiteboardScroller.createPage(Color.WHITE, 1200, 1200, toolBar, PageStyle.DOTTED, pane, wb)
+      val page3 = whiteboardScroller.createPage(whiteboard.color, whiteboard.size._1, whiteboard.size._2, toolBar, whiteboard.style, pane, wb)
 
       //page1.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)))
 

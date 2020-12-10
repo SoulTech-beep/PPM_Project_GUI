@@ -125,21 +125,21 @@ class Controller {
   }
 
   def getWhiteboardPane(whiteboard: Whiteboard): VBox = {
-    setOnClickWhiteboardPane(Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName), currentSection.id + "w" + whiteboard.id)
+    setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName), currentSection.id + "w" + whiteboard.id)
   }
 
-  def setOnClickWhiteboardPane(vBox: VBox, id:String): VBox = {
+  def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox, id:String): VBox = {
     vBox.setOnMouseClicked(_ => {
       rightStackPane.getChildren.remove(canvasScroller)
       if(!listWhiteboards.contains(id)) {
         whiteboardOnPage = new whiteboardScroller()
-        canvasScroller = whiteboardOnPage.getCanvas(toolBar, mySplitPane)
+        canvasScroller = whiteboardOnPage.getCanvas(whiteboard,toolBar, mySplitPane)
         rightStackPane.getChildren.add(0, canvasScroller)
         listWhiteboards = listWhiteboards + (id -> whiteboardOnPage)
       } else {
         rightStackPane.getChildren.remove(canvasScroller)
         whiteboardOnPage = listWhiteboards.get(id).get
-        canvasScroller = whiteboardOnPage.getCanvas(toolBar, mySplitPane)
+        canvasScroller = whiteboardOnPage.getCanvas(whiteboard,toolBar, mySplitPane)
         rightStackPane.getChildren.add(0, canvasScroller)
       }
       //TODO if the one we click is the one being displayed, let's not remove and update everything...

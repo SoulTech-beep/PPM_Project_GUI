@@ -38,13 +38,13 @@ object FxApp {
     Section("0.1", "António", List(
       Section("0.1.1", "Laranja", List(
         Section("0.1.1.1", "Henrique", List(
-          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, Color.PINK, (20,20), List(), "AR", PageStyle.DOTTED)))
+          Section("0.1.1.1.1", "Tiago", List(), List(new Whiteboard(0, Color.PINK, (210*5,297*5), List(), "AR", PageStyle.DOTTED)))
         ), List())
       ), List()),
       Section("0.1.2", "Sapo", List(), List())
     ), List()),
     Section("0.2", "Miguel", List(), List())
-  ), List(new Whiteboard(0, Color.BLUE, (20,20), List(), "IA", PageStyle.LINED)))
+  ), List(new Whiteboard(0, Color.WHITE, (210*5,297*5), List(), "IA", PageStyle.DOTTED)))
 
   var colorStyle:ColorStyle = new ColorStyle()
 

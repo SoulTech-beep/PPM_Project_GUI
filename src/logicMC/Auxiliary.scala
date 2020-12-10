@@ -31,6 +31,8 @@ object PageSize extends Enumeration {
 
 object Auxiliary {
 
+   val SIZEMULTIPLIER = 5
+
    def squaredPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
       verticalLines(width, height, pane, step)
       horizontalLine(width, height, pane, step)
