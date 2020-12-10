@@ -25,13 +25,11 @@ object PageSize extends Enumeration {
 
    type PageSize = (Int, Int)
 
-   val A4: (Int, Int) = (210, 297)
-   val A3: (Int, Int) = (297, 420)
+   val A4: (Int, Int) = (1050, 1485)
+   val A3: (Int, Int) = (1485, 2100)
 }
 
 object Auxiliary {
-
-   val SIZEMULTIPLIER = 5
 
    def squaredPage(width: Double, height: Double, pane: Pane, step:Int): Unit = {
       verticalLines(width, height, pane, step)

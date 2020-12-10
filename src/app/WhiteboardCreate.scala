@@ -9,7 +9,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
-import logicMC.Auxiliary.{SIZEMULTIPLIER, getSpacer, getStyledHBox}
+import logicMC.Auxiliary.{getSpacer, getStyledHBox}
 import logicMC.PageSize.PageSize
 import logicMC.{Auxiliary, PageSize, Section}
 
@@ -185,7 +185,7 @@ class WhiteboardCreate() {
 
   def onCreateClicked(): Unit = {
     if(!whiteboardNameTextField.getText.isBlank){
-      FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1*Auxiliary.SIZEMULTIPLIER, selectedSize._2*SIZEMULTIPLIER, whiteboardNameTextField.getText, selectedStyle)
+      FxApp.app_state = Section.addWhiteboardWithValues(appState._1, appState._2, selectedColor.get(), selectedSize._1, selectedSize._2, whiteboardNameTextField.getText, selectedStyle)
     }
     val stage = createButton.getScene.getWindow.asInstanceOf[Stage]
     stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))

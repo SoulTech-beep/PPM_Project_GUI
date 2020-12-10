@@ -5,7 +5,7 @@ import javafx.beans.property.{ObjectProperty, SimpleBooleanProperty, SimpleDoubl
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
-import javafx.scene.Node
+import javafx.scene.{Node, Scene}
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout.{HBox, VBox}
@@ -13,7 +13,7 @@ import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Polygon, Rectangle}
 import javafx.scene.text.FontWeight
 import javafx.stage.FileChooser.ExtensionFilter
-import javafx.stage.{FileChooser, Stage}
+import javafx.stage.{FileChooser, Modality, Stage}
 import logicMC.Eraser
 
 object ToolType extends Enumeration {
@@ -110,33 +110,34 @@ class customToolBar {
   def setShapeButton():Unit = {
     val shapeButton:MenuButton = new MenuButton()
 
-    val circle : Button = new Button("Circle")
-    val square : Button = new Button("Square")
-    val line : Button = new Button("Line")
-    val polygon : Button = new Button("Polygon")
+    val circle : MenuItem = new MenuItem("Circle")
+    val square : MenuItem = new MenuItem("Square")
+    val line : MenuItem = new MenuItem("Line")
+    val polygon : MenuItem = new MenuItem("Polygon")
 
-    val vbox : VBox = new VBox()
-    vbox.getChildren.addAll(circle,square,line,polygon)
-    val options : CustomMenuItem = new CustomMenuItem()
-    options.setContent(vbox)
 
-    shapeButton.getItems().add(options)
+    shapeButton.getItems().addAll(circle, square, line, polygon)
 
     buttonList = shapeButton :: buttonList
+
+    val menuItemList = List(circle,square,line,polygon)
 
     line.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.line)
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getLine(Color.BLACK,false))
-      resetButton(line)
 
+      resetMenuItem(line, menuItemList)
+
+      resetButton(shapeButton)
     })
 
     polygon.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.polygon)
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getHexagon(Color.BLACK,fill = false))
-      resetButton(polygon)
+      resetMenuItem(polygon,menuItemList)
+      resetButton(shapeButton)
 
     })
 
@@ -144,7 +145,10 @@ class customToolBar {
       shapePen = shapePen.changeShape(ShapeType.circle)
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getCircle(Color.BLACK,fill = false))
-      resetButton(circle)
+
+      resetMenuItem(circle,menuItemList)
+
+      resetButton(shapeButton)
 
     })
 
@@ -152,7 +156,10 @@ class customToolBar {
       shapePen = shapePen.changeShape(ShapeType.square)
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getSquare(Color.BLACK,false))
-      resetButton(square)
+
+      resetMenuItem(square,menuItemList)
+
+      resetButton(shapeButton)
 
     })
 
@@ -179,9 +186,9 @@ class customToolBar {
       imagePath = ""
       selectedTool = ToolType.pdf
       optionsHBox.getChildren.clear()
-      getFileChooser("PDF")
       resetButton(pdfButton)
 
+      getFileChooser("PDF")
     })
 
     val icon = new ImageView(new Image("images/pdf.png"))
@@ -205,8 +212,9 @@ class customToolBar {
       imagePath = ""
       selectedTool = ToolType.image
       optionsHBox.getChildren.clear()
-      getFileChooser("Image")
       resetButton(imageButton)
+
+      getFileChooser("Image")
     })
 
     val icon = new ImageView(new Image("images/image.png"))
@@ -230,9 +238,9 @@ class customToolBar {
       videoPath = ""
       selectedTool = ToolType.video
       optionsHBox.getChildren.clear()
-      getFileChooser("Video")
       resetButton(videoButton)
 
+      getFileChooser("Video")
     })
 
     val icon = new ImageView(new Image("images/video.png"))
@@ -269,33 +277,51 @@ class customToolBar {
   }
 
   def getFileChooser(fileType : String):FileChooser = {
-    val secondStage: Stage = new Stage()
+
     val fileChooser = new FileChooser
+
     if(fileType == "Image"){
       fileChooser.setTitle("Select Image")
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
-      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) imagePath = selectedFile.toURI().toString()
+      else resetButton(null)
+
     }
     else if(fileType == "Video") {
       fileChooser.setTitle("Select Video")
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Video Files", "*.mp4", "*.avi"))
-      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) videoPath = selectedFile.toURI().toString()
+      else resetButton(null)
+
     } else if(fileType == "PDF") {
       fileChooser.setTitle("Select PDF")
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("PDF Files", "*.pdf"))
-      val selectedFile = fileChooser.showOpenDialog(secondStage)
+      val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) imagePath = selectedFile.toURI().toString()
+      else resetButton(null)
+
     }
+
 
     fileChooser
   }
 
-  def resetButton(buttonToSelect: Button):Unit = {
+  def resetButton(buttonToSelect: Control):Unit = {
     buttonList.foreach( p => p.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px"))
-    buttonToSelect.setStyle("-fx-background-color: #636e72; -fx-background-radius: 25px")
 
+    if(buttonToSelect != null){
+      buttonToSelect.setStyle("-fx-background-color: #636e72; -fx-background-radius: 25px")
+    }
+
+  }
+
+  def resetMenuItem(menuItem: MenuItem, lst: List[MenuItem]): Unit ={
+    buttonList.foreach( p => p.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px"))
+    lst.foreach(p => p.setStyle(""))
+
+    menuItem.setStyle("-fx-padding: 0 10 0 10;-fx-background-radius: 18; -fx-border-radius: 18; -fx-background-color: rgba(99, 110, 114,0.2);")
   }
 
   def setSelectionButton(): Unit = {
@@ -669,7 +695,12 @@ class customToolBar {
     })
 
     transparentColor.setOnAction(p => {
-      menuButton.setGraphic(icon)
+      val icon1 = new ImageView(new Image("images/transparent.png"))
+      icon1.setSmooth(true)
+      icon1.setFitHeight(20)
+      icon1.setFitWidth(20)
+
+      menuButton.setGraphic(icon1)
       shapePen = f(shapePen, Color.TRANSPARENT)
     })
 
@@ -677,7 +708,6 @@ class customToolBar {
       menuButton.setGraphic(icon)
     }else{
       menuButton.setGraphic(getCircle(f1(shapePen).get(), fill))
-
     }
 
     menuButton.getItems.addAll(specifiedColorsMenuItem, colorPickerMenuItem)
@@ -770,10 +800,18 @@ class customToolBar {
   }
 
 
+
 }
 
 object customToolBar {
 
+  def getIcon(imageLocation:String): ImageView ={
+    val icon = new ImageView(new Image(imageLocation))
+    icon.setSmooth(true)
+    icon.setFitHeight(20)
+    icon.setFitWidth(20)
 
+    icon
+  }
 
 }

@@ -240,13 +240,18 @@ object whiteboardScroller {
     page.setOnMouseClicked(event => {
 
       if(toolBar.selectedTool == ToolType.pdf) {
-        val s:String = toolBar.imagePath.replaceAll("%20"," ")
-        val num = pdfNum
-        generateImageFromPDF(s, "png", num)
-        val listFiles: List[File] = getListOfFiles("src/output/" + s.split('/').last.replace(".pdf",num.toString))
-        getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200, new Point2D(20,20), wb)
-        pdfNum = pdfNum + 1
-        toolBar.selectedTool = ToolType.move
+        if(toolBar.imagePath != ""){
+          val s:String = toolBar.imagePath.replaceAll("%20"," ")
+          val num = pdfNum
+          generateImageFromPDF(s, "png", num)
+          val listFiles: List[File] = getListOfFiles("src/output/" + s.split('/').last.replace(".pdf",num.toString))
+          getPdfView(page, s.split('/').last.replace(".pdf",num.toString),listFiles,0,200, new Point2D(20,20), wb)
+          pdfNum = pdfNum + 1
+          toolBar.selectedTool = ToolType.move
+
+          toolBar.resetButton(null)
+        }
+
       }
 
       if(toolBar.selectedTool == ToolType.image) {
@@ -256,6 +261,8 @@ object whiteboardScroller {
           val iP: ImagePattern = new ImagePattern(image)
           val square = new Rectangle(image.getWidth, image.getHeight, iP)
           page.getChildren.add(square)
+
+          toolBar.resetButton(null)
 
           wb.camadas_node = square :: wb.camadas_node
 
@@ -314,36 +321,35 @@ object whiteboardScroller {
           val player: MediaPlayer = new MediaPlayer(video)
           val mediaView: MediaView = new MediaView(player)
 
-          mediaView.setFitHeight(video.getHeight)
-          mediaView.setFitWidth(video.getWidth)
+          mediaView.setFitWidth(450)
 
           val play: Button = new Button()
-          play.setText("play")
+          play.setGraphic(customToolBar.getIcon("images/play.png"))
           play.setOnAction(e => {
             player.play()
           })
 
           val pause: Button = new Button()
-          pause.setText("pause")
+          pause.setGraphic(customToolBar.getIcon("images/pause.png"))
           pause.setOnAction(e => {
             player.pause()
           })
 
 
           val fast: Button = new Button()
-          fast.setText("fast")
+          fast.setGraphic(customToolBar.getIcon("images/fast.png"))
           fast.setOnAction(e => {
             player.setRate(1.5)
           })
 
           val slow: Button = new Button()
-          slow.setText("slow")
+          slow.setGraphic(customToolBar.getIcon("images/slow.png"))
           slow.setOnAction(e => {
             player.setRate(0.5)
           })
 
           val restart: Button = new Button()
-          restart.setText("restart")
+          restart.setGraphic(customToolBar.getIcon("images/restart.png"))
           restart.setOnAction(e => {
             player.seek(player.getStartTime)
             player.play
@@ -353,18 +359,29 @@ object whiteboardScroller {
           val videoToolBar: HBox = new HBox()
           videoToolBar.getChildren.addAll(play,pause,fast,slow,restart)
 
-          val sp: StackPane = new StackPane()
+          val sp: AnchorPane = new AnchorPane()
           sp.getChildren.addAll( mediaView, videoToolBar)
 
-          page.getChildren.add(sp)
+          AnchorPane.setBottomAnchor(videoToolBar, 0)
+          AnchorPane.setLeftAnchor(videoToolBar, 0)
+          AnchorPane.setRightAnchor(videoToolBar, 0)
 
-          sp.setOnMouseEntered(e =>{
-            videoToolBar.setVisible(true)
+          page.getChildren.add(sp)
+          toolBar.resetButton(null)
+
+          //TODO offset added just for convenience...  Video should be added to the mouse place
+          sp.setLayoutX(50)
+          sp.setLayoutY(50)
+
+          sp.setOnMouseEntered(entered =>{
+            videoToolBar.setOpacity(1)
           })
-          sp.setOnMouseExited(e =>{
-            videoToolBar.setVisible(false)
+
+          sp.setOnMouseExited(exited =>{
+            videoToolBar.setOpacity(0)
           })
-          videoToolBar.setVisible(false)
+
+          videoToolBar.setOpacity(0)
 
           videoToolBar.setAlignment(Pos.BOTTOM_CENTER)
           videoToolBar.setSpacing(20)
@@ -401,11 +418,18 @@ object whiteboardScroller {
               val newSize:Double = size.getText().toDouble
 
               if(sp.getBoundsInParent.getMinY + newSize < page.getMaxHeight && sp.getBoundsInParent.getMinX + newSize*(video.getWidth.toDouble/video.getHeight) < page.getMaxWidth ) {
-                mediaView.setFitWidth(newSize*(video.getWidth.toDouble/video.getHeight))
-                mediaView.setFitHeight(newSize)
+
+                if(newSize*(video.getWidth.toDouble/video.getHeight) > 100){
+
+                  mediaView.setFitWidth(newSize*(video.getWidth.toDouble/video.getHeight))
+                  mediaView.setFitHeight(newSize)
+
+                }
+
               }
             })
           }
+
 
           val cm: ContextMenu = new ContextMenu()
           sp.setOnContextMenuRequested(click => contextMenuNode(cm, click, sp) (resizeVideo) (deleteVideo))

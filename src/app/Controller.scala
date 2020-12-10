@@ -157,12 +157,17 @@ class Controller {
   }
 
   def updateWhiteboardName(whiteboard: Whiteboard): Unit = {
+
     val index = currentSection.whiteboards.indexWhere(p => p.id == whiteboard.id)
     val newCurrentSectionWhiteboards = currentSection.whiteboards.updated(index, whiteboard)
 
     val newCurrentSection = Section(currentSection.id, currentSection.name, currentSection.sections, newCurrentSectionWhiteboards)
 
     FxApp.app_state = Section.updateAll(FxApp.app_state._1, newCurrentSection)
+
+    //TODO Added, may or may not work!
+    currentSection = FxApp.app_state._2
+
   }
 
   def getSectionPane(section: Section): VBox = {

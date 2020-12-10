@@ -10,6 +10,7 @@ import logicMC.{Section, Whiteboard}
 
 class HelloWorld extends Application {
 
+
   override def start(primaryStage: Stage): Unit = {
 
     primaryStage.setTitle("ChestNut")
@@ -29,9 +30,12 @@ class HelloWorld extends Application {
     primaryStage.setScene(scene)
     primaryStage.show()
 
+
   }
 
 }
+
+
 object FxApp {
 
   val originalSection = new Section("0", "Macaco", List(
@@ -48,10 +52,12 @@ object FxApp {
 
   var colorStyle:ColorStyle = new ColorStyle()
 
+
   var app_state: (Section, Section) = (originalSection, originalSection)
 
   def main(args: Array[String]): Unit = {
     Application.launch(classOf[HelloWorld], args: _*)
+
   }
 
 
