@@ -529,8 +529,6 @@ object whiteboardScroller {
         }
       }
 
-
-
     })
 
     page.setOnMouseReleased(event => {

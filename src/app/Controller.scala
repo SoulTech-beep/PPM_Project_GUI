@@ -212,14 +212,26 @@ class Controller {
   }
 
   def getAddSectionPopup(stage: Stage):VBox = {
-    val vBox = new VBox()
-    vBox.setSpacing(20)
-    vBox.setAlignment(Pos.CENTER)
-    vBox.setPadding(new Insets(10, 10, 10, 10))
+
+
+    val label = new Label("Section name")
+    label.setFont(Auxiliary.getFont(14))
+    label.setPadding(new Insets(5,0,0,5))
 
     val nameTextField = new TextField()
     nameTextField.setPromptText("Section name")
     nameTextField.getStyleClass.add("customTextField")
+
+    VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
+
+    val vBoxTextField = new VBox(label)
+    vBoxTextField.getChildren.add(nameTextField)
+    vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+    vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
+    VBox.setMargin(vBoxTextField, new Insets(10,10,0,10))
+
+    val okButton = Auxiliary.getButtonWithColor("55efc4","00b894","Add Section")
+
 
     nameTextField.setOnKeyPressed(p => {
       if (p.getCode == KeyCode.ENTER) {
@@ -233,23 +245,6 @@ class Controller {
       }
     })
 
-    val okButton = new Button("Add Section")
-    okButton.setFont(Auxiliary.getFont(16))
-
-    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
-    okButton.setStyle(style + "-fx-background-color:#55efc4;")
-
-    okButton.setOnMouseEntered(_ =>{
-      okButton.setStyle(style + "-fx-background-color:#00b894;")
-    })
-
-    okButton.setOnMouseExited(_ => {
-      okButton.setStyle(style + "-fx-background-color:#55efc4;")
-    })
-
-    okButton.setMaxWidth(Double.MaxValue)
-    okButton.setPrefHeight(35)
-
 
     okButton.setOnMouseClicked(_ => {
       //TODO check if name isn't empty
@@ -262,9 +257,16 @@ class Controller {
       }
     })
 
-    vBox.getChildren.addAll(nameTextField, okButton)
+    val innervBox = new VBox(vBoxTextField, okButton)
+    innervBox.setStyle("-fx-background-color: white;")
 
-    vBox
+    innervBox.setSpacing(20)
+    innervBox.setAlignment(Pos.CENTER)
+    innervBox.setPadding(new Insets(10,10,10,10))
+
+
+
+    innervBox
   }
 
   def addSectionButtonOnClick(): Unit = {
@@ -275,6 +277,7 @@ class Controller {
       popupStage.initModality(Modality.APPLICATION_MODAL)
       popupStage.getIcons.add(new Image("images/addIcon.png"))
       popupStage.setResizable(false)
+      popupStage.setWidth(400)
 
       val scene = new Scene(getAddSectionPopup(popupStage))
       scene.getStylesheets.add("testStyle.css")
