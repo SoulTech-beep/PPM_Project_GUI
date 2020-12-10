@@ -603,6 +603,8 @@ object whiteboardScroller {
           }
         })
 
+        println("selectedPolyline: " + selectedPolyline.size)
+
         wb.camadas_node.foreach(c => {
           val shape = selectionPolyline.intersects(c.getBoundsInParent)
           if (shape) {
@@ -650,17 +652,20 @@ object whiteboardScroller {
 
         if(newsel == null) {
 
-          selectedShapes.foreach(c => c.setStyle(""))
-          selectedPolyline.foreach(c => c.setStyle(""))
 
           if(newselNodes == null) {
             page.getChildren.remove(selectionPolyline)
+
+            selectedShapes.foreach(c => c.setStyle(""))
+            selectedPolyline.foreach(c => c.setStyle(""))
 
             selectedPolyline = List()
             selectedShapes = List()
 
           }  else if (!selectedShapes.contains(newselNodes)) {
-            val selectedNumber = selectedShapes.size + selectedPolyline.size
+
+            selectedShapes.foreach(c => c.setStyle(""))
+            selectedPolyline.foreach(c => c.setStyle(""))
 
             page.getChildren.remove(selectionPolyline)
 
@@ -670,12 +675,8 @@ object whiteboardScroller {
             newselNodes.toFront()
             newselNodes.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
 
-            wb.camadas_node.filter( p => p!= newselNodes)
-            wb.camadas_node = newselNodes::wb.camadas_node
           }
         } else if(!selectedPolyline.contains(newsel)) {
-          val selectedNumber = selectedPolyline.size + selectedShapes.size
-
 
           selectedShapes.foreach(c => c.setStyle(""))
           selectedPolyline.foreach(c => c.setStyle(""))
@@ -686,9 +687,6 @@ object whiteboardScroller {
           selectedShapes = List()
 
           newsel.toFront()
-          wb.camadas.filter( p => p!= newsel)
-          wb.camadas = newsel::wb.camadas
-
           newsel.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
         }
 
