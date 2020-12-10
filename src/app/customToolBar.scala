@@ -4,7 +4,7 @@ import app.ToolType.{ToolType, selector}
 import javafx.beans.property.{ObjectProperty, SimpleBooleanProperty, SimpleDoubleProperty, SimpleIntegerProperty, SimpleObjectProperty}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.FXML
-import javafx.geometry.Pos
+import javafx.geometry.{Insets, Pos}
 import javafx.scene.Node
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
@@ -68,31 +68,32 @@ class customToolBar {
     selectedTool = ToolType.pen
     selectedPen = penTool
 
-    setTextButton()
+    getSeparator()
+
     setPDFButton()
     setVideoButton()
     setImageButton()
 
     getSeparator()
 
-    setSelectionButton()
-
+    setTextButton()
     setShapeButton()
-    setEraserButton()
 
     getSeparator()
 
-    //TODO we gotta add some separators here!
-
+    setEraserButton()
     setPenButton("images/marker.png", ToolType.marker)
     setPenButton("images/ball-point.png", ToolType.pen)
 
     getSeparator()
 
+    setSelectionButton()
     setMoveButton()
 
     toolbar.getItems.add(optionsHBox)
-    optionsHBox.setSpacing(10)
+
+    HBox.setMargin(optionsHBox, new Insets(0,0,0,12))
+    optionsHBox.setSpacing(15)
   }
 
   def getSeparator():Unit = {
@@ -100,6 +101,8 @@ class customToolBar {
     separator.getStylesheets.add("separator.css")
     separator.setId("my-separator")
     separator.setPrefHeight(20)
+
+    HBox.setMargin(separator, new Insets(0,3,0,3))
 
     toolbar.getItems.add(0, separator)
   }
@@ -121,28 +124,36 @@ class customToolBar {
 
     buttonList = shapeButton :: buttonList
 
-    line.setOnAction(event => {
-      selectTool(ToolType.geometricShape)
+    line.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.line)
+      selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getLine(Color.BLACK,false))
+      resetButton(line)
+
     })
 
-    polygon.setOnAction(event => {
+    polygon.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.polygon)
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getHexagon(Color.BLACK,fill = false))
+      resetButton(polygon)
+
     })
 
-    circle.setOnAction(event => {
-      selectTool(ToolType.geometricShape)
+    circle.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.circle)
+      selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getCircle(Color.BLACK,fill = false))
+      resetButton(circle)
+
     })
 
-    square.setOnAction(event => {
-      selectTool(ToolType.geometricShape)
+    square.setOnAction(_ => {
       shapePen = shapePen.changeShape(ShapeType.square)
+      selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getSquare(Color.BLACK,false))
+      resetButton(square)
+
     })
 
     shapeButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -169,6 +180,8 @@ class customToolBar {
       selectedTool = ToolType.pdf
       optionsHBox.getChildren.clear()
       getFileChooser("PDF")
+      resetButton(pdfButton)
+
     })
 
     val icon = new ImageView(new Image("images/pdf.png"))
@@ -193,6 +206,7 @@ class customToolBar {
       selectedTool = ToolType.image
       optionsHBox.getChildren.clear()
       getFileChooser("Image")
+      resetButton(imageButton)
     })
 
     val icon = new ImageView(new Image("images/image.png"))
@@ -217,6 +231,8 @@ class customToolBar {
       selectedTool = ToolType.video
       optionsHBox.getChildren.clear()
       getFileChooser("Video")
+      resetButton(videoButton)
+
     })
 
     val icon = new ImageView(new Image("images/video.png"))
@@ -237,6 +253,8 @@ class customToolBar {
     buttonList = textButton :: buttonList
 
     textButton.setOnAction(_ => {
+      resetButton(textButton)
+
       selectTool(ToolType.text)
     })
 
@@ -274,6 +292,12 @@ class customToolBar {
     fileChooser
   }
 
+  def resetButton(buttonToSelect: Button):Unit = {
+    buttonList.foreach( p => p.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px"))
+    buttonToSelect.setStyle("-fx-background-color: #636e72; -fx-background-radius: 25px")
+
+  }
+
   def setSelectionButton(): Unit = {
 
     val selectionButton:Button = new Button()
@@ -283,6 +307,8 @@ class customToolBar {
     selectionButton.setOnAction(event => {
       selectedTool = ToolType.selector
       optionsHBox.getChildren.clear()
+
+      resetButton(selectionButton)
     })
 
     selectionButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -305,6 +331,8 @@ class customToolBar {
     moveButton.setOnAction(_ => {
       selectedTool = ToolType.move
       optionsHBox.getChildren.clear()
+      resetButton(moveButton)
+
     })
 
     moveButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -327,6 +355,8 @@ class customToolBar {
 
     eraserButton.setOnAction(event => {
       selectTool(ToolType.eraser)
+      resetButton(eraserButton)
+
     })
 
     eraserButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -349,6 +379,8 @@ class customToolBar {
 
     penButton.setOnAction(event => {
       selectTool(toolType)
+      resetButton(penButton)
+
     })
 
     penButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -364,6 +396,8 @@ class customToolBar {
 
   def getFontStylePicker():MenuButton = {
     val menuButton = new MenuButton()
+    menuButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
 
     val bold = new Button("Bold")
     val light = new Button("Light")
@@ -418,6 +452,8 @@ class customToolBar {
 
       val menuButton = new MenuButton()
       menuButton.setGraphic(getCircle(textTool.textColor.get(), true))
+      menuButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
+
 
       val colorPicker = new ColorPicker()
       colorPicker.setOnAction(a => {
@@ -445,6 +481,7 @@ class customToolBar {
       selectedPen = penList.find(p => p._2 == toolName).get._1
 
       val dropDown = new MenuButton()
+      dropDown.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
 
       val redColor = new Button()
       val blackColor = new Button()
@@ -540,8 +577,6 @@ class customToolBar {
 
     } else if(toolName == ToolType.geometricShape) {
 
-      println("tetete")
-
       selectedTool = toolName
 
       val slOpacity: Slider = getSliderMenu(shapePen.opacity.get(), (0,1), 0.1)
@@ -559,19 +594,13 @@ class customToolBar {
         }
       })
 
-      if(shapePen.shape == ShapeType.polygon){
+
         return optionsHBox.getChildren.addAll(
           setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true, true)
           ,toMenuItem(slWidth,"images/width.png")
           , toMenuItem(slOpacity, "images/opacity.png"),
           setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
-      }else{
-        return optionsHBox.getChildren.addAll(
-          setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true)
-          ,toMenuItem(slWidth,"images/width.png")
-          , toMenuItem(slOpacity, "images/opacity.png"),
-          setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
-      }
+
 
     }
 
@@ -579,6 +608,7 @@ class customToolBar {
 
   def setColorPicker(f:(GeometricShape, Color) => (GeometricShape), f1:(GeometricShape) => (ObjectProperty[Color]), fill:Boolean = true, transparent:Boolean = false):MenuButton = {
     val menuButton = new MenuButton()
+    menuButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
 
     val redColor = new Button()
     val blackColor = new Button()
@@ -639,13 +669,16 @@ class customToolBar {
     })
 
     transparentColor.setOnAction(p => {
-
-
       menuButton.setGraphic(icon)
       shapePen = f(shapePen, Color.TRANSPARENT)
     })
 
-    menuButton.setGraphic(getCircle(f1(shapePen).get(), fill))
+    if(shapePen.fillColor.get()==Color.TRANSPARENT && transparent){
+      menuButton.setGraphic(icon)
+    }else{
+      menuButton.setGraphic(getCircle(f1(shapePen).get(), fill))
+
+    }
 
     menuButton.getItems.addAll(specifiedColorsMenuItem, colorPickerMenuItem)
 
@@ -730,6 +763,8 @@ class customToolBar {
 
     menu.setGraphic(icon)
     menu.getItems.add(menuItem)
+
+    menu.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
 
     menu
   }

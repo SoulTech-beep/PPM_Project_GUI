@@ -58,14 +58,14 @@ class Controller {
 
   @Override
   def initialize(): Unit = {
-    /*app.customToolBar.setToolbar(toolbar)
-    app.customToolBar.initializeCustomToolBar()*/
 
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
 
     toolBar.setToolbar(toolbar)
     toolBar.initializeCustomToolBar()
+
+    toolbar.setDisable(true)
 
     layoutShenanigans()
 
@@ -132,6 +132,8 @@ class Controller {
     vBox.setOnMouseClicked(_ => {
       rightStackPane.getChildren.remove(canvasScroller)
       if(!listWhiteboards.contains(id)) {
+        toolbar.setDisable(false)
+
         whiteboardOnPage = new whiteboardScroller()
         canvasScroller = whiteboardOnPage.getCanvas(whiteboard,toolBar, mySplitPane)
         rightStackPane.getChildren.add(0, canvasScroller)
