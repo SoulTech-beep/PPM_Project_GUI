@@ -242,7 +242,7 @@ object Section{
 
 
 
-  def getRename(section:Section, vBox:VBox, label:Label,  updateSectionName: Section =>Unit):Unit = {
+  def getRename(section:Section, vBox:VBox, sectionLabel:Label,  updateSectionName: Section =>Unit):Unit = {
 
     val renameMenuItem = new MenuItem("Rename")
     val contextMenu = new ContextMenu(renameMenuItem)
@@ -291,13 +291,13 @@ object Section{
 
       nameTextField.setOnKeyPressed(p => {
         if(p.getCode == KeyCode.ENTER) {
-          checkTextFieldAndChange(nameTextField, label, popupStage)
+          checkTextFieldAndChange(nameTextField, sectionLabel, popupStage)
           updateSectionName(section.changeName(nameTextField.getText))
         }
       })
 
       okButton.setOnMouseClicked(_ => {
-        checkTextFieldAndChange(nameTextField, label, popupStage)
+        checkTextFieldAndChange(nameTextField, sectionLabel, popupStage)
         updateSectionName(section.changeName(nameTextField.getText))
       })
 
