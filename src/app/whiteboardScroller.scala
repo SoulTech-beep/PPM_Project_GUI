@@ -99,7 +99,7 @@ object whiteboardScroller {
     def deleteText(stage:Stage): Button ={
       val deleteButton = new Button("Delete")
 
-      VBox.setMargin(deleteButton, new Insets(5, 10, 10, 10))
+      VBox.setMargin(deleteButton, new Insets(5, 10, 20, 10))
 
       deleteButton.setFont(Auxiliary.getFont(16))
 
@@ -647,6 +647,9 @@ object whiteboardScroller {
 
             newselNodes.toFront()
             newselNodes.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
+
+            wb.camadas_node.filter( p => p!= newselNodes)
+            wb.camadas_node = newselNodes::wb.camadas_node
           }
         } else if(!selectedPolyline.contains(newsel)) {
           val selectedNumber = selectedPolyline.size + selectedShapes.size
@@ -661,6 +664,9 @@ object whiteboardScroller {
           selectedShapes = List()
 
           newsel.toFront()
+          wb.camadas.filter( p => p!= newsel)
+          wb.camadas = newsel::wb.camadas
+
           newsel.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0.0, 0.0);")
         }
 
