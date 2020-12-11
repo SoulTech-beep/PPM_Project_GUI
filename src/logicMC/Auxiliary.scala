@@ -12,7 +12,7 @@ import javafx.scene.paint.Color
 import javafx.scene.shape.{Circle, Line}
 import javafx.scene.text.{Font, FontWeight}
 import javafx.scene.{Node, Scene}
-import javafx.stage.{Modality, Stage}
+import javafx.stage.{Modality, Stage, WindowEvent}
 import javafx.util.Duration
 import logicMC.Colors.Colors
 
@@ -227,57 +227,6 @@ object Auxiliary {
     hBox
   }
 
-  def blurBackground(startValue: Double, endValue: Double, duration: Double, pane: Node): Unit = {
-    val gaussianBlur = new GaussianBlur(startValue)
-    val value = new SimpleDoubleProperty(startValue)
-
-    pane.setEffect(gaussianBlur)
-
-    value.addListener((_, _, newV) => {
-      gaussianBlur.setRadius(newV.doubleValue())
-    })
-
-    val timeline = new Timeline()
-    val kv: KeyValue = new KeyValue(value, double2Double(endValue))
-    val kf = new KeyFrame(Duration.millis(duration), kv)
-
-    timeline.getKeyFrames.add(kf)
-    timeline.play()
-  }
-
-  def getPopup[T](popupStageTitle: String, popupLabelTitle: String, popupTextFieldTitle: String, confirmationButton: (String, String, String), label: Label, update: T => Unit, change: String => T): Unit = {
-    val popup = setUpPopup(popupStageTitle, popupLabelTitle, popupTextFieldTitle, confirmationButton)
-
-    setUpPopupTextFieldChangedUpdateRespectiveLabel[T](popup._2, label, popup._1, update, change)
-
-    setUpPopupButtonClicked[T](label, popup._2, popup._1, popup._3, update, change)
-
-  }
-
-  def setUpPopup(popupStageTitle: String, popupLabelTitle: String, popupTextFieldTitle: String, confirmationButton: (String, String, String)): (Stage, TextField, Button) = {
-
-    val popupStage: Stage = setUpPopupStage(popupStageTitle)
-    val label: Label = setUpPopupLabel(popupLabelTitle)
-
-    val nameTextField: TextField = setUpPopupTextField(popupTextFieldTitle)
-
-    val vBoxTextField: VBox = setUpPopupSection(label, nameTextField)(" -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
-
-    val okButton = Auxiliary.getButtonWithColor(confirmationButton._1, confirmationButton._2, confirmationButton._3)
-
-    val innervBox = setUpPopupSection(vBoxTextField, okButton)()
-    innervBox.setSpacing(20)
-    innervBox.setAlignment(Pos.CENTER)
-    innervBox.setPadding(new Insets(10, 10, 10, 10))
-
-    setUpPoupScene(innervBox, popupStage)
-
-    popupStage.show()
-
-    (popupStage, nameTextField, okButton)
-
-  }
-
   def getButtonWithColor(color1: String = "55efc4", hoverColor: String = "00b894", name: String): Button = {
     val deleteButton = new Button(name)
 
@@ -303,10 +252,70 @@ object Auxiliary {
     deleteButton
   }
 
-  def setUpPopupStage(popupTitle: String): Stage = {
+  def blurBackground(startValue: Double, endValue: Double, duration: Double, pane: Node): Unit = {
+    val gaussianBlur = new GaussianBlur(startValue)
+    val value = new SimpleDoubleProperty(startValue)
+
+    pane.setEffect(gaussianBlur)
+
+    value.addListener((_, _, newV) => {
+      gaussianBlur.setRadius(newV.doubleValue())
+    })
+
+    val timeline = new Timeline()
+    val kv: KeyValue = new KeyValue(value, double2Double(endValue))
+    val kf = new KeyFrame(Duration.millis(duration), kv)
+
+    timeline.getKeyFrames.add(kf)
+    timeline.play()
+  }
+
+
+  def getRenamePopup[T](popupStageTitle: String, popupLabelTitle: String, popupTextFieldTitle: String, confirmationButton: (String, String, String), label: Label, update: T => Unit, change: String => T, pane:Node): Unit = {
+    blurBackground(0, 30, 500, pane)
+
+    val popup = setUpPopup(popupStageTitle, popupLabelTitle, popupTextFieldTitle, confirmationButton)
+
+    setUpPopupTextFieldChangedUpdateRespectiveLabel[T](popup._2, label, popup._1, update, change)
+
+    setUpPopupButtonClicked[T](label, popup._2, popup._1, popup._3, update, change)
+
+    popup._1.setOnCloseRequest(_ => blurBackground(30, 0, 500, pane))
+  }
+
+  def setUpPopup(popupStageTitle: String, popupLabelTitle: String, popupTextFieldTitle: String, confirmationButton: (String, String, String), show:Boolean = true): (Stage, TextField, Button) = {
+
+    val popupStage: Stage = setUpPopupStage(popupStageTitle)
+
+    val label: Label = setUpPopupLabel(popupLabelTitle)
+    val nameTextField: TextField = setUpPopupTextField(popupTextFieldTitle)
+
+    val vBoxTextField: VBox = setUpPopupSection(label, nameTextField)()
+    //Since we only have section, we need to add a little bit of gap for the button
+    VBox.setMargin(vBoxTextField, new Insets(10, 10, 10, 10))
+
+    val okButton = Auxiliary.getButtonWithColor(confirmationButton._1, confirmationButton._2, confirmationButton._3)
+
+    val innervBox = setUpPopupSection(vBoxTextField, okButton)()
+
+    setUpPoupScene(innervBox, popupStage)
+
+    if(show){
+      popupStage.show()
+    }
+
+    (popupStage, nameTextField, okButton)
+
+  }
+
+
+  def setUpPopupStage(popupTitle: String, iconPlace:String = "images/renameIcon.png"): Stage = {
     val popupStage = new Stage()
     popupStage.setTitle(popupTitle)
     popupStage.initModality(Modality.APPLICATION_MODAL)
+    popupStage.setResizable(false)
+
+    popupStage.getIcons.add(new Image(iconPlace))
 
     popupStage
   }
@@ -323,36 +332,42 @@ object Auxiliary {
     Font.font("SF Pro Display", fontWeight, size)
   }
 
-  def setUpPopupTextField(text: String): TextField = {
+  def setUpPopupTextField(text: String, promptText:String = ""): TextField = {
     val nameTextField = new TextField(text)
     nameTextField.setFont(Auxiliary.getFont(14)(FontWeight.LIGHT))
+    nameTextField.setPromptText(promptText)
     nameTextField.setPromptText("New name")
     nameTextField.selectAll()
+    nameTextField.getStyleClass.add("customTextField")
 
     VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
+
+    VBox.setMargin(nameTextField, new Insets(10,10,10,10))
 
     nameTextField
   }
 
-  def setUpPopupSection(nodes: Node*)(style: String = ""): VBox = {
+  def setUpPopupSection(nodes: Node*)(background:String = "white"): VBox = {
     val vBoxTextField = new VBox()
     nodes.foreach(node => vBoxTextField.getChildren.add(node))
 
-    vBoxTextField.setStyle("-fx-background-color:white;" + style)
+    vBoxTextField.setStyle("-fx-background-color:" + background + "; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
+
     vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
     VBox.setMargin(vBoxTextField, new Insets(10, 10, 0, 10))
+    vBoxTextField.setSpacing(10)
+    vBoxTextField.setFillWidth(true)
 
     vBoxTextField
   }
 
   def setUpPoupScene(content: VBox, popupStage: Stage): Scene = {
+
+    VBox.setMargin(content, new Insets(20))
+    content.setPadding(new Insets(10))
+
     val scene = new Scene(content)
     scene.getStylesheets.add("testStyle.css")
-
-    popupStage.setTitle("Change name")
-    popupStage.getIcons.add(new Image("images/renameIcon.png"))
-    popupStage.setWidth(400)
-    popupStage.setResizable(false)
 
     popupStage.setScene(scene)
 
@@ -365,6 +380,7 @@ object Auxiliary {
       if (key.getCode == KeyCode.ENTER) {
         checkTextFieldAndChange(textField, label, stage)
         update(change(label.getText))
+
       }
     })
 
@@ -382,7 +398,15 @@ object Auxiliary {
     if (!textField.getText.isBlank) {
       label.setText(textField.getText)
       popup.close()
+      fireCloseRequestStage(textField)
+
     }
   }
+
+  def fireCloseRequestStage(button: Node):Unit = {
+    val stage = button.getScene.getWindow.asInstanceOf[Stage]
+    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+  }
+
 
 }

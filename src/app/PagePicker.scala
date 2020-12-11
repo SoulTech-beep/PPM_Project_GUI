@@ -27,62 +27,28 @@ class PagePicker {
 
   var selectedColor: ObjectProperty[Color] = new SimpleObjectProperty[Color](Colors.c1)
 
-
-  def setVBoxStyle(vBox: VBox*): Unit = {
-    vBox.foreach(p => {
-      p.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
-      p.setPadding(new Insets(5, 5, 5, 5))
-    })
-
-  }
-
   def wasClicked:Boolean = {
     buttonClicked
   }
 
-  def getPage():(Color, PageSize, PageStyle) = {
+  def getPage:(Color, PageSize, PageStyle) = {
     (selectedColor.get(), selectedSize, selectedStyle)
   }
 
   def initialize(): VBox = {
+    val pageStyleLabel = Auxiliary.setUpPopupLabel("Page Style")
+    val pageColorLabel = Auxiliary.setUpPopupLabel("Page Color")
+    val pageSizeLabel = Auxiliary.setUpPopupLabel("Page Size")
 
-    setVBoxStyle(colorVBox, sizeVBox, pageVBox)
-
-    val pageStyleLabel = new Label("Page Style")
-    val pageColorLabel = new Label("Page Color")
-    val pageSizeLabel = new Label("Page Size")
-
-    pageStyleLabel.setFont(Auxiliary.getFont(14)())
-    pageColorLabel.setFont(Auxiliary.getFont(14)())
-    pageSizeLabel.setFont(Auxiliary.getFont(14)())
-
-    pageStyleLabel.setPadding(new Insets(5,0,0,5))
-    pageColorLabel.setPadding(new Insets(5,0,0,5))
-    pageSizeLabel.setPadding(new Insets(5,0,0,5))
-
-    colorVBox.getChildren.addAll(pageColorLabel, getColorPicker)
-    sizeVBox.getChildren.addAll(pageSizeLabel, PagePicker.getSizePicker(setSize))
-
-
-    pageVBox.getChildren.addAll(pageStyleLabel, getStylePicker)
+    colorVBox = Auxiliary.setUpPopupSection(pageColorLabel, getColorPicker)()
+    sizeVBox = Auxiliary.setUpPopupSection(pageSizeLabel, PagePicker.getSizePicker(setSize))()
+    pageVBox = Auxiliary.setUpPopupSection(pageStyleLabel, getStylePicker)()
 
     colorVBox.setPrefWidth(286)
 
-    val mainVBox = new VBox()
+    val novaMainVBox = Auxiliary.setUpPopupSection(pageVBox, colorVBox, sizeVBox, setCreateButton())("#fcfcfc")
 
-    mainVBox.getChildren.addAll(pageVBox, colorVBox, sizeVBox, setCreateButton())
-
-    mainVBox.setStyle("-fx-background-color: #fcfcfc;")
-    mainVBox.setPadding(new Insets(10, 10, 10, 10))
-
-    mainVBox.setSpacing(10)
-    mainVBox.setFillWidth(true)
-
-    VBox.setMargin(pageVBox, new Insets(10,10,10,10))
-    VBox.setMargin(colorVBox, new Insets(0,10,10,10))
-    VBox.setMargin(sizeVBox, new Insets(0,10,10,10))
-
-    mainVBox
+    novaMainVBox
   }
 
   def getColorPicker: HBox = {
@@ -107,7 +73,7 @@ class PagePicker {
     def select(): Unit = {
       selectedStyle = style
       pane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(4), new BorderWidths(1.5))))
-      pane.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 15, 0, 0, 0);")
+      pane.setStyle(Auxiliary.getShadow())
     }
 
     def resetBorder(paneToReset: Pane): Unit = {
@@ -162,9 +128,8 @@ class PagePicker {
 
     button.setOnAction(_ => {
       buttonClicked = true
-      PagePicker.fireCloseRequestStage(button)
+      Auxiliary.fireCloseRequestStage(button)
     })
-
 
     button
   }
@@ -182,12 +147,6 @@ object PagePicker {
 
     hBox
   }
-
-  def fireCloseRequestStage(button: Button):Unit = {
-    val stage = button.getScene.getWindow.asInstanceOf[Stage]
-    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
-  }
-
 
   def getSizeToggleButton(text:String , selectedSizeGroup: ToggleGroup, setDefault:Boolean = false): ToggleButton = {
     val toggleButton = new ToggleButton(text)

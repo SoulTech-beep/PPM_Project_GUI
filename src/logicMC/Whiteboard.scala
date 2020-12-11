@@ -1,10 +1,11 @@
 package logicMC
 
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control._
-import javafx.scene.layout.VBox
+import javafx.scene.layout.{Pane, VBox}
 import javafx.scene.paint.Color
-import logicMC.Auxiliary.{getImageView, getPopup}
+import logicMC.Auxiliary.{getImageView, getRenamePopup}
 import logicMC.PageStyle.PageStyle
 import logicMC.Whiteboard.Size
 
@@ -68,7 +69,7 @@ object Whiteboard{
   }
 
 
-  def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit):VBox = {
+  def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit, pane:Node):VBox = {
     val imageView = getImageView("images/book.png")
 
     val nameLabel = new Label(whiteboard.name)
@@ -88,12 +89,12 @@ object Whiteboard{
 
     renameMenuItem.setOnAction(_ => {
 
-      getPopup[Whiteboard]("Rename Whiteboard",
+      getRenamePopup[Whiteboard]("Rename Whiteboard",
         "Name",
         whiteboard.name,
         ("fdcb6e","fcba03","Change Name"),
         nameLabel,
-        updateWhiteboardName, whiteboard.changeName
+        updateWhiteboardName, whiteboard.changeName, pane
       )
 
     })

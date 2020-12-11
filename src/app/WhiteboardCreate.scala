@@ -25,26 +25,20 @@ class WhiteboardCreate() {
     VBox.setMargin(whiteboardNameTextField, new Insets(10, 10, 10, 10))
 
     val nameFieldLabel = setUpPopupLabel("Whiteboard name")
+    val section = Auxiliary.setUpPopupSection(nameFieldLabel, whiteboardNameTextField)()
 
-    val section = Auxiliary.setUpPopupSection(nameFieldLabel, whiteboardNameTextField)(" -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
-
-    VBox.setMargin(section, new Insets(0,10,10,10))
+    VBox.setMargin(section, new Insets(10,10,10,10))
 
     val mainVBox = pagePicker.initialize()
 
     mainVBox.getChildren.add(mainVBox.getChildren.size()-1, section)
 
-    val scene= new Scene(mainVBox)
-    scene.getStylesheets.add("testStyle.css")
+    val stage:Stage = setUpPopupStage("Add Page", "images/addIcon.png")
 
-    Auxiliary.blurBackground(0, 30, 1000, pane)
+     Auxiliary.setUpPoupScene(mainVBox, stage)
 
-    val stage:Stage = setUpPopupStage("Add Page")
-    stage.setScene(scene)
     stage.show()
 
-    stage.getIcons.add(new Image("images/addIcon.png"))
-    stage.setResizable(false)
 
     stage.setOnCloseRequest(_ => {
       if (!whiteboardNameTextField.getText.isBlank) {

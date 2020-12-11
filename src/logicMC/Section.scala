@@ -1,11 +1,12 @@
 package logicMC
 
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.{ContextMenu, Label, MenuItem}
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
-import logicMC.Auxiliary.{getImageView, getPopup}
+import logicMC.Auxiliary.{getImageView, getRenamePopup}
 import logicMC.PageStyle.PageStyle
 import logicMC.Section.{ID, Name}
 
@@ -134,7 +135,7 @@ object Section{
   }
 
 
-  def getSectionPane(section: Section, godSection:Section, currentSection: Section,updateVisualState: Section => Unit, updateSectionName:Section => Unit):VBox = {
+  def getSectionPane(section: Section, godSection:Section, currentSection: Section,updateVisualState: Section => Unit, updateSectionName:Section => Unit, pane:Node):VBox = {
     val imageView = getImageView("images/folder.png")
 
     val label = new Label(section.name)
@@ -162,27 +163,29 @@ object Section{
 
     })
 
-    getRename(section, vBox, label, updateSectionName)
+    getRename(section, vBox, label, updateSectionName, pane)
 
     vBox
   }
 
 
 
-  def getRename(section:Section, vBox:VBox, sectionLabel:Label,  updateSectionName: Section =>Unit):Unit = {
+  def getRename(section:Section, vBox:VBox, sectionLabel:Label,  updateSectionName: Section =>Unit, pane:Node):Unit = {
 
     val renameMenuItem = new MenuItem("Rename")
     val contextMenu = new ContextMenu(renameMenuItem)
 
     renameMenuItem.setOnAction(_ => {
 
-      getPopup[Section]("Rename Section",
+
+      getRenamePopup[Section]("Rename Section",
       "Name",
         section.name,
         ("00b894","088c72","Change Name"),
         sectionLabel,
         updateSectionName,
-        section.changeName
+        section.changeName,
+        pane
       )
 
     })
