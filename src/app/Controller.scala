@@ -194,7 +194,7 @@ class Controller {
   }
 
   def getAddSectionPopup(stage: Stage):VBox = {
-
+//teste
     var sectionNameLabel = Auxiliary.setUpPopupLabel("Sectioin name")
 
     var sectionNameTextField = Auxiliary.setUpPopupTextField("")
