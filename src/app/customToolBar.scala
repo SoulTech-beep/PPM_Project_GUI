@@ -234,16 +234,16 @@ class customToolBar {
 
   def getFileChooser(fileType: String): FileChooser = {
 
-    val fileChooser = new FileChooser
+    var fileChooser = new FileChooser
 
     if (fileType == "Image") {
-      getSpecificFileChooser("Image", true, "*.png", "*.jpg", "*.gif")
+      fileChooser = getSpecificFileChooser("Image", true, new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
     }
     else if (fileType == "Video") {
-      getSpecificFileChooser("Video", false, "*.mp4", "*.avi")
+      fileChooser = getSpecificFileChooser("Video", false, new ExtensionFilter("Video Filtes", "*.mp4", "*.avi"))
 
     } else if (fileType == "PDF") {
-      getSpecificFileChooser("PDF", true, "*.pdf")
+      fileChooser = getSpecificFileChooser("PDF", true, new ExtensionFilter("PDF Files", "*.pdf"))
 
     }
 
@@ -560,13 +560,10 @@ class customToolBar {
     menu
   }
 
-  def getSpecificFileChooser(fileType: String, isImagePath: Boolean, fileExtension: String*): FileChooser = {
+  def getSpecificFileChooser(fileType: String, isImagePath: Boolean, extensionFilter: ExtensionFilter): FileChooser = {
 
     val fileChooser = new FileChooser
     fileChooser.setTitle("Select " + fileType)
-
-    val extensionFilter = new ExtensionFilter(fileType + " Files")
-    fileExtension.foreach(e => extensionFilter.getExtensions.add(e))
 
     fileChooser.getExtensionFilters.addAll(extensionFilter)
     val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)

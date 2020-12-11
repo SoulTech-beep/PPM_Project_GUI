@@ -6,7 +6,7 @@ import javafx.scene.image.{Image, WritableImage}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.scene.{Node, Scene, SnapshotParameters}
-import javafx.stage.{Modality, Stage}
+import javafx.stage.{DirectoryChooser, Modality, Stage}
 import logicMC.PageStyle.PageStyle
 import logicMC.{Auxiliary, Whiteboard}
 
@@ -28,6 +28,9 @@ class WhiteboardGUI(tb: customToolBar, wb:Whiteboard, pane:SplitPane) extends Zo
       val writableImage: WritableImage = p.snapshot(new SnapshotParameters, null)
       images = writableImage :: images
     })
+
+    val directoryChooser = new DirectoryChooser
+
 
   }
 
