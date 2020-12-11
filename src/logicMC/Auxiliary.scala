@@ -261,8 +261,6 @@ object Auxiliary {
 
     val nameTextField: TextField = setUpPopupTextField(popupTextFieldTitle)
 
-    VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
-
     val vBoxTextField: VBox = setUpPopupSection(label, nameTextField)(" -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
 
     val okButton = Auxiliary.getButtonWithColor(confirmationButton._1, confirmationButton._2, confirmationButton._3)
@@ -283,7 +281,7 @@ object Auxiliary {
   def getButtonWithColor(color1: String = "55efc4", hoverColor: String = "00b894", name: String): Button = {
     val deleteButton = new Button(name)
 
-    VBox.setMargin(deleteButton, new Insets(0, 10, 20, 10))
+    VBox.setMargin(deleteButton, new Insets(0, 10, 10, 10))
 
     deleteButton.setFont(Auxiliary.getFont(16)())
 
@@ -330,6 +328,8 @@ object Auxiliary {
     nameTextField.setFont(Auxiliary.getFont(14)(FontWeight.LIGHT))
     nameTextField.setPromptText("New name")
     nameTextField.selectAll()
+
+    VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
 
     nameTextField
   }

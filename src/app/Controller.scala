@@ -1,12 +1,12 @@
 package app
 
-import javafx.fxml.{FXML, FXMLLoader}
+import javafx.fxml.FXML
 import javafx.geometry.{Insets, Pos}
+import javafx.scene.Scene
 import javafx.scene.control._
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.layout._
-import javafx.scene.{Parent, Scene}
 import javafx.stage.{Modality, Stage}
 import logicMC.{Auxiliary, Section, Whiteboard}
 
@@ -195,30 +195,23 @@ class Controller {
 
   def getAddSectionPopup(stage: Stage):VBox = {
 
+    var sectionNameLabel = Auxiliary.setUpPopupLabel("Sectioin name")
 
-    val label = new Label("Section name")
-    label.setFont(Auxiliary.getFont(14)())
-    label.setPadding(new Insets(5,0,0,5))
+    var sectionNameTextField = Auxiliary.setUpPopupTextField("")
+    sectionNameTextField.setPromptText("Section name")
+    sectionNameTextField.getStyleClass.add("customTextField")
 
-    val nameTextField = new TextField()
-    nameTextField.setPromptText("Section name")
-    nameTextField.getStyleClass.add("customTextField")
-
-    VBox.setMargin(nameTextField, new Insets(10, 10, 10, 10))
-
-    val vBoxTextField = new VBox(label)
-    vBoxTextField.getChildren.add(nameTextField)
+    val vBoxTextField = new VBox(sectionNameLabel, sectionNameTextField)
     vBoxTextField.setStyle("-fx-background-color:white; -fx-background-radius:15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 45, 0, 0, 0);")
     vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
     VBox.setMargin(vBoxTextField, new Insets(10,10,0,10))
 
     val okButton = Auxiliary.getButtonWithColor("55efc4","00b894","Add Section")
 
-
-    nameTextField.setOnKeyPressed(p => {
+    sectionNameTextField.setOnKeyPressed(p => {
       if (p.getCode == KeyCode.ENTER) {
-        if (!nameTextField.getText.isBlank) {
-          FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+        if (!sectionNameTextField.getText.isBlank) {
+          FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, sectionNameTextField.getText)
           updateVisualState(FxApp.app_state._2)
 
           blurBackground(30, 0, 500)
@@ -230,8 +223,8 @@ class Controller {
 
     okButton.setOnMouseClicked(_ => {
       //TODO check if name isn't empty
-      if (!nameTextField.getText.isBlank) {
-        FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, nameTextField.getText)
+      if (!sectionNameTextField.getText.isBlank) {
+        FxApp.app_state = Section.addNewSectionName(FxApp.app_state._1, FxApp.app_state._2, sectionNameTextField.getText)
         updateVisualState(FxApp.app_state._2)
 
         blurBackground(30, 0, 500)
