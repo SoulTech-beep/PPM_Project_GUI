@@ -37,8 +37,8 @@ class customToolBar {
   @FXML
   var toolbar: ToolBar = _
 
-  var selectedPen:Pen = null
-  var selectedTool:ToolType = null
+  var selectedPen:Option[Pen] = None
+  var selectedTool:ToolType = ToolType.move
 
   val optionsHBox:HBox = new HBox()
 
@@ -66,7 +66,7 @@ class customToolBar {
     penList = (markerTool, ToolType.marker) :: penList
 
     selectedTool = ToolType.pen
-    selectedPen = penTool
+    selectedPen = Some(penTool)
 
     getSeparator()
 
@@ -105,6 +105,8 @@ class customToolBar {
     HBox.setMargin(separator, new Insets(0,3,0,3))
 
     toolbar.getItems.add(0, separator)
+
+    buttonList = separator :: buttonList
   }
 
   def setShapeButton():Unit = {
@@ -129,7 +131,7 @@ class customToolBar {
 
       resetMenuItem(line, menuItemList)
 
-      resetButton(shapeButton)
+      resetButton(Some(shapeButton))
     })
 
     polygon.setOnAction(_ => {
@@ -137,7 +139,7 @@ class customToolBar {
       selectTool(ToolType.geometricShape)
       shapeButton.setGraphic(getHexagon(Color.BLACK,fill = false))
       resetMenuItem(polygon,menuItemList)
-      resetButton(shapeButton)
+      resetButton(Some(shapeButton))
 
     })
 
@@ -148,7 +150,7 @@ class customToolBar {
 
       resetMenuItem(circle,menuItemList)
 
-      resetButton(shapeButton)
+      resetButton(Some(shapeButton))
 
     })
 
@@ -159,7 +161,7 @@ class customToolBar {
 
       resetMenuItem(square,menuItemList)
 
-      resetButton(shapeButton)
+      resetButton(Some(shapeButton))
 
     })
 
@@ -186,7 +188,7 @@ class customToolBar {
       imagePath = ""
       selectedTool = ToolType.pdf
       optionsHBox.getChildren.clear()
-      resetButton(pdfButton)
+      resetButton(Some(pdfButton))
 
       getFileChooser("PDF")
     })
@@ -212,7 +214,7 @@ class customToolBar {
       imagePath = ""
       selectedTool = ToolType.image
       optionsHBox.getChildren.clear()
-      resetButton(imageButton)
+      resetButton(Some(imageButton))
 
       getFileChooser("Image")
     })
@@ -238,7 +240,7 @@ class customToolBar {
       videoPath = ""
       selectedTool = ToolType.video
       optionsHBox.getChildren.clear()
-      resetButton(videoButton)
+      resetButton(Some(videoButton))
 
       getFileChooser("Video")
     })
@@ -261,7 +263,7 @@ class customToolBar {
     buttonList = textButton :: buttonList
 
     textButton.setOnAction(_ => {
-      resetButton(textButton)
+      resetButton(Some(textButton))
 
       selectTool(ToolType.text)
     })
@@ -285,7 +287,7 @@ class customToolBar {
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"))
       val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) imagePath = selectedFile.toURI().toString()
-      else resetButton(null)
+      else resetButton(None)
 
     }
     else if(fileType == "Video") {
@@ -293,14 +295,14 @@ class customToolBar {
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("Video Files", "*.mp4", "*.avi"))
       val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) videoPath = selectedFile.toURI().toString()
-      else resetButton(null)
+      else resetButton(None)
 
     } else if(fileType == "PDF") {
       fileChooser.setTitle("Select PDF")
       fileChooser.getExtensionFilters.addAll(new ExtensionFilter("PDF Files", "*.pdf"))
       val selectedFile = fileChooser.showOpenDialog(toolbar.getScene.getWindow)
       if(selectedFile != null) imagePath = selectedFile.toURI().toString()
-      else resetButton(null)
+      else resetButton(None)
 
     }
 
@@ -308,11 +310,11 @@ class customToolBar {
     fileChooser
   }
 
-  def resetButton(buttonToSelect: Control):Unit = {
+  def resetButton(buttonToSelect: Option[Control]):Unit = {
     buttonList.foreach( p => p.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px"))
 
-    if(buttonToSelect != null){
-      buttonToSelect.setStyle("-fx-background-color: #636e72; -fx-background-radius: 25px")
+    if(!buttonToSelect.isEmpty){
+      buttonToSelect.get.setStyle("-fx-background-color: #636e72; -fx-background-radius: 25px")
     }
 
   }
@@ -334,7 +336,7 @@ class customToolBar {
       selectedTool = ToolType.selector
       optionsHBox.getChildren.clear()
 
-      resetButton(selectionButton)
+      resetButton(Some(selectionButton))
     })
 
     selectionButton.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -357,7 +359,7 @@ class customToolBar {
     moveButton.setOnAction(_ => {
       selectedTool = ToolType.move
       optionsHBox.getChildren.clear()
-      resetButton(moveButton)
+      resetButton(Some(moveButton))
 
     })
 
@@ -381,7 +383,7 @@ class customToolBar {
 
     eraserButton.setOnAction(event => {
       selectTool(ToolType.eraser)
-      resetButton(eraserButton)
+      resetButton(Some(eraserButton))
 
     })
 
@@ -405,7 +407,7 @@ class customToolBar {
 
     penButton.setOnAction(event => {
       selectTool(toolType)
-      resetButton(penButton)
+      resetButton(Some(penButton))
 
     })
 
@@ -504,7 +506,7 @@ class customToolBar {
 
     if(toolName == ToolType.pen || toolName == ToolType.marker){
       selectedTool = toolName
-      selectedPen = penList.find(p => p._2 == toolName).get._1
+      selectedPen = Some(penList.find(p => p._2 == toolName).get._1)
 
       val dropDown = new MenuButton()
       dropDown.setStyle("-fx-background-color: #b2bec3; -fx-background-radius: 25px")
@@ -621,11 +623,11 @@ class customToolBar {
       })
 
 
-        return optionsHBox.getChildren.addAll(
-          setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true, true)
-          ,toMenuItem(slWidth,"images/width.png")
-          , toMenuItem(slOpacity, "images/opacity.png"),
-          setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
+      return optionsHBox.getChildren.addAll(
+        setColorPicker(((a,b)=> a.changeFillColor(b)), (a) => a.fillColor, true, true)
+        ,toMenuItem(slWidth,"images/width.png")
+        , toMenuItem(slOpacity, "images/opacity.png"),
+        setColorPicker(((a,b)=>a.changeColor(b)), (a)=> a.strokeColor, false))
 
 
     }

@@ -9,11 +9,6 @@ import logicMC.{Auxiliary, Section, Whiteboard}
 
 class Controller {
 
-  val toolBar: customToolBar = new customToolBar
-  //FlowPane where all the sections and whiteboards will appear on the left side of the split pane
-  private val sectionsVBox: FlowPane = new FlowPane()
-  var listWhiteboards: Map[String, whiteboardScroller] = Map()
-  var whiteboardOnPage: whiteboardScroller = new whiteboardScroller
   @FXML
   private var mySplitPane: SplitPane = _
   //Left Side of SplitPane
@@ -40,17 +35,24 @@ class Controller {
   private var rightStackPane: StackPane = _
   @FXML
   private var toolbar: ToolBar = _
+
+  //FlowPane where all the sections and whiteboards will appear on the left side of the split pane
+  private val sectionsVBox: FlowPane = new FlowPane()
+
   //Current section being shown on the left side of the split pane
   private var currentSection: Section = _
+
+  //private var app.customToolBar:app.customToolBar = new app.customToolBar
+
   private var canvasScroller: ScrollPane = new ScrollPane()
+
+  var listWhiteboards: Map[String, WhiteboardGUI] = Map()
+  var whiteboardOnPage: Option[WhiteboardGUI] = None
 
   @Override
   def initialize(): Unit = {
     //At the first time we must initialize with the GOD section (Which is the same as the current section at the beginning)
     currentSection = FxApp.app_state._2
-
-    toolBar.setToolbar(toolbar)
-    toolBar.initializeCustomToolBar()
 
     toolbar.setDisable(true)
 
@@ -113,28 +115,34 @@ class Controller {
     setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName, mySplitPane), currentSection.id + "w" + whiteboard.id)
   }
 
-  def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox, id: String): VBox = {
+  def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox, id:String): VBox = {
     vBox.setOnMouseClicked(_ => {
       rightStackPane.getChildren.remove(canvasScroller)
-      if (!listWhiteboards.contains(id)) {
+      if(!listWhiteboards.contains(id)) {
+        val toolBar: customToolBar = new customToolBar
+        toolBar.setToolbar(toolbar)
+        toolBar.initializeCustomToolBar()
         toolbar.setDisable(false)
+        whiteboardOnPage = Some(new WhiteboardGUI(toolBar,whiteboard,mySplitPane))
 
-        whiteboardOnPage = new whiteboardScroller()
-        canvasScroller = whiteboardOnPage.getCanvas(whiteboard, toolBar, mySplitPane)
+        canvasScroller = whiteboardOnPage.get.getCanvas
         rightStackPane.getChildren.add(0, canvasScroller)
-        listWhiteboards = listWhiteboards + (id -> whiteboardOnPage)
+        listWhiteboards = listWhiteboards + (id -> whiteboardOnPage.get)
       } else {
         rightStackPane.getChildren.remove(canvasScroller)
-        whiteboardOnPage = listWhiteboards.get(id).get
-        canvasScroller = whiteboardOnPage.getCanvas(whiteboard, toolBar, mySplitPane)
+        whiteboardOnPage = Some(listWhiteboards.get(id).get)
+        canvasScroller = whiteboardOnPage.get.getCanvas
         rightStackPane.getChildren.add(0, canvasScroller)
+        toolbar.getItems.clear()
+        whiteboardOnPage.get.toolbar.buttonList.foreach(p => toolbar.getItems.add(p))
+        toolbar.getItems.add( whiteboardOnPage.get.toolbar.optionsHBox)
       }
-      //TODO if the one we click is the one being displayed, let's not remove and update everything...
 
     })
 
     vBox
   }
+
 
   def updateSectionName(section: Section): Unit = {
     FxApp.app_state = Section.updateAll(FxApp.app_state._1, section)
@@ -176,7 +184,7 @@ class Controller {
 
   def addSectionButtonOnClick(): Unit = {
 
-    val popup = Auxiliary.setUpPopup("Add Section", "Section name", "", ("fdcb6e", "fcba03", "Change Name"), show = false)
+    val popup = Auxiliary.setUpPopup("Add Section", "Section name", "", ("fdcb6e", "fcba03", "Add Section"), show = false)
     popup._1.setOnCloseRequest(_ => blurBackground(30, 0, 500))
 
     addSectionButton.setOnAction(_ => {
