@@ -2,10 +2,10 @@ package app
 
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control._
-import javafx.scene.image.Image
+import javafx.scene.image.{Image, WritableImage}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.{Node, Scene}
+import javafx.scene.{Node, Scene, SnapshotParameters}
 import javafx.stage.{Modality, Stage}
 import logicMC.PageStyle.PageStyle
 import logicMC.{Auxiliary, Whiteboard}
@@ -19,6 +19,17 @@ class WhiteboardGUI(tb: customToolBar, wb:Whiteboard, pane:SplitPane) extends Zo
 
   val toolbar: customToolBar = tb
   var canvasFinal : Option[ZoomableScrollPane] = None
+
+  def toPdf():Unit = {
+
+    var images: List[WritableImage] = List()
+
+    pages.getChildren.forEach(p => {
+      val writableImage: WritableImage = p.snapshot(new SnapshotParameters, null)
+      images = writableImage :: images
+    })
+
+  }
 
   def getCanvas: ZoomableScrollPane = {
     if(canvasFinal.isEmpty)
