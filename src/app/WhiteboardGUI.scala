@@ -51,7 +51,6 @@ object WhiteboardGUI {
     VBox.setMargin(addPageButton, new Insets(0,0,50,0))
     addPageButton.setPrefSize(130, 50)
 
-
     addPageButton.setOnAction(_ => {
       val pagePicker = new PagePicker()
 

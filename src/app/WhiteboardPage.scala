@@ -101,9 +101,7 @@ object WhiteboardPage {
     mouseExitedListeners(wp)
   }
 
-
   //MOUSE -----CLICKED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseClickedListeners(wp:WhiteboardPage): Unit = {
     wp.setOnMouseClicked(event => {
@@ -383,9 +381,7 @@ object WhiteboardPage {
 
   }
 
-
   //MOUSE -----MOVED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseMovedListeners(wp:WhiteboardPage): Unit = {
     wp.setOnMouseMoved(event => {
@@ -427,9 +423,7 @@ object WhiteboardPage {
 
   }
 
-
   //MOUSE -----RELEASED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseReleasedListeners(wp:WhiteboardPage): Unit = {
 
@@ -534,9 +528,7 @@ object WhiteboardPage {
 
   }
 
-
   //MOUSE -----PRESSED----- AND AUXILIARY FUNCTIONS
-
 
   def mousePressedListeners(wp:WhiteboardPage): Unit = {
     wp.setOnMousePressed(event => {
@@ -795,9 +787,7 @@ object WhiteboardPage {
 
   }
 
-
   //MOUSE -----ENTERED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseEnteredListeners(wp:WhiteboardPage): Unit = {
 
@@ -810,9 +800,7 @@ object WhiteboardPage {
 
   }
 
-
   //MOUSE -----EXITED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseExitedListeners(wp:WhiteboardPage): Unit = {
     wp.setOnMouseExited(_ => {
@@ -820,9 +808,7 @@ object WhiteboardPage {
     })
   }
 
-
   //MOUSE -----DRAGGED----- AND AUXILIARY FUNCTIONS
-
 
   def mouseDraggedListeners(wp:WhiteboardPage): Unit = {
 
@@ -997,7 +983,6 @@ object WhiteboardPage {
     wp.camadas = wp.camadas.filter(e => !porApagar.contains(e))
 
   }
-
 
   //OTHER FUNCTIONS
 

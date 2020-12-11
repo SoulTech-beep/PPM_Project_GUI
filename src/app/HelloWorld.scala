@@ -3,10 +3,9 @@ package app
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.image.Image
-import javafx.scene.paint.Color
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
-import logicMC.{Colors, PageSize, PageStyle, Section, Whiteboard}
+import logicMC._
 
 class HelloWorld extends Application {
 
@@ -29,7 +28,6 @@ class HelloWorld extends Application {
 
     primaryStage.setScene(scene)
     primaryStage.show()
-
 
   }
 
@@ -118,7 +116,6 @@ object FxApp {
 
 
   ),List())
-
 
   var app_state: (Section, Section) = (originalSection, originalSection)
 

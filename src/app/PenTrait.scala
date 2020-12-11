@@ -5,7 +5,7 @@ import javafx.scene.paint.Color
 trait PenTrait {
 
   def changeColor(color: Color) : PenTrait
-  def changeOpacity(new_width:Double) : PenTrait
-  def changeWidth(new_opacity:Double) : PenTrait
+  def changeOpacity(newOpacity:Double) : PenTrait
+  def changeWidth(newWidth:Double) : PenTrait
 
 }

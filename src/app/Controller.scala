@@ -112,7 +112,7 @@ class Controller {
   }
 
   def getWhiteboardPane(whiteboard: Whiteboard): VBox = {
-    setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName, mySplitPane), currentSection.id + "w" + whiteboard.id)
+    setOnClickWhiteboardPane(whiteboard, Whiteboard.getWhiteboardPane(whiteboard, updateWhiteboardName, mySplitPane, removeWhiteboard), currentSection.id + "w" + whiteboard.id)
   }
 
   def setOnClickWhiteboardPane(whiteboard: Whiteboard, vBox: VBox, id:String): VBox = {
@@ -130,7 +130,7 @@ class Controller {
         listWhiteboards = listWhiteboards + (id -> whiteboardOnPage.get)
       } else {
         rightStackPane.getChildren.remove(canvasScroller)
-        whiteboardOnPage = Some(listWhiteboards.get(id).get)
+        whiteboardOnPage = Some(listWhiteboards(id))
         canvasScroller = whiteboardOnPage.get.getCanvas
         rightStackPane.getChildren.add(0, canvasScroller)
         toolbar.getItems.clear()
@@ -146,6 +146,21 @@ class Controller {
 
   def updateSectionName(section: Section): Unit = {
     FxApp.app_state = Section.updateAll(FxApp.app_state._1, section)
+  }
+
+  def removeWhiteboard(whiteboard:Whiteboard):Unit = {
+    val toSearch = currentSection.id + "w" + whiteboard.id
+    val whiteboardOnList = listWhiteboards.get(toSearch)
+
+    rightStackPane.getChildren.remove(canvasScroller)
+    toolbar.getItems.clear()
+    listWhiteboards = listWhiteboards.removed(toSearch)
+
+    val newCurrentSection = Section(currentSection.id, currentSection.name, currentSection.sections, currentSection.whiteboards.filter(p => p!= whiteboard))
+
+    FxApp.app_state = Section.updateAll(FxApp.app_state._1, newCurrentSection)
+
+    updateVisualState(newCurrentSection)
   }
 
   def updateWhiteboardName(whiteboard: Whiteboard): Unit = {

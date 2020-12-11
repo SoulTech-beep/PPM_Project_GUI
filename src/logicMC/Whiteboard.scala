@@ -69,7 +69,7 @@ object Whiteboard{
   }
 
 
-  def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit, pane:Node):VBox = {
+  def getWhiteboardPane(whiteboard: Whiteboard, updateWhiteboardName: Whiteboard =>Unit, pane:Node, removeWhiteboard:Whiteboard => Unit):VBox = {
     val imageView = getImageView("images/book.png")
 
     val nameLabel = new Label(whiteboard.name)
@@ -85,7 +85,12 @@ object Whiteboard{
     vBox.setAlignment(Pos.CENTER)
 
     val renameMenuItem = new MenuItem("Rename")
-    val contextMenu = new ContextMenu(renameMenuItem)
+    val deleteMenuItem = new MenuItem("Delete")
+    val contextMenu = new ContextMenu(renameMenuItem, deleteMenuItem)
+
+    deleteMenuItem.setOnAction(_ => {
+      removeWhiteboard(whiteboard)
+    })
 
     renameMenuItem.setOnAction(_ => {
 

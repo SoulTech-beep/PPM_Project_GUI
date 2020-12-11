@@ -4,29 +4,29 @@ import javafx.beans.property.{ObjectProperty, SimpleDoubleProperty, SimpleIntege
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 
-case class CustomText(textColor: ObjectProperty[Color], textWeight: ObjectProperty[FontWeight], textSize:SimpleIntegerProperty, opacity:SimpleDoubleProperty){
-
-  def changeTextColor(color: Color):CustomText = {
-    CustomText.changeTextColor(this, color)
-  }
+case class CustomText(textColor: ObjectProperty[Color], textWeight: ObjectProperty[FontWeight], textSize:SimpleIntegerProperty, opacity:SimpleDoubleProperty) {
 
   def changeTextWeight(fontWeight: FontWeight):CustomText = {
     CustomText.changeTextWeight(this, fontWeight)
   }
 
-  def changeTextSize(newSize: Int):CustomText = {
-    CustomText.changeTextSize(this, newSize)
+  def changeTextSize(newSize: Double):CustomText = {
+    CustomText.changeTextSize(this, newSize.toInt)
   }
 
   def changeOpacity(newOpacity: Double):CustomText = {
     CustomText.changeOpacity(this, newOpacity)
   }
 
+  def changeColor(color: Color): CustomText = {
+    CustomText.changeColor(this, color)
+  }
+
 }
 
 object CustomText{
 
-  def changeTextColor(customText: CustomText, color:Color):CustomText = {
+  def changeColor(customText: CustomText, color:Color):CustomText = {
     customText.textColor.set(color)
 
     getCopy(customText)
