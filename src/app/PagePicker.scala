@@ -1,16 +1,15 @@
 package app
 
-import app.PageStyle.PageStyle
 import javafx.beans.property.{ObjectProperty, SimpleObjectProperty}
 import javafx.geometry.Insets
-import javafx.scene.Node
 import javafx.scene.control.{Button, Label, ToggleButton, ToggleGroup}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
 import javafx.stage.{Stage, WindowEvent}
 import logicMC.Auxiliary.{getSpacer, getStyledHBox}
 import logicMC.PageSize.PageSize
-import logicMC.{Auxiliary, PageSize}
+import logicMC.PageStyle.PageStyle
+import logicMC.{Auxiliary, Colors, PageSize, PageStyle}
 
 class PagePicker {
 
@@ -28,22 +27,6 @@ class PagePicker {
 
   var selectedColor: ObjectProperty[Color] = new SimpleObjectProperty[Color](Colors.c1)
 
-  def horizontalLine(width: Double, height: Double, pane: Pane): Unit = {
-    Auxiliary.horizontalLine(width, height, pane, 10)
-  }
-
-  def verticalLines(width: Double, height: Double, pane: Pane): Unit = {
-    Auxiliary.verticalLines(width, height, pane, 10)
-  }
-
-  def dottedPage(width: Double, height: Double, pane: Pane): Unit = {
-    Auxiliary.dottedPage(width, height, pane, 10)
-  }
-
-  def getSquaredLines(width: Double, height: Double, pane: Pane): Unit = {
-    verticalLines(width, height, pane)
-    horizontalLine(width, height, pane)
-  }
 
   def setVBoxStyle(vBox: VBox*): Unit = {
     vBox.foreach(p => {
@@ -69,16 +52,18 @@ class PagePicker {
     val pageColorLabel = new Label("Page Color")
     val pageSizeLabel = new Label("Page Size")
 
-    pageStyleLabel.setFont(Auxiliary.getFont(14))
-    pageColorLabel.setFont(Auxiliary.getFont(14))
-    pageSizeLabel.setFont(Auxiliary.getFont(14))
+    pageStyleLabel.setFont(Auxiliary.getFont(14)())
+    pageColorLabel.setFont(Auxiliary.getFont(14)())
+    pageSizeLabel.setFont(Auxiliary.getFont(14)())
 
     pageStyleLabel.setPadding(new Insets(5,0,0,5))
     pageColorLabel.setPadding(new Insets(5,0,0,5))
     pageSizeLabel.setPadding(new Insets(5,0,0,5))
 
     colorVBox.getChildren.addAll(pageColorLabel, getColorPicker)
-    sizeVBox.getChildren.addAll(pageSizeLabel, getSizePicker)
+    sizeVBox.getChildren.addAll(pageSizeLabel, PagePicker.getSizePicker(setSize))
+
+
     pageVBox.getChildren.addAll(pageStyleLabel, getStylePicker)
 
     colorVBox.setPrefWidth(286)
@@ -101,14 +86,14 @@ class PagePicker {
   }
 
   def getColorPicker: HBox = {
-    val colorPicker = Auxiliary.getColorPicker()
+    val colorPicker = Auxiliary.getColorPicker
 
     selectedColor = colorPicker._2
 
     colorPicker._1
   }
 
-  def setStyleToggle(style: PageStyle, function: (Double, Double, Pane) => Unit, setDefault: Boolean = false): Pane = {
+  def setStyleToggle(style: PageStyle, function: (Double, Double, Pane, Int, Double) => Unit, setDefault: Boolean = false): Pane = {
     val pane = new Pane()
 
     selectedStyleButtons = pane :: selectedStyleButtons
@@ -117,7 +102,7 @@ class PagePicker {
     resetBorder(pane)
 
     pane.setPrefSize(50, 50)
-    function(50, 50, pane)
+    function(50, 50, pane, 10, 1)
 
     def select(): Unit = {
       selectedStyle = style
@@ -152,24 +137,63 @@ class PagePicker {
 
 
   def getStylePicker: HBox = {
-    val hBox = getStyledHBox()
+    val hBox = getStyledHBox
 
-    hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SIMPLE, (_: Double, _: Double, _: Pane) => (), setDefault = true), getSpacer, setStyleToggle(PageStyle.DOTTED, dottedPage))
-    hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SQUARED, getSquaredLines), getSpacer)
-    hBox.getChildren.addAll(setStyleToggle(PageStyle.LINED, horizontalLine), getSpacer)
+    hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SIMPLE, (_: Double, _: Double, _: Pane, _:Int, _:Double) => (), setDefault = true), getSpacer, setStyleToggle(PageStyle.DOTTED, Auxiliary.dottedPage))
+    hBox.getChildren.addAll(getSpacer, setStyleToggle(PageStyle.SQUARED, Auxiliary.squaredPage), getSpacer)
+    hBox.getChildren.addAll(setStyleToggle(PageStyle.LINED, Auxiliary.horizontalLine), getSpacer)
 
     hBox
   }
 
   def setSize(text: String, pageSize: PageSize, setDefault: Boolean = false): ToggleButton = {
-    val toggleButton = new ToggleButton(text)
-    toggleButton.setPadding(new Insets(5, 20, 5, 20))
-    toggleButton.setToggleGroup(selectedSizeGroup)
-    toggleButton.setSelected(setDefault)
+    val toggleButton = PagePicker.getSizeToggleButton(text, selectedSizeGroup, setDefault)
 
     toggleButton.setOnAction(_ => {
       selectedSize = pageSize
     })
+
+    toggleButton
+  }
+
+
+  def setCreateButton(): Button = {
+    val button = Auxiliary.getButtonWithColor(name = "Create")
+
+    button.setOnAction(_ => {
+      buttonClicked = true
+      PagePicker.fireCloseRequestStage(button)
+    })
+
+
+    button
+  }
+
+
+}
+
+object PagePicker {
+
+  def getSizePicker(setSize:(String, PageSize, Boolean)=>ToggleButton): HBox = {
+    val hBox = getStyledHBox
+
+    hBox.getChildren.addAll(getSpacer, setSize("A4", PageSize.A4,true))
+    hBox.getChildren.addAll(getSpacer, setSize("A3", PageSize.A3, false), getSpacer)
+
+    hBox
+  }
+
+  def fireCloseRequestStage(button: Button):Unit = {
+    val stage = button.getScene.getWindow.asInstanceOf[Stage]
+    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
+  }
+
+
+  def getSizeToggleButton(text:String , selectedSizeGroup: ToggleGroup, setDefault:Boolean = false): ToggleButton = {
+    val toggleButton = new ToggleButton(text)
+    toggleButton.setPadding(new Insets(5, 20, 5, 20))
+    toggleButton.setToggleGroup(selectedSizeGroup)
+    toggleButton.setSelected(setDefault)
 
     toggleButton.getStyleClass.add("start-stop")
     toggleButton.setStyle("-fx-background-radius: 25px;")
@@ -177,77 +201,4 @@ class PagePicker {
     toggleButton
   }
 
-  def getSizePicker: HBox = {
-    val hBox = getStyledHBox()
-
-    hBox.getChildren.addAll(getSpacer, setSize("A4", pageSize = PageSize.A4, setDefault = true))
-    hBox.getChildren.addAll(getSpacer, setSize("A3", PageSize.A3), getSpacer)
-
-    hBox
-  }
-
-  def setCreateButton(): Button = {
-    val button = new Button()
-
-    VBox.setMargin(button, new Insets(0, 10, 10, 10))
-
-    button.setText("Create")
-    button.setFont(Auxiliary.getFont(16))
-
-    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
-
-    button.setStyle(style + "-fx-background-color:#55efc4;")
-
-    button.setOnMouseEntered(_ => {
-      button.setStyle(style + "-fx-background-color:#00b894;")
-    })
-
-    button.setOnMouseExited(_ => {
-      button.setStyle(style + "-fx-background-color:#55efc4;")
-    })
-
-    button.setMaxWidth(Double.MaxValue)
-    button.setPrefHeight(35)
-
-    button.setOnAction(_ => {
-      buttonClicked = true
-      val stage = button.getScene.getWindow.asInstanceOf[Stage]
-      stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))
-    })
-
-
-    button
-  }
-
-
-
-}
-
-object PagePicker {
-
-  def getButton(string: String):Button ={
-    val button = new Button()
-
-    VBox.setMargin(button, new Insets(0, 10, 10, 10))
-
-    button.setText(string)
-    button.setFont(Auxiliary.getFont(16))
-
-    val style = "-fx-background-radius:15px; -fx-text-fill: white;"
-
-    button.setStyle(style + "-fx-background-color:#55efc4;")
-
-    button.setOnMouseEntered(_ => {
-      button.setStyle(style + "-fx-background-color:#00b894;")
-    })
-
-    button.setOnMouseExited(_ => {
-      button.setStyle(style + "-fx-background-color:#55efc4;")
-    })
-
-    button.setMaxWidth(Double.MaxValue)
-    button.setPrefHeight(35)
-
-    button
-  }
 }

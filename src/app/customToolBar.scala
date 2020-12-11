@@ -14,7 +14,7 @@ import javafx.scene.shape.{Circle, Polygon, Rectangle}
 import javafx.scene.text.FontWeight
 import javafx.stage.FileChooser.ExtensionFilter
 import javafx.stage.{FileChooser, Modality, Stage}
-import logicMC.Eraser
+import logicMC.{Eraser, ShapeType}
 
 object ToolType extends Enumeration {
 

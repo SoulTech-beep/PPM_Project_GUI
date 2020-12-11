@@ -6,20 +6,53 @@ import javafx.scene.text.FontWeight
 
 case class CustomText(textColor: ObjectProperty[Color], textWeight: ObjectProperty[FontWeight], textSize:SimpleIntegerProperty, opacity:SimpleDoubleProperty){
 
-  def changeTextColor(color: Color):Unit = {
-    this.textColor.set(color)
+  def changeTextColor(color: Color):CustomText = {
+    CustomText.changeTextColor(this, color)
   }
 
-  def changeTextWeight(fontWeight: FontWeight):Unit = {
-    this.textWeight.set(fontWeight)
+  def changeTextWeight(fontWeight: FontWeight):CustomText = {
+    CustomText.changeTextWeight(this, fontWeight)
   }
 
-  def changeTextSize(newSize: Int):Unit = {
-    this.textSize.set(newSize)
+  def changeTextSize(newSize: Int):CustomText = {
+    CustomText.changeTextSize(this, newSize)
   }
 
-  def changeOpacity(newOpacity: Double):Unit = {
-    this.opacity.set(newOpacity)
+  def changeOpacity(newOpacity: Double):CustomText = {
+    CustomText.changeOpacity(this, newOpacity)
   }
 
 }
+
+object CustomText{
+
+  def changeTextColor(customText: CustomText, color:Color):CustomText = {
+    customText.textColor.set(color)
+
+    getCopy(customText)
+  }
+
+  def changeTextWeight(customText: CustomText, fontWeight: FontWeight):CustomText = {
+    customText.textWeight.set(fontWeight)
+
+    getCopy(customText)
+  }
+
+  def changeTextSize(customText: CustomText, size: Int):CustomText = {
+    customText.textSize.set(size)
+
+    getCopy(customText)
+  }
+
+  def changeOpacity(customText: CustomText, opacity: Double):CustomText = {
+    customText.opacity.set(opacity)
+
+    getCopy(customText)
+  }
+
+  def getCopy(customText: CustomText):CustomText = {
+    CustomText(customText.textColor, customText.textWeight, customText.textSize, customText.opacity)
+  }
+
+}
+

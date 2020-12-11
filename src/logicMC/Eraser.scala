@@ -11,6 +11,7 @@ case class Eraser(radius: SimpleDoubleProperty) {
 }
 
 object Eraser {
+
   def changeRadius(eraser: Eraser, radius: Double): Eraser = {
     eraser.radius.set(radius)
     Eraser(radius = eraser.radius)

@@ -182,31 +182,13 @@ class Controller {
   def addWhiteboardButtonOnClick(): Unit = {
 
     addWhiteboardButton.setOnAction(_ => {
-      val fxmlLoader = new FXMLLoader(getClass.getResource("./WhiteboardCreate.fxml"))
 
-      val mainViewRoot: Parent = fxmlLoader.load()
-
-      val scene = new Scene(mainViewRoot)
-      scene.getStylesheets.add("testStyle.css")
+      val whiteboardCreate = new WhiteboardCreate
+      whiteboardCreate.initialize(mySplitPane, updateVisualState)
+      whiteboardCreate.setState(FxApp.app_state)
 
       blurBackground(0, 30, 1000)
 
-      val createWhiteboardController = fxmlLoader.getController.asInstanceOf[WhiteboardCreate]
-      createWhiteboardController.setState(FxApp.app_state)
-
-      val secondStage: Stage = new Stage()
-      secondStage.setScene(scene)
-      secondStage.initModality(Modality.APPLICATION_MODAL)
-      secondStage.show()
-      secondStage.setTitle("Add Whiteboard")
-      secondStage.getIcons.add(new Image("images/addIcon.png"))
-
-      secondStage.setResizable(false)
-
-      secondStage.setOnCloseRequest(_ => {
-        updateVisualState(FxApp.app_state._2)
-        blurBackground(30, 0, 500)
-      })
 
     })
   }
@@ -215,7 +197,7 @@ class Controller {
 
 
     val label = new Label("Section name")
-    label.setFont(Auxiliary.getFont(14))
+    label.setFont(Auxiliary.getFont(14)())
     label.setPadding(new Insets(5,0,0,5))
 
     val nameTextField = new TextField()

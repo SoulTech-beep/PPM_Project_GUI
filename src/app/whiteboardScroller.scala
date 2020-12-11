@@ -3,7 +3,6 @@ package app
 
 import java.io.File
 
-import app.PageStyle.PageStyle
 import javafx.animation.{KeyFrame, KeyValue, Timeline}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.event.ActionEvent
@@ -19,7 +18,8 @@ import javafx.scene.text.Text
 import javafx.scene.{Node, Scene}
 import javafx.stage.{Modality, Stage, WindowEvent}
 import javafx.util.Duration
-import logicMC.{Auxiliary, Whiteboard}
+import logicMC.PageStyle.PageStyle
+import logicMC.{Auxiliary, Colors, PageStyle, ShapeType, Whiteboard}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 import org.apache.pdfbox.tools.imageio.ImageIOUtil
@@ -79,7 +79,7 @@ object whiteboardScroller {
       val width = new TextField(textHolder.getLayoutBounds.getWidth.toString)
 
       val label = new Label("Text width")
-      label.setFont(Auxiliary.getFont(14))
+      label.setFont(Auxiliary.getFont(14)())
       label.setPadding(new Insets(5,0,0,5))
 
       val vBox = new VBox(label,width)
@@ -101,7 +101,7 @@ object whiteboardScroller {
 
       VBox.setMargin(deleteButton, new Insets(5, 10, 20, 10))
 
-      deleteButton.setFont(Auxiliary.getFont(16))
+      deleteButton.setFont(Auxiliary.getFont(16)())
 
       val style = "-fx-background-radius:15px; -fx-text-fill: white;"
 
@@ -143,7 +143,7 @@ object whiteboardScroller {
       vBox.setStyle("-fx-background-color: white;")
 
       val label = new Label("Text")
-      label.setFont(Auxiliary.getFont(14))
+      label.setFont(Auxiliary.getFont(14)())
       label.setPadding(new Insets(5,0,0,5))
 
       val vBoxTextField = new VBox(label)
@@ -152,7 +152,7 @@ object whiteboardScroller {
       vBoxTextField.setPadding(new Insets(5, 5, 5, 5))
       VBox.setMargin(vBoxTextField, new Insets(5,10,0,10))
 
-      val changeButton = PagePicker.getButton("Confirm")
+      val changeButton = Auxiliary.getButtonWithColor(name="Confirm")
       val resizeTextValues = resizeText(changeButton)
 
       vBox.getChildren.addAll(resizeTextValues._1,vBoxTextField, changeButton, deleteText(stage))
@@ -191,7 +191,7 @@ object whiteboardScroller {
 
     })
 
-    textHolder.setFont(Auxiliary.getFontWeight(customToolBar.textTool.textSize.get, customToolBar.textTool.textWeight.get))
+    textHolder.setFont(Auxiliary.getFont(customToolBar.textTool.textSize.get)( customToolBar.textTool.textWeight.get))
     textHolder.setOpacity(customToolBar.textTool.opacity.get)
     textHolder.setFill(customToolBar.textTool.textColor.get)
 
@@ -652,7 +652,6 @@ object whiteboardScroller {
 
         if(newsel == null) {
 
-
           if(newselNodes == null) {
             page.getChildren.remove(selectionPolyline)
 
@@ -1050,7 +1049,7 @@ object whiteboardScroller {
   def addPageButton(pages: VBox, toolBar:customToolBar, pane:Node, wb:whiteboardScroller):Button = {
 
     val addPageButton = new Button("Add new page")
-    addPageButton.setFont(Auxiliary.getFont(14))
+    addPageButton.setFont(Auxiliary.getFont(14)())
     VBox.setMargin(addPageButton, new Insets(0,0,50,0))
     addPageButton.setPrefSize(130, 50)
 
